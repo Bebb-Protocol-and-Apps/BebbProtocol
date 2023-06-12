@@ -1,0 +1,34 @@
+{
+  "canisters": {
+    "newwave": {
+      "main": "src/newwave/main.mo",
+      "type": "motoko"
+    },
+    "test_assets": {
+      "dependencies": [
+        "newwave"
+      ],
+      "frontend": {
+        "entrypoint": "src/hello_assets/src/index.html"
+      },
+      "source": [
+        "src/hello_assets/assets",
+        "dist/hello_assets/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+        "packtool": "vessel sources"
+    }
+  },
+  "dfx": "0.10.1",
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}

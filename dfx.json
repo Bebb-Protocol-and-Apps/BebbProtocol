@@ -1,0 +1,14 @@
+{
+  "canisters": {
+    "newwave": {
+      "main": "src/newwave/main.mo",
+      "type": "motoko"
+    }
+  },
+  "defaults": {
+    "build": {
+        "packtool": "vessel sources"
+    }
+  },
+  "version": 1
+}

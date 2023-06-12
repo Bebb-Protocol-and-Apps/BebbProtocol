@@ -1,6 +1,7 @@
 # Various IDEs and Editors
 .vscode/
 .idea/
+**/*~
 
 # Mac OSX temporary files
 .DS_Store
@@ -8,6 +9,8 @@
 
 # dfx temporary files
 .dfx/
+.dfx/**
+**/.dfx/
 
 # frontend code
 node_modules/
