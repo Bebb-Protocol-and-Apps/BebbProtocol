@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/patrick/InternetComputer/tutorials/rust_profile/target/release/build/typenum-1a732590489a748a/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/home/patrick/InternetComputer/tutorials/rust_profile/target/release/build/typenum-1a732590489a748a/out/op.rs
