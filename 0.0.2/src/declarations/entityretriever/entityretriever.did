@@ -1,0 +1,27 @@
+type EntityType = 
+ variant {
+   BridgeEntity;
+   Location;
+   Person;
+   Webasset;
+ };
+type EntitySettings = record {};
+type Entity = 
+ record {
+   creationTimestamp: nat64;
+   creator: principal;
+   description: opt text;
+   entitySpecificFields: opt text;
+   entityType: EntityType;
+   externalId: opt text;
+   internalId: text;
+   keywords: opt vec text;
+   listOfEntitySpecificFieldKeys: vec text;
+   name: opt text;
+   owner: principal;
+   settings: EntitySettings;
+ };
+service : {
+  get_entities: (vec text) -> (vec Entity);
+  get_entity: (text) -> (opt Entity);
+}

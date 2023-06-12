@@ -1,0 +1,17 @@
+{
+  "canisters": {
+    "NewWaveV0": {
+      "build": "cargo build --target wasm32-unknown-unknown --package NewWaveV0 --release",
+      "candid": "src/NewWaveV0/src/entity.did",
+      "wasm": "target/wasm32-unknown-unknown/release/NewWaveV0.wasm",
+      "type": "custom"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}

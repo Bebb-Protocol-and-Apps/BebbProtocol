@@ -1,0 +1,28 @@
+type Entity_2 = record {
+    "internalId": text;
+    "externalId": text;
+    "entityType": text;
+    "name": text;
+    "description": text;
+    "keywords": vec text;
+    "attachedBridgeIds": vec text;
+};
+type Entity = Entity_2;
+
+type Bridge_2 = record {
+    "internalId": text;
+    "fromEntityId": text;
+    "toEntityId": text;
+};
+type Bridge = Bridge_2;
+
+service : {
+    "getEntityById": (text) -> (Entity_2) query;
+    "getBridgeById": (text) -> (Bridge_2) query;
+    "getEntityByExternalId": (text) -> (Entity_2) query;
+    "createEntity": (Entity_2) -> (text);
+    "createEntityAndBridge": (text, Entity_2) -> (text);
+    "createBridge": (Bridge_2) -> (text);
+    "searchEntity": (text) -> (opt Entity_2) query;
+    "getBridgedEntitiesForEntityId": (text) -> (vec Entity_2) query;
+}

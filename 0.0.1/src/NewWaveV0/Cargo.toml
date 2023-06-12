@@ -1,0 +1,13 @@
+[package]
+name = "NewWaveV0"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ic-cdk = "0.3"
+ic-cdk-macros = "0.3"
+serde = "1.0.111"
+sha2 = "0.9.3"

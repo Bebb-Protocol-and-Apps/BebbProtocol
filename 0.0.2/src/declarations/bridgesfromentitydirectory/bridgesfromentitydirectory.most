@@ -1,0 +1,5 @@
+type BridgesDirectoryStorageUnit/1 = BridgesDirectoryStorageUnit;
+actor {
+  stable var stableBridgesDirectoryStorageUnits :
+    [(Text, BridgesDirectoryStorageUnit/1)]
+};
