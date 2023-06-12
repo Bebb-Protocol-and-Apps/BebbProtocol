@@ -1,9 +1,0 @@
-type List = 
- opt record {
-       text;
-       List;
-     };
-service : {
-  getEntityEntries: (text) -> (List);
-  putEntityEntry: (text, text, text) -> (text);
-}

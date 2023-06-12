@@ -1,7 +1,0 @@
-type BridgesDirectoryStorageUnit/1 = BridgesDirectoryStorageUnit;
-actor {
-  stable var stableBridgesFromDirectoryStorageUnits :
-    [(Text, BridgesDirectoryStorageUnit/1)];
-  stable var stableBridgesToDirectoryStorageUnits :
-    [(Text, BridgesDirectoryStorageUnit/1)]
-};

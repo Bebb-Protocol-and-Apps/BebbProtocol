@@ -1,4 +1,0 @@
-type EntityTypeCreator/1 = EntityTypeCreator;
-actor {
-  stable var stableEntityTypeCreators : [(Text, EntityTypeCreator/1)]
-};

@@ -1,5 +1,0 @@
-type EntityDirectoryStorageUnit/1 = EntityDirectoryStorageUnit;
-actor {
-  stable var stableEntityDirectoryStorageUnits :
-    [(Text, EntityDirectoryStorageUnit/1)]
-};

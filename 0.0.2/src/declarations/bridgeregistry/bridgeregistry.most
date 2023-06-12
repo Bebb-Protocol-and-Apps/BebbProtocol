@@ -1,5 +1,0 @@
-type BridgeRegistryStorageUnit/1 = BridgeRegistryStorageUnit;
-actor {
-  stable var stableBridgeRegistryStorageUnits :
-    [(Text, BridgeRegistryStorageUnit/1)]
-};

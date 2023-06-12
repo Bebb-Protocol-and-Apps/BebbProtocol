@@ -1,4 +1,0 @@
-service : {
-  getEntityEntry: (text) -> (opt principal);
-  putEntityEntry: (text, principal) -> (text);
-}
