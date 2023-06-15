@@ -11,8 +11,6 @@ import AssocList "mo:base/AssocList";
 
 import NewWaveError "errors";
 
-import Entity "entity";
-import BridgeEntity "bridge_entity";
 
 module {
   public type Dip721NonFungibleToken = {
@@ -33,9 +31,6 @@ module {
     #Ok : S;
     #Err : E;
   };
-
-  public type EntityResult = Result<?Entity.Entity, NewWaveError.NewWaveError>;
-  public type BridgeResult = Result<?BridgeEntity.BridgeEntity, NewWaveError.NewWaveError>;
 
   public type OwnerResult = Result<Principal, ApiError>;
   public type TxReceipt = Result<Nat, ApiError>;

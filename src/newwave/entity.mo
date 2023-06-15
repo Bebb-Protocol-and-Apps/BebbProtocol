@@ -17,86 +17,86 @@ import Result "mo:base/Result";
 import Random "mo:base/Random";
 import Blob "mo:base/Blob";
 
-import EntityType "entity_type";
-import EntitySettings "entity_settings";
-
 import Utils "Utils";
-
-// example to include functions on type object:
-  // type Counter = { inc : () -> Nat };
-  /* func Counter() : { inc : () -> Nat } =
-  object {
-    var c = 0;
-    public func inc() : Nat { c += 1; c }
-  }; */
+import Text "mo:base/Text";
+import Types "Types";
 
 module {
+  public type EntityIdErrors = {
+    #Unauthorized : Text;
+    #Error;
+  };
+
+  public type EntityIdResult = Types.Result<?Text, EntityIdErrors>;
+
+  public type EntityErrors = {
+    #Unauthorized : Text;
+    #EntityNotFound;
+    #Error;
+  };
+
+  public type EntityResult = Types.Result<?Entity, EntityErrors>;
+
+  public class EntitySettings() {
+    var mainSetting : Text = "default";
+  };
+
+  public type EntityType = {
+    #BridgeEntity;
+    #Webasset;
+    #Person;
+    #Location;
+  };
 
   public type Entity = {
-    internalId : Text;
+    id: Text;
     creationTimestamp : Nat64;
     creator : Principal;
     owner : Principal;
-    settings : EntitySettings.EntitySettings;
-    entityType : EntityType.EntityType;
+    settings : EntitySettings;
+    entityType : EntityType;
     name : ?Text;
     description : ?Text;
     keywords : ?[Text];
-    externalId : ?Text;
     entitySpecificFields : ?Text;
     listOfEntitySpecificFieldKeys : [Text];
-    // resolveRepresentedEntity : () -> T; // if possible, generic return value, otherwise probably Text
   };
+
 
   public type EntityInitiationObject = {
-    _internalId : ?Text;
-    _creator : ?Principal;
-    _owner : ?Principal;
-    _settings : ?EntitySettings.EntitySettings;
-    _entityType : EntityType.EntityType;
-    _name : ?Text;
-    _description : ?Text;
-    _keywords : ?[Text];
-    _externalId : ?Text;
-    _entitySpecificFields : ?Text;
+    settings : ?EntitySettings;
+    entityType : EntityType;
+    name : ?Text;
+    description : ?Text;
+    keywords : ?[Text];
+    entitySpecificFields : ?Text;
   };
 
-  public func Entity(
+  public func generateEntityFromInitializationObject(
     initiationObject : EntityInitiationObject,
     caller : Principal,
   ) : async Entity {
     return {
-      internalId : Text = switch(initiationObject._internalId) {
-        //case null { Utils.newUniqueId() };
-        case null { await Utils.newRandomUniqueId() };
-        case (?customId) { customId };
-      };
+      id : Text = "";
       creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
-      creator : Principal = switch(initiationObject._creator) {
-        case null { caller };
-        case (?customCreator) { customCreator };
-      };
-      owner : Principal = switch(initiationObject._owner) {
-        case null { caller };
-        case (?customOwner) { customOwner };
-      };
-      settings : EntitySettings.EntitySettings = switch(initiationObject._settings) {
-        case null { EntitySettings.EntitySettings() };
+      creator : Principal = caller;
+      owner : Principal = caller;
+      settings : EntitySettings = switch(initiationObject.settings) {
+        case null { EntitySettings() };
         case (?customSettings) { customSettings };
       };
-      entityType : EntityType.EntityType = initiationObject._entityType;
-      name : ?Text = initiationObject._name;
-      description : ?Text = initiationObject._description;
-      keywords : ?[Text] = initiationObject._keywords;
-      externalId : ?Text = initiationObject._externalId;
-      entitySpecificFields : ?Text = initiationObject._entitySpecificFields;
+      entityType : EntityType = initiationObject.entityType;
+      name : ?Text = initiationObject.name;
+      description : ?Text = initiationObject.description;
+      keywords : ?[Text] = initiationObject.keywords;
+      entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
       listOfEntitySpecificFieldKeys : [Text] = [];
     }
   };
 
   public type EntityUpdateObject = {
-    internalId : Text;
-    settings : ?EntitySettings.EntitySettings;
+    id : Text;
+    settings : ?EntitySettings;
     name : ?Text;
     description : ?Text;
     keywords : ?[Text];
