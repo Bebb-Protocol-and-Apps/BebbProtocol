@@ -22,8 +22,8 @@ actor {
     let result = await createEntity(caller, entityToCreate);
     switch(result)
     {
-      case ("") { return #Error(#Error)};
-      case (?id) { return #OK(id)};
+      case ("") { return #Err(#Error)};
+      case (id) { return #Ok(id)};
     }
   };
 
@@ -31,8 +31,8 @@ actor {
     let result = getEntity(entityId);
     switch(result)
     {
-      case (null) { return #Error(#EntityNotFound)};
-      case (?entity) { return #OK(entity)};
+      case (null) { return #Err(#EntityNotFound)};
+      case (entity) { return #Ok(entity)};
     }
   };
 
@@ -72,12 +72,12 @@ actor {
     return result;
   };
 
-  public shared ({ caller }) func delete_bridge(bridgeId : Text) : async Types.BridgeResult {
+  public shared ({ caller }) func delete_bridge(bridgeId : Text) : async Bridge.BridgeResult {
     let result = await deleteBridge(caller, bridgeId);
     return result;
   };
 
-  public shared ({ caller }) func update_bridge(bridgeUpdateObject : Bridge.BridgeUpdateObject) : async Types.BridgeResult {
+  public shared ({ caller }) func update_bridge(bridgeUpdateObject : Bridge.BridgeUpdateObject) : async Bridge.BridgeResult {
     let result = await updateBridge(caller, bridgeUpdateObject);
     return result;
   };
@@ -86,8 +86,8 @@ actor {
     let result = await updateEntity(caller, entityUpdateObject);
     switch(result)
     {
-      case ("") { return #Error(#Error)};
-      case (?id) { return #OK(id)};
+      case ("") { return #Err(#Error)};
+      case (?id) { return #Ok(id)};
     }
   };
 
@@ -218,7 +218,7 @@ actor {
   };
 
   stable var pendingFromBridgesStorageStable : [(Text, BridgeCategories)] = [];
-  var pendingFromBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
+  var pecndingFromBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
   stable var pendingToBridgesStorageStable : [(Text, BridgeCategories)] = [];
   var pendingToBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
   stable var fromBridgesStorageStable : [(Text, BridgeCategories)] = [];
@@ -537,7 +537,7 @@ actor {
     return true;
   };
 
-  func deleteBridge(caller : Principal, bridgeId : Text) : async Types.BridgeResult {
+  func deleteBridge(caller : Principal, bridgeId : Text) : async Bridge.BridgeResult {
     switch(getBridge(bridgeId)) {
       case null { return #Err(#BridgeNotFound); };
       case (?bridgeToDelete) {
@@ -571,7 +571,7 @@ actor {
     };
   };
 
-  func updateBridge(caller : Principal, bridgeUpdateObject : Bridge.BridgeUpdateObject) : async Types.BridgeResult {
+  func updateBridge(caller : Principal, bridgeUpdateObject : Bridge.BridgeUpdateObject) : async Bridge.BridgeResult {
     switch(getBridge(bridgeUpdateObject.internalId)) {
       case null { return #Err(#BridgeNotFound); };
       case (?bridgeToUpdate) {
