@@ -36,11 +36,13 @@ actor {
     }
   };
 
-  public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async ?Bridge.Bridge {
+  public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async ?Bridge.BridgeIdErrors {
     let result = await createBridge(caller, bridgeToCreate);
-    return result;
-    // return BridgeCreator.create_bridge(bridgeToCreate); TODO: possible to return promise? Would this speed up this canister?
-  };
+    switch(result)
+    {
+      case ("") { return #Err(#Error)};
+      case (id) { return #Ok(id)};
+    } };
 
   public shared query ({ caller }) func get_bridge(entityId : Text) : async ?Bridge.Bridge {
     let result = getBridge(entityId);

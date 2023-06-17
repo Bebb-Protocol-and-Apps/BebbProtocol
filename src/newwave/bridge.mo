@@ -20,42 +20,126 @@ import Utils "Utils";
 import Types "Types";
 import NewWaveError "errors";
 
-module  {
+module {
 
-  public type BridgeResult = Types.Result<?Bridge, NewWaveError.NewWaveError>;
+  /**
+   * Defines the errors for the public API when trying to retrieve a Bridge ID
+  */
+  public type BridgeIdErrors = {
+    #Unauthorized : Text;
+    #BridgeNotFound;
+    #Error;
+  };
 
+  /**
+   * Defines the result type for trying to retieve the ID of a bridge from
+   * the public API
+  */
+  public type BridgeIdResult = Types.Result<Text, BridgeIdErrors>;
 
+  /**
+   * Defines the bridge errors that can occur when trying to retrieve a bridge
+  */
+  public type BridgeErrors = {
+    #Unauthorized : Text;
+    #BridgeNotFound;
+    #Error;
+  };
+
+  /**
+   * Defines the result type for trying to retrieve an Entity from
+   * the public API
+  */
+  public type BridgeResult = Types.Result<?Bridge, BridgeErrors>;
+
+  /**
+   * Stores bridge specific settings
+  */
   public class BridgeSettings() {
     var mainSetting : Text = "default";
   };
 
+  /**
+   * The available bridge types that can be used to describe a bridge
+  */
   public type BridgeType = {
-      #OwnerCreated;
+    #OwnerCreated;
   };
 
+  /**
+    * The bridge states that describe the current status of a bridge
+  */
   public type BridgeState = {
     #Pending;
     #Rejected;
     #Confirmed;
   };
 
+  /**
+    * The type that defines the attributes for a Bridge
+  */
   public type Bridge = {
-    id: Text;
+    /**
+     * The ID of the Bridge that is used to store it in
+     * in the bridge database
+    */
+    id : Text;
+    /**
+     * The timestamp in UTC (maybe) that the bridge was created
+    */
     creationTimestamp : Nat64;
+    /**
+     * The original creator of the bridge.
+    */
     creator : Principal;
+    /**
+     * The current owner of the bridge
+    */
     owner : Principal;
+    /**
+     * Settings for the bridge
+    */
     settings : BridgeSettings;
+    /**
+     * A human readable name? for the bridge
+    */
     name : ?Text;
+    /**
+     * An owner defined description for what the bridge is
+    */
     description : ?Text;
+    /**
+     * Keywords that are used to descripe the bridge to
+     * enable more efficient lookup of the bridge?
+    */
     keywords : ?[Text];
+    /**
+     * Unknown
+    */
     listOfBridgeSpecificFieldKeys : [Text];
+    /**
+     * The type of the bridge
+    */
     bridgeType : BridgeType;
+    /**
+     * The entity ID that specifies the starting entity for the bridge
+    */
     fromEntityId : Text;
+    /**
+     * The entity ID that specifies the ending entity for the bridge
+    */
     toEntityId : Text;
+    /**
+     * The current bridge stated (TO BE DEPRECATED)
+    */
     state : BridgeState;
   };
-  public let BridgeKeys : [Text] = ["bridgeType"];
 
+  /**
+   * The initialization object is the fields provided by a user
+   * in order to create a bridge. The rest of the fields are automatically
+   * created by Bebb
+  */
   public type BridgeInitiationObject = {
     settings : ?BridgeSettings;
     name : ?Text;
@@ -67,38 +151,61 @@ module  {
     state : ?BridgeState;
   };
 
-  public let BridgeInitiationObjectKeys : [Text] = ["_bridgeType", "_fromEntityId", "_toEntityId", "_state"];
-
+  /**
+   * This function is used to convert a user provided initialization object
+   * and converts it into a Bridge. This bridge contains a null id and is not
+   * saved in the database yet
+   *
+   * @return The newly created bridge with a empty id 
+  */
   public func generateBridgeFromInitializationObject(
     initiationObject : BridgeInitiationObject,
     caller : Principal,
-  ) : async Bridge { // or Entity.Entity
+  ) : async Bridge {
     return {
-      id : Text = await Utils.newRandomUniqueId();
+      id : Text = "";
       creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
       creator : Principal = caller;
       owner : Principal = caller;
-      settings : BridgeSettings = switch(initiationObject._settings) {
+      settings : BridgeSettings = switch (initiationObject.settings) {
         case null { BridgeSettings() };
         case (?customSettings) { customSettings };
       };
-      name : ?Text = initiationObject._name;
-      description : ?Text = initiationObject._description;
-      keywords : ?[Text] = initiationObject._keywords;
+      name : ?Text = initiationObject.name;
+      description : ?Text = initiationObject.description;
+      keywords : ?[Text] = initiationObject.keywords;
       listOfBridgeSpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId", "state"];
-      bridgeType : BridgeType = initiationObject._bridgeType;
-      fromEntityId : Text = initiationObject._fromEntityId;
-      toEntityId : Text = initiationObject._toEntityId;
+      bridgeType : BridgeType = initiationObject.bridgeType;
+      fromEntityId : Text = initiationObject.fromEntityId;
+      toEntityId : Text = initiationObject.toEntityId;
       state : BridgeState = #Confirmed;
-    }
+    };
   };
 
+  /**
+   This type defines the fields that the current owner is allowed
+   to modify and use to update the bridge
+  */
   public type BridgeUpdateObject = {
+    /**
+     * The id of the bridge to update
+    */
+    id : Text;
+    /**
+      * The new settings to add to the bridge
+    */
     settings : ?BridgeSettings;
+    /**
+     * The updated name for the bridge
+    */
     name : ?Text;
+    /**
+     * The updated descrition for the bridge
+    */
     description : ?Text;
+    /**
+     * The Updated keywords for the bridge
+    */
     keywords : ?[Text];
-    state : ?BridgeState;
-    bridgeType : ?BridgeType;
   };
 };
