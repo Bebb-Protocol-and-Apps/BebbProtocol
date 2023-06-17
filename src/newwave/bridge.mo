@@ -57,14 +57,14 @@ module  {
   public let BridgeKeys : [Text] = ["bridgeType"];
 
   public type BridgeInitiationObject = {
-    _settings : ?BridgeSettings;
-    _name : ?Text;
-    _description : ?Text;
-    _keywords : ?[Text];
-    _bridgeType : BridgeType;
-    _fromEntityId : Text;
-    _toEntityId : Text;
-    _state : ?BridgeState;
+    settings : ?BridgeSettings;
+    name : ?Text;
+    description : ?Text;
+    keywords : ?[Text];
+    bridgeType : BridgeType;
+    fromEntityId : Text;
+    toEntityId : Text;
+    state : ?BridgeState;
   };
 
   public let BridgeInitiationObjectKeys : [Text] = ["_bridgeType", "_fromEntityId", "_toEntityId", "_state"];

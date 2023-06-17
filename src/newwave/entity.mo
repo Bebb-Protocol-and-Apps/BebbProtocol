@@ -27,6 +27,7 @@ module {
   */
   public type EntityIdErrors = {
     #Unauthorized : Text;
+    #EntityNotFound;
     #Error;
   };
 
@@ -49,7 +50,7 @@ module {
    * Defines the result type for trying to retrieve an Entity from
    * the public API
   */
-  public type EntityResult = Types.Result<Entity, EntityErrors>;
+  public type EntityResult = Types.Result<?Entity, EntityErrors>;
 
   /**
    * Stores entity specific settings

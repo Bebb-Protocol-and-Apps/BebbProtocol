@@ -84,15 +84,18 @@ actor {
 
   public shared ({ caller }) func update_entity(entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
     let result = await updateEntity(caller, entityUpdateObject);
-    switch(result)
-    {
-      case ("") { return #Err(#Error)};
-      case (?id) { return #Ok(id)};
-    }
+    return result;
   };
 
 // HELPER FUNCTIONS
-  func createEntity(caller : Principal, entityToCreate : Entity.EntityInitiationObject) : async Text {
+  /**
+   * Function creates a new entity based on the input initialization object. If it is able
+   * to make the object, it stores it and return the id, otherwise it will not
+   * store an object and return an empty string
+   *
+   * @return The id of the new entity if the entity creation was successful, otherwise an empty string
+  */
+  private func createEntity(caller : Principal, entityToCreate : Entity.EntityInitiationObject) : async Text {
     // Create the entity 
     var entity = await Entity.generateEntityFromInitializationObject(entityToCreate, caller);
     
@@ -103,15 +106,15 @@ actor {
     var found_unique_id : Bool = false;
     while(not found_unique_id)
     {
-      // 100 is chosen arbitarily to ensure that in case of something weird happening
+      // 10 is chosen arbitarily to ensure that in case of something weird happening
       //  there is a timeout and it errors rather then looking forever
-      if (counter > 100)
+      if (counter > 10)
       {
         return "";
       };
 
       newEntityId := await Utils.newRandomUniqueId();
-      if (entitiesStorage.get(newId) == null)
+      if (entitiesStorage.get(newEntityId) == null)
       {
         entity.id := newEntityId;
         return putEntity(entity)
@@ -135,81 +138,125 @@ actor {
     return result;
   };
 
-  func checkIfEntityWithAttributeExists(attribute : Text, attributeValue : Text) : Bool {
-    switch(attribute) {
-      case "internalId" {
-        switch(getEntity(attributeValue)) {
-          case null { return false; };
-          case _ { return true; };
-        };
-      };
-      case "externalId" {
-        for ((k, entity) in entitiesStorage.entries()) {
-          if (entity.externalId == ?attributeValue) {
-            return true;
-          };          
-        };
-        return false;
-      };
-      case _ { return false; }
+  /**
+  * Function checks that the given entity id provides exists within the database
+  *
+  * @return True if the entity exists, false otherwise
+  */
+  private func checkIfEntityExists(entityId : Text) : Bool {
+    let result = getEntity(entityId);
+    switch(result)
+    {
+      case(null) { return  false;};
+      case(entity) { return true;};
     };
   };
 
-  func getEntityByAttribute(attribute : Text, attributeValue : Text) : ?Entity.Entity {
-    switch(attribute) {
-      case "internalId" {
-        return getEntity(attributeValue);
-      };
-      case "externalId" {
-        for ((k, entity) in entitiesStorage.entries()) {
-          if (entity.externalId == ?attributeValue) {
-            return ?entity;
-          };          
-        };
-        return null;
-      };
-      case _ { return null; }
-    };
-  };
+  // func checkIfEntityWithAttributeExists(attribute : Text, attributeValue : Text) : Bool {
+  //   switch(attribute) {
+  //     case "internalId" {
+  //       switch(getEntity(attributeValue)) {
+  //         case null { return false; };
+  //         case _ { return true; };
+  //       };
+  //     };
+  //     case "externalId" {
+  //       for ((k, entity) in entitiesStorage.entries()) {
+  //         if (entity.externalId == ?attributeValue) {
+  //           return true;
+  //         };          
+  //       };
+  //       return false;
+  //     };
+  //     case _ { return false; }
+  //   };
+  // };
 
-  func getEntitiesByAttribute(attribute : Text, attributeValue : Text) : [Entity.Entity] {
-    switch(attribute) {
-      case "externalId" {
-        var entitiesToReturn = List.nil<Entity.Entity>();
-        for ((k, entity) in entitiesStorage.entries()) {
-          if (entity.externalId == ?attributeValue) {
-            entitiesToReturn := List.push<Entity.Entity>(entity, entitiesToReturn);
-          };          
-        };
-        return List.toArray<Entity.Entity>(entitiesToReturn);
-      };
-      case _ { return []; }
-    };
-  };
+  // func getEntityByAttribute(attribute : Text, attributeValue : Text) : ?Entity.Entity {
+  //   switch(attribute) {
+  //     case "internalId" {
+  //       return getEntity(attributeValue);
+  //     };
+  //     case "externalId" {
+  //       for ((k, entity) in entitiesStorage.entries()) {
+  //         if (entity.externalId == ?attributeValue) {
+  //           return ?entity;
+  //         };          
+  //       };
+  //       return null;
+  //     };
+  //     case _ { return null; }
+  //   };
+  // };
 
-  func createBridge(caller : Principal, bridgeToCreate : Bridge.BridgeInitiationObject) : async ?Bridge.Bridge {
-    // ensure that bridged Entities exist
-    switch(checkIfEntityWithAttributeExists("internalId", bridgeToCreate._fromEntityId)) {
-      case false { return null; }; // TODO: potentially return error message instead
-      case true {
-        if (checkIfEntityWithAttributeExists("internalId", bridgeToCreate._toEntityId) == false) {
-          return null; // TODO: potentially return error message instead
-        };
-      };
+  // func getEntitiesByAttribute(attribute : Text, attributeValue : Text) : [Entity.Entity] {
+  //   switch(attribute) {
+  //     case "externalId" {
+  //       var entitiesToReturn = List.nil<Entity.Entity>();
+  //       for ((k, entity) in entitiesStorage.entries()) {
+  //         if (entity.externalId == ?attributeValue) {
+  //           entitiesToReturn := List.push<Entity.Entity>(entity, entitiesToReturn);
+  //         };          
+  //       };
+  //       return List.toArray<Entity.Entity>(entitiesToReturn);
+  //     };
+  //     case _ { return []; }
+  //   };
+  // };
+
+  /**
+   * Function creates a new bridge based on the input initialization object. If it is able
+   * to make the object, it stores it and return the id, otherwise it will not
+   * store an object and return an empty string
+   *
+   * @return The id of the new entity if the entity creation was successful, otherwise an empty string
+  */
+  private func createBridge(caller : Principal, bridgeToCreate : Bridge.BridgeInitiationObject) : async Text{
+    // Check if both the to and from entities exist for the bridge
+    let toEntityExists = checkIfEntityExists(bridgeToCreate.toEntityId);
+    let fromEntityExists = checkIfEntityExists(bridgeToCreate.fromEntityExists);
+    
+    if (toEntityExists == false or fromEntityExists == false)
+    {
+      return "";
     };
-    let bridge : Bridge.Bridge = await Bridge.Bridge(bridgeToCreate, caller);
-    let result = putBridge(bridge);
-    return ?result;
+
+    var bridge : Bridge.Bridge = await Bridge.generateBridgeFromInitializationObject(bridgeToCreate, caller);
+
+    // Find a unique id for the new bridge that will not
+    // conflict with any current items
+    var newBridgeId : Text = "";
+    var counter : Nat = 0;
+    var found_unique_id : Bool = false;
+    while(not found_unique_id)
+    {
+      // 10 is chosen arbitarily to ensure that in case of something weird happening
+      //  there is a timeout and it errors rather then looking forever
+      if (counter > 10)
+      {
+        return "";
+      };
+
+      newBridgeId := await Utils.newRandomUniqueId();
+      if (bridgesStorage.get(newBridgeId) == null)
+      {
+        bridge.id := newBridgeId;
+        return putBridge(bridge)
+      };
+
+      counter := counter + 1;
+    };
+    return "";
   };
 
   stable var bridgesStorageStable : [(Text, Bridge.Bridge)] = [];
   var bridgesStorage : HashMap.HashMap<Text, Bridge.Bridge> = HashMap.HashMap(0, Text.equal, Text.hash);
 
-  func putBridge(bridge : Bridge.Bridge) : Bridge.Bridge {
-    let result = bridgesStorage.put(bridge.internalId, bridge);
-    let bridgeAddedToDirectory = putEntityEntry(bridge);
-    assert(Text.equal(bridge.internalId, bridgeAddedToDirectory));
-    return bridge;
+  func putBridge(bridge : Bridge.Bridge) : Text {
+    let result = bridgesStorage.put(bridge.id, bridge);
+    // TODO: Add the bridge to the appropriate Entity objects attachments
+    // let bridgeAddedToDirectory = putEntityEntry(bridge);
+    return bridge.id;
   };
 
   type BridgeCategories = { // TODO: define bridge categories, probably import from a dedicated file (BridgeType)
@@ -608,32 +655,31 @@ actor {
     };
   };
 
-  func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityResult {
-    switch(getEntity(entityUpdateObject.id)) {
+  /**
+  * Function takes in an entity update object and updates the entity that corresponds with the update
+  * if it exists and the caller has permissions. Otherwise an error is returned
+  * 
+  * @return Either the Entity ID if the call was successful or an error if not
+  */
+  private func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
+    var entity = getEntity(entityUpdateObject.id);
+    switch(entity) {
       case null { return #Err(#EntityNotFound); };
-      case (?entityToUpdate) {
+      case (entityToUpdate) {
         switch(Principal.equal(entityToUpdate.owner, caller)) {
           case false {
-            let errorText : Text = Principal.toText(caller);
-            return #Err(#Unauthorized errorText);
-          }; // Only owner may update the Entity
+            return #Err(#Unauthorized);
+          }; 
+          // Only owner may update the Entity
           case true {
-            // TBD: other update constraints
-            let updatedEntity : Entity.Entity = {
-              id : Text = entityToUpdate.id;
-              creationTimestamp : Nat64 = entityToUpdate.creationTimestamp;
-              creator : Principal = entityToUpdate.creator;
-              owner : Principal = entityToUpdate.owner;
-              settings : Entity.EntitySettings = Option.get<Entity.EntitySettings>(entityUpdateObject.settings, entityToUpdate.settings);
-              entityType : Entity.EntityType = entityToUpdate.entityType;
-              name : ?Text = Option.get<?Text>(?entityUpdateObject.name, entityToUpdate.name);
-              description : ?Text = Option.get<?Text>(?entityUpdateObject.description, entityToUpdate.description);
-              keywords : ?[Text] = Option.get<?[Text]>(?entityUpdateObject.keywords, entityToUpdate.keywords);
-              entitySpecificFields : ?Text = entityToUpdate.entitySpecificFields;
-              listOfEntitySpecificFieldKeys : [Text] = entityToUpdate.listOfEntitySpecificFieldKeys;
-            };
-            let result = entitiesStorage.put(updatedEntity.internalId, updatedEntity);
-            return #Ok(?updatedEntity);      
+            entity.settings := Option.get<Entity.EntitySettings>(entityUpdateObject.settings, entityToUpdate.settings);
+            entity.entityType := entityToUpdate.entityType;
+            entity.name := Option.get<?Text>(?entityUpdateObject.name, entityToUpdate.name);
+            entity.description := Option.get<?Text>(?entityUpdateObject.description, entityToUpdate.description);
+            entity.keywords := Option.get<?[Text]>(?entityUpdateObject.keywords, entityToUpdate.keywords);
+
+            let result = putEntity(entity);
+            return #Ok(result);      
           };
         };
       };
