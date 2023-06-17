@@ -59,7 +59,7 @@ module {
   };
 
   /**
-   * THe available entity types that can be used to describe an entity
+   * The available entity types that can be used to describe an entity
   */
   public type EntityType = {
     #BridgeEntity;
@@ -73,16 +73,16 @@ module {
   */
   public type Entity = {
     /**
-     * The ID of the Entity that is used to store it in 
+     * The ID of the Entity that is used to store it in
      * in the entity database
     */
-    id: Text;
+    id : Text;
     /**
      * The timestamp in UTC (maybe) that the entity was created
     */
     creationTimestamp : Nat64;
     /**
-     * The original creator of the entity. 
+     * The original creator of the entity.
     */
     creator : Principal;
     /**
@@ -106,7 +106,7 @@ module {
     */
     description : ?Text;
     /**
-     * Keywords that are used to descripe the entity to 
+     * Keywords that are used to descripe the entity to
      * enable more efficient lookup of the entity?
     */
     keywords : ?[Text];
@@ -148,7 +148,7 @@ module {
       creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
       creator : Principal = caller;
       owner : Principal = caller;
-      settings : EntitySettings = switch(initiationObject.settings) {
+      settings : EntitySettings = switch (initiationObject.settings) {
         case null { EntitySettings() };
         case (?customSettings) { customSettings };
       };
@@ -158,13 +158,13 @@ module {
       keywords : ?[Text] = initiationObject.keywords;
       entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
       listOfEntitySpecificFieldKeys : [Text] = [];
-    }
+    };
   };
 
   /**
    This type defines the fields that the current owner is allowed
    to modify and use to update the entity
-  */  
+  */
   public type EntityUpdateObject = {
     id : Text;
     settings : ?EntitySettings;
