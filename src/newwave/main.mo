@@ -40,7 +40,7 @@ actor {
     let result = await createBridge(caller, bridgeToCreate);
     switch(result)
     {
-      case ("") { return #Err(#Error)};
+      case (null) { return #Err(#Error)};
       case (id) { return #Ok(id)};
     } };
 
@@ -98,9 +98,7 @@ actor {
    * @return The id of the new entity if the entity creation was successful, otherwise an empty string
   */
   private func createEntity(caller : Principal, entityToCreate : Entity.EntityInitiationObject) : async Text {
-    // Create the entity 
-    var entity = await Entity.generateEntityFromInitializationObject(entityToCreate, caller);
-    
+
     // Find a unique id for the new entity that will not
     // conflict with any current items
     var newEntityId : Text = "";
@@ -116,13 +114,20 @@ actor {
       };
 
       newEntityId := await Utils.newRandomUniqueId();
-      if (entitiesStorage.get(newEntityId) == null)
+      switch (entitiesStorage.get(newEntityId))
       {
-        entity.id := newEntityId;
-        return putEntity(entity)
+        case (null) {
+          // Create the entity 
+          let entity = Entity.generateEntityFromInitializationObject(entityToCreate, newEntityId, caller);
+          return putEntity(entity);
+        };
+        case (_)
+        {
+          counter := counter + 1;
+        };
       };
 
-      counter := counter + 1;
+
     };
     return "";
   };
@@ -141,7 +146,7 @@ actor {
   };
 
   /**
-  * Function checks that the given entity id provides exists within the database
+  * Function checks that the given entity id provided exists within the database
   *
   * @return True if the entity exists, false otherwise
   */
@@ -153,6 +158,7 @@ actor {
       case(entity) { return true;};
     };
   };
+
 
   // func checkIfEntityWithAttributeExists(attribute : Text, attributeValue : Text) : Bool {
   //   switch(attribute) {
@@ -213,17 +219,16 @@ actor {
    *
    * @return The id of the new entity if the entity creation was successful, otherwise an empty string
   */
-  private func createBridge(caller : Principal, bridgeToCreate : Bridge.BridgeInitiationObject) : async Text{
+  private func createBridge(caller : Principal, bridgeToCreate : Bridge.BridgeInitiationObject) : async ?Text{
     // Check if both the to and from entities exist for the bridge
     let toEntityExists = checkIfEntityExists(bridgeToCreate.toEntityId);
     let fromEntityExists = checkIfEntityExists(bridgeToCreate.fromEntityId);
     
     if (toEntityExists == false or fromEntityExists == false)
     {
-      return "";
+      return null;
     };
 
-    var bridge : Bridge.Bridge = await Bridge.generateBridgeFromInitializationObject(bridgeToCreate, caller);
 
     // Find a unique id for the new bridge that will not
     // conflict with any current items
@@ -236,29 +241,129 @@ actor {
       //  there is a timeout and it errors rather then looking forever
       if (counter > 10)
       {
-        return "";
+        return null;
       };
 
       newBridgeId := await Utils.newRandomUniqueId();
       if (bridgesStorage.get(newBridgeId) == null)
       {
-        bridge.id := newBridgeId;
-        return putBridge(bridge)
+        let bridge : Bridge.Bridge = Bridge.generateBridgeFromInitializationObject(bridgeToCreate, newBridgeId, caller);
+        return addNewBridge(bridge)
       };
 
       counter := counter + 1;
     };
-    return "";
+    return null;
   };
 
   stable var bridgesStorageStable : [(Text, Bridge.Bridge)] = [];
   var bridgesStorage : HashMap.HashMap<Text, Bridge.Bridge> = HashMap.HashMap(0, Text.equal, Text.hash);
 
-  func putBridge(bridge : Bridge.Bridge) : Text {
+  /**
+   * Function adds a new bridge and attempts to add the bridge to the entities
+   * bridge lookup tables. If adding the bridge to the entities fails, then the bridge
+   * is not created and is instead deleted
+   *
+   * @return Returns null if the entitiy failed to get created, otherwise it returns
+   * the bridge id of the newly created bridge
+  */
+  private func addNewBridge(bridge : Bridge.Bridge) : ?Text {
+    // Don't allow creating the bridge if the bridge already exists 
+    if (checkIfBridgeExists(bridge.id) == true)
+    {
+      return null;
+    };
+
+    let result = putBridge(bridge);
+    let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge.id);
+    let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge.id);
+    
+    // Ensure the bridge could be added to both entities bridge lookup tables
+    if (fromIdResult == false or toIdResult == false)
+    {
+      // Delete the bridge since it failed to get created
+      bridgesStorage.delete(bridge.id);
+      return null;
+    };
+
+    return ?bridge.id;
+  };
+
+  /**
+   * Function is a simple way to add a Bridge to storage without any checks and 
+   * adding the bridge to the appropriate entity. This is useful for updating
+   * an already created bridge
+   *
+   * @return The newly created bridge
+  */
+  func putBridge(bridge : Bridge.Bridge) : Bridge.Bridge {
     let result = bridgesStorage.put(bridge.id, bridge);
-    // TODO: Add the bridge to the appropriate Entity objects attachments
-    // let bridgeAddedToDirectory = putEntityEntry(bridge);
-    return bridge.id;
+    return bridge;
+  };
+
+
+  /**
+   * This function takes a bridge and adds the bridge ID to the fromIds field
+   * to the entity that this Bridge Links from
+   *
+   * @return True if the bridge ID was added to the from ID list, otherwise
+   * false is returned if it couldn't
+  */
+  private func addBridgeToEntityFromIds(entityId: Text, bridgeId : Text) : Bool {
+    let entity = getEntity(entityId);
+    switch (entity) {
+      case (null) {
+        return false;
+      };
+      case (?retrievedEntity) {
+        retrievedEntity.fromIds := Array.append<Text>(retrievedEntity.fromIds, [bridgeId]);
+        return true;
+      }
+    }
+  };
+
+  /**
+   * This function takes a bridge and adds the bridge ID to the toIds field
+   * to the entity that this Bridge Links to
+   *
+   * @return True if the bridge ID was added to the to ID list, otherwise
+   * false is returned if it couldn't
+  */
+  private func addBridgeToEntityToIds(entityId: Text, bridgeId : Text) : Bool {
+    var entity = getEntity(entityId);
+    switch (entity) {
+      case (null) {
+        return false;
+      };
+      case (?retrievedEntity) {
+        retrievedEntity.toIds := Array.append<Text>(retrievedEntity.toIds, [bridgeId]);
+        return true;
+      }
+    }
+  };
+
+  /**
+   * Function retrieves a bridge based on the input ID 
+   * 
+   * @return The bridge if it is found or null if not found
+  */
+  private func getBridge(bridgeId : Text) : ?Bridge.Bridge {
+    let result = bridgesStorage.get(bridgeId);
+    return result;
+  };
+
+  /**
+  * Function checks that the given bridge id provided exists within the database
+  *
+  * @return True if the entity exists, false otherwise
+  */
+  private func checkIfBridgeExists(bridgeId : Text) : Bool {
+    let result = getBridge(bridgeId);
+    switch(result)
+    {
+      case(null) { return  false;};
+      case(bridge) { return true;};
+    };
   };
 
   // type BridgeCategories = { // TODO: define bridge categories, probably import from a dedicated file (BridgeType)
@@ -366,16 +471,6 @@ actor {
   //   };
   //   return bridge.internalId;
   // };
-
-  /**
-   * Function retrieves a bridge based on the input ID 
-   * 
-   * @return The bridge if it is found or null if not found
-  */
-  private func getBridge(bridgeId : Text) : ?Bridge.Bridge {
-    let result = bridgesStorage.get(bridgeId);
-    return result;
-  };
 
   // func getBridgeIdsByEntityId(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : [Text] {
   //   var bridgeIdsToReturn = List.nil<Text>();

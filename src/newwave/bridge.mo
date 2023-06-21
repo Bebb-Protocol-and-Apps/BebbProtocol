@@ -160,10 +160,11 @@ module {
   */
   public func generateBridgeFromInitializationObject(
     initiationObject : BridgeInitiationObject,
+    id : Text,
     caller : Principal,
-  ) : async Bridge {
+  ) : Bridge {
     return {
-      id : Text = "";
+      id : Text = id;
       creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
       creator : Principal = caller;
       owner : Principal = caller;

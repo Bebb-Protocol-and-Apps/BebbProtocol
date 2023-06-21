@@ -119,6 +119,17 @@ module {
      * Unknown
     */
     listOfEntitySpecificFieldKeys : [Text];
+
+    /**
+     * Contains all the bridge ids that originate from this 
+     * Entity
+    */
+    var fromIds : [Text];
+
+    /**
+     * Contains all the bridge ids that point to this entity
+    */
+    var toIds : [Text];
   };
 
   /**
@@ -144,10 +155,11 @@ module {
   */
   public func generateEntityFromInitializationObject(
     initiationObject : EntityInitiationObject,
+    entityId : Text,
     caller : Principal,
-  ) : async Entity {
+  ) : Entity {
     return {
-      id : Text = "";
+      id : Text = entityId;
       creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
       creator : Principal = caller;
       owner : Principal = caller;
@@ -161,6 +173,8 @@ module {
       keywords : ?[Text] = initiationObject.keywords;
       entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
       listOfEntitySpecificFieldKeys : [Text] = [];
+      var toIds : [Text] = [];
+      var fromIds : [Text] = [];
     };
   };
 
