@@ -26,7 +26,7 @@ module {
    * Defines the errors for the public API when trying to retrieve an Entity ID
   */
   public type EntityIdErrors = {
-    #Unauthorized : Text;
+    #Unauthorized;
     #EntityNotFound;
     #Error;
   };
@@ -139,6 +139,8 @@ module {
    * This function is used to convert a user provided initialization object
    * and converts it into an Entity. This entity contains a null id and is not
    * saved in the database yet
+   *
+   * @return The newly created entity with a empty id 
   */
   public func generateEntityFromInitializationObject(
     initiationObject : EntityInitiationObject,
@@ -167,10 +169,25 @@ module {
    to modify and use to update the entity
   */
   public type EntityUpdateObject = {
+    /**
+     * The ID of the entity to update
+    */
     id : Text;
+    /**
+      * The new settings to add to the entity
+    */
     settings : ?EntitySettings;
+    /**
+     * The updated name for the entity
+    */
     name : ?Text;
+    /**
+     * The updated descrition for the entity
+    */
     description : ?Text;
+    /**
+     * The Updated keywords for the entity
+    */
     keywords : ?[Text];
   };
 };
