@@ -317,6 +317,7 @@ actor {
       };
       case (?retrievedEntity) {
         retrievedEntity.fromIds := Array.append<Text>(retrievedEntity.fromIds, [bridgeId]);
+        let result = putEntity(retrievedEntity);
         return true;
       }
     }
@@ -337,6 +338,49 @@ actor {
       };
       case (?retrievedEntity) {
         retrievedEntity.toIds := Array.append<Text>(retrievedEntity.toIds, [bridgeId]);
+        let result = putEntity(retrievedEntity);
+        return true;
+      }
+    }
+  };
+
+  /**
+   * This function takes an entity and the bridge associated to it, and deletes the bridge
+   * id from the fromIds list in the Entity
+   *
+   * @return True if the bridge id was successfully removed from the fromIds list, false
+   * if either it didn't exist or something went wrong
+  */
+  private func deleteBridgeFromEntityFromIds(entityId: Text, bridgeId : Text) : Bool {
+    let entity = getEntity(entityId);
+    switch (entity) {
+      case (null) {
+        return false;
+      };
+      case (?retrievedEntity) {
+        retrievedEntity.fromIds := Array.filter<Text>(retrievedEntity.fromIds, func x = x == bridgeId);
+        let result = putEntity(retrievedEntity);
+        return true;
+      }
+    }
+  };
+
+    /**
+   * This function takes an entity and the bridge associated to it, and deletes the bridge
+   * id from the toIds list in the Entity
+   *
+   * @return True if the bridge id was successfully removed from the toIds list, false
+   * if either it didn't exist or something went wrong
+  */
+  private func deleteBridgeFromEntityToIds(entityId: Text, bridgeId : Text) : Bool {
+    let entity = getEntity(entityId);
+    switch (entity) {
+      case (null) {
+        return false;
+      };
+      case (?retrievedEntity) {
+        retrievedEntity.toIds := Array.filter<Text>(retrievedEntity.toIds, func x = x == bridgeId);
+        let result = putEntity(retrievedEntity);
         return true;
       }
     }
@@ -350,6 +394,17 @@ actor {
   private func getBridge(bridgeId : Text) : ?Bridge.Bridge {
     let result = bridgesStorage.get(bridgeId);
     return result;
+  };
+
+  /**
+   * Function deletes a bridge from storage. Ensure to delete the connections to the Entities
+   * before removing the bridge
+   *
+   * @ return True if the bridge was successfully deleted, false otherwise
+  */
+  func deleteBridgeFromStorage(bridgeId : Text) : Bool {
+    bridgesStorage.delete(bridgeId);
+    return true;
   };
 
   /**
@@ -615,10 +670,6 @@ actor {
   //   };
   // };
 
-  // func deleteBridgeFromStorage(bridgeId : Text) : Bool {
-  //   bridgesStorage.delete(bridgeId);
-  //   return true;
-  // };
 
   // func detachBridgeFromEntities(bridge : Bridge.Bridge) : Bool {
   //   // Delete Bridge's references from Entities' entries
@@ -695,26 +746,12 @@ actor {
             return #Err(#Unauthorized);
           }; // Only owner may delete the Bridge
           case true {
-            // TBD: other deletion constraints
-            // switch(detachBridgeFromEntities(bridgeToDelete)) {
-            //   case false { 
-            //     assert(false); // Should roll back all changes (Something like this would be better: trap("Was Not Able to Delete the Bridge");)
-            //     return #Err(#Other "Unable to Delete the Bridge");
-            //   };
-            //   case true {         
-            //     switch(deleteBridgeFromStorage(bridgeId)) {
-            //       case true {
-            //         return #Ok(?bridgeToDelete);
-            //       };
-            //       case _ { 
-            //         assert(false); // Should roll back all changes (Something like this would be better: trap("Was Not Able to Delete the Bridge");)
-            //         return #Err(#Other "Unable to Delete the Bridge");
-            //       };
-            //     };                          
-            //   };
-            // };   
-            // FIx deleting bridges
-            return #Err(#BridgeNotFound)      
+            // First delete the references to the bridge in the entities
+            // Then delete the bridge itself
+            let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeId);
+            let bridgeDeleteFromEntityToIdResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeId);
+            let bridgeDeleteResult = deleteBridgeFromStorage(bridgeId);
+            return #Ok(bridgeId);     
           };
         };
       };
