@@ -302,7 +302,7 @@ actor {
    *
    * @return The newly created bridge
   */
-  func putBridge(bridge : Bridge.Bridge) : Bridge.Bridge {
+  private func putBridge(bridge : Bridge.Bridge) : Bridge.Bridge {
     let result = bridgesStorage.put(bridge.id, bridge);
     return bridge;
   };
@@ -364,7 +364,7 @@ actor {
         return false;
       };
       case (?retrievedEntity) {
-        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.filter<Text>(retrievedEntity.fromIds, func x = x == bridgeId));
+        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.filter<Text>(retrievedEntity.fromIds, func x = x != bridgeId));
         let result = putEntity(newEntity);
         return true;
       }
@@ -385,7 +385,7 @@ actor {
         return false;
       };
       case (?retrievedEntity) {
-        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.filter<Text>(retrievedEntity.toIds, func x = x == bridgeId));
+        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.filter<Text>(retrievedEntity.toIds, func x = x != bridgeId));
         let result = putEntity(newEntity);
         return true;
       }
@@ -756,6 +756,10 @@ actor {
             // Then delete the bridge itself
             let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeId);
             let bridgeDeleteFromEntityToIdResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeId);
+            if (bridgeDeleteFromEntityFromIdsResult == false or bridgeDeleteFromEntityToIdResult == false)
+            {
+              return #Err(#Error);
+            };
             let bridgeDeleteResult = deleteBridgeFromStorage(bridgeId);
             return #Ok(bridgeId);     
           };
