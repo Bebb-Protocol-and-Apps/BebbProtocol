@@ -17,7 +17,9 @@ import Types "./Types";
 import Utils "./Utils";
 
 actor {
-  // INTERFACE
+  /*************************************************
+              Canister Public Interface
+  *************************************************/
 
   /**
    * Public interface for creating an entity. This will attempt to create the entity and return the id if it does so
@@ -134,10 +136,8 @@ actor {
     };
   };
 
-  // HELPER FUNCTIONS
-
   /*************************************************
-              Code related to entities
+          Helper Functions related to entities
   *************************************************/
 
   /**
@@ -245,7 +245,7 @@ actor {
   };
 
   /*************************************************
-              Code related to bridges
+          Helper Functions related to bridges
   *************************************************/
 
   /**
