@@ -32,21 +32,27 @@ actor {
     switch(result)
     {
       case (null) { return #Err(#EntityNotFound)};
-      case (entity) { return #Ok(entity)};
+      case (?entity) { return #Ok(entity)};
     }
   };
 
-  public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async ?Bridge.BridgeIdErrors {
+  public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async Bridge.BridgeIdResult {
     let result = await createBridge(caller, bridgeToCreate);
     switch(result)
     {
       case (null) { return #Err(#Error)};
-      case (id) { return #Ok(id)};
+      case (?id) { return #Ok(id)};
     } };
 
-  public shared query ({ caller }) func get_bridge(entityId : Text) : async ?Bridge.Bridge {
+  public shared query ({ caller }) func get_bridge(entityId : Text) : async Bridge.BridgeResult {
     let result = getBridge(entityId);
-    return result;
+    switch(result)
+    {
+
+        case (null) { return #Err(#Error)};
+        case (?bridge) { return #Ok(bridge)};
+
+    };
   };
 
   // public shared query ({ caller }) func get_bridge_ids_by_entity_id(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : async [Text] {
@@ -316,8 +322,8 @@ actor {
         return false;
       };
       case (?retrievedEntity) {
-        retrievedEntity.fromIds := Array.append<Text>(retrievedEntity.fromIds, [bridgeId]);
-        let result = putEntity(retrievedEntity);
+        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Text>(retrievedEntity.fromIds, [bridgeId]));
+        let result = putEntity(newEntity);
         return true;
       }
     }
@@ -337,8 +343,8 @@ actor {
         return false;
       };
       case (?retrievedEntity) {
-        retrievedEntity.toIds := Array.append<Text>(retrievedEntity.toIds, [bridgeId]);
-        let result = putEntity(retrievedEntity);
+        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.append<Text>(retrievedEntity.toIds, [bridgeId]));
+        let result = putEntity(newEntity);
         return true;
       }
     }
@@ -358,8 +364,8 @@ actor {
         return false;
       };
       case (?retrievedEntity) {
-        retrievedEntity.fromIds := Array.filter<Text>(retrievedEntity.fromIds, func x = x == bridgeId);
-        let result = putEntity(retrievedEntity);
+        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.filter<Text>(retrievedEntity.fromIds, func x = x == bridgeId));
+        let result = putEntity(newEntity);
         return true;
       }
     }
@@ -379,8 +385,8 @@ actor {
         return false;
       };
       case (?retrievedEntity) {
-        retrievedEntity.toIds := Array.filter<Text>(retrievedEntity.toIds, func x = x == bridgeId);
-        let result = putEntity(retrievedEntity);
+        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.filter<Text>(retrievedEntity.toIds, func x = x == bridgeId));
+        let result = putEntity(newEntity);
         return true;
       }
     }

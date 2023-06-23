@@ -50,7 +50,7 @@ module {
    * Defines the result type for trying to retrieve an Entity from
    * the public API
   */
-  public type EntityResult = Types.Result<?Entity, EntityErrors>;
+  public type EntityResult = Types.Result<Entity, EntityErrors>;
 
   /**
    * Stores entity specific settings
@@ -124,12 +124,12 @@ module {
      * Contains all the bridge ids that originate from this 
      * Entity
     */
-    var fromIds : [Text];
+    fromIds : [Text];
 
     /**
      * Contains all the bridge ids that point to this entity
     */
-    var toIds : [Text];
+    toIds : [Text];
   };
 
   /**
@@ -173,8 +173,54 @@ module {
       keywords : ?[Text] = initiationObject.keywords;
       entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
       listOfEntitySpecificFieldKeys : [Text] = [];
-      var toIds : [Text] = [];
-      var fromIds : [Text] = [];
+      toIds : [Text] = [];
+      fromIds : [Text] = [];
+    };
+  };
+
+  /**
+   * Function updates an entity and returns a new entity with the fromIds updated to the new value
+   *
+   * @return A new entity with the new fromIds field
+  */
+  public func updateEntityFromIds(entity: Entity, fromIds: [Text]) : Entity {
+    return {
+        id = entity.id;
+        creationTimestamp = entity.creationTimestamp;
+        creator = entity.creator;
+        owner = entity.owner;
+        settings = entity.settings;
+        entityType = entity.entityType;
+        name = entity.name;
+        description = entity.description;
+        keywords = entity.keywords;
+        entitySpecificFields = entity.entitySpecificFields;
+        listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
+        fromIds = fromIds;
+        toIds = entity.toIds;
+    };
+  };
+
+    /**
+   * Function updates an entity and returns a new entity with the toIds updated to the new value
+   *
+   * @return A new entity with the new toIds field
+  */
+  public func updateEntityToIds(entity: Entity, toIds: [Text]) : Entity {
+    return {
+        id = entity.id;
+        creationTimestamp = entity.creationTimestamp;
+        creator = entity.creator;
+        owner = entity.owner;
+        settings = entity.settings;
+        entityType = entity.entityType;
+        name = entity.name;
+        description = entity.description;
+        keywords = entity.keywords;
+        entitySpecificFields = entity.entitySpecificFields;
+        listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
+        fromIds = entity.fromIds;
+        toIds = toIds;
     };
   };
 

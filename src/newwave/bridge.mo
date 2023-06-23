@@ -50,7 +50,7 @@ module {
    * Defines the result type for trying to retrieve an Entity from
    * the public API
   */
-  public type BridgeResult = Types.Result<?Bridge, BridgeErrors>;
+  public type BridgeResult = Types.Result<Bridge, BridgeErrors>;
 
   /**
    * Stores bridge specific settings
