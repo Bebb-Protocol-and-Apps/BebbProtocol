@@ -156,58 +156,6 @@ actor {
     };
   };
 
-  // func checkIfEntityWithAttributeExists(attribute : Text, attributeValue : Text) : Bool {
-  //   switch(attribute) {
-  //     case "internalId" {
-  //       switch(getEntity(attributeValue)) {
-  //         case null { return false; };
-  //         case _ { return true; };
-  //       };
-  //     };
-  //     case "externalId" {
-  //       for ((k, entity) in entitiesStorage.entries()) {
-  //         if (entity.externalId == ?attributeValue) {
-  //           return true;
-  //         };
-  //       };
-  //       return false;
-  //     };
-  //     case _ { return false; }
-  //   };
-  // };
-
-  // func getEntityByAttribute(attribute : Text, attributeValue : Text) : ?Entity.Entity {
-  //   switch(attribute) {
-  //     case "internalId" {
-  //       return getEntity(attributeValue);
-  //     };
-  //     case "externalId" {
-  //       for ((k, entity) in entitiesStorage.entries()) {
-  //         if (entity.externalId == ?attributeValue) {
-  //           return ?entity;
-  //         };
-  //       };
-  //       return null;
-  //     };
-  //     case _ { return null; }
-  //   };
-  // };
-
-  // func getEntitiesByAttribute(attribute : Text, attributeValue : Text) : [Entity.Entity] {
-  //   switch(attribute) {
-  //     case "externalId" {
-  //       var entitiesToReturn = List.nil<Entity.Entity>();
-  //       for ((k, entity) in entitiesStorage.entries()) {
-  //         if (entity.externalId == ?attributeValue) {
-  //           entitiesToReturn := List.push<Entity.Entity>(entity, entitiesToReturn);
-  //         };
-  //       };
-  //       return List.toArray<Entity.Entity>(entitiesToReturn);
-  //     };
-  //     case _ { return []; }
-  //   };
-  // };
-
   /**
    * Function creates a new bridge based on the input initialization object. If it is able
    * to make the object, it stores it and return the id, otherwise it will not
@@ -408,321 +356,6 @@ actor {
     };
   };
 
-  // type BridgeCategories = { // TODO: define bridge categories, probably import from a dedicated file (BridgeType)
-  //   ownerCreatedBridges : List.List<Text>;
-  //   otherBridges : List.List<Text>;
-  // };
-
-  // stable var pendingFromBridgesStorageStable : [(Text, BridgeCategories)] = [];
-  // var pecndingFromBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
-  // stable var pendingToBridgesStorageStable : [(Text, BridgeCategories)] = [];
-  // var pendingToBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
-  // stable var fromBridgesStorageStable : [(Text, BridgeCategories)] = [];
-  // var fromBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
-  // stable var toBridgesStorageStable : [(Text, BridgeCategories)] = [];
-  // var toBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
-
-  // func putEntityEntry(bridge : Bridge.Bridge) : Text {
-  //   if (bridge.state == #Pending) { // if bridge state is Pending, store accordingly
-  //   // store in pending from storage
-  //     switch(pendingFromBridgesStorage.get(bridge.fromEntityId)) {
-  //       case null {
-  //         // first entry for entityId
-  //         var otherBridgesList = List.nil<Text>();
-  //         otherBridgesList := List.push<Text>(bridge.internalId, otherBridgesList);
-  //         let newEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = List.nil<Text>();
-  //           otherBridges = otherBridgesList;
-  //         };
-  //         pendingFromBridgesStorage.put(bridge.fromEntityId, newEntityEntry);
-  //       };
-  //       case (?entityEntry) {
-  //         // add to existing entry for entityId
-  //         let updatedEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = entityEntry.ownerCreatedBridges;
-  //           otherBridges = List.push<Text>(bridge.internalId, entityEntry.otherBridges);
-  //         };
-  //         pendingFromBridgesStorage.put(bridge.fromEntityId, updatedEntityEntry);
-  //       };
-  //     };
-  //   // store in pending to storage
-  //     switch(pendingToBridgesStorage.get(bridge.toEntityId)) {
-  //       case null {
-  //         // first entry for entityId
-  //         var otherBridgesList = List.nil<Text>();
-  //         otherBridgesList := List.push<Text>(bridge.internalId, otherBridgesList);
-  //         let newEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = List.nil<Text>();
-  //           otherBridges = otherBridgesList;
-  //         };
-  //         pendingToBridgesStorage.put(bridge.toEntityId, newEntityEntry);
-  //       };
-  //       case (?entityEntry) {
-  //         // add to existing entry for entityId
-  //         let updatedEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = entityEntry.ownerCreatedBridges;
-  //           otherBridges = List.push<Text>(bridge.internalId, entityEntry.otherBridges);
-  //         };
-  //         pendingToBridgesStorage.put(bridge.toEntityId, updatedEntityEntry);
-  //       };
-  //     };
-  //   } else {
-  //     // store bridge for entities bridged to and from
-  //     // store in from storage
-  //     switch(fromBridgesStorage.get(bridge.fromEntityId)) {
-  //       case null {
-  //         // first entry for entityId
-  //         var otherBridgesList = List.nil<Text>();
-  //         otherBridgesList := List.push<Text>(bridge.internalId, otherBridgesList);
-  //         let newEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = List.nil<Text>();
-  //           otherBridges = otherBridgesList;
-  //         };
-  //         fromBridgesStorage.put(bridge.fromEntityId, newEntityEntry);
-  //       };
-  //       case (?entityEntry) {
-  //         // add to existing entry for entityId
-  //         let updatedEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = entityEntry.ownerCreatedBridges;
-  //           otherBridges = List.push<Text>(bridge.internalId, entityEntry.otherBridges);
-  //         };
-  //         fromBridgesStorage.put(bridge.fromEntityId, updatedEntityEntry);
-  //       };
-  //     };
-  //   // store in to storage
-  //     switch(toBridgesStorage.get(bridge.toEntityId)) {
-  //       case null {
-  //         // first entry for entityId
-  //         var otherBridgesList = List.nil<Text>();
-  //         otherBridgesList := List.push<Text>(bridge.internalId, otherBridgesList);
-  //         let newEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = List.nil<Text>();
-  //           otherBridges = otherBridgesList;
-  //         };
-  //         toBridgesStorage.put(bridge.toEntityId, newEntityEntry);
-  //       };
-  //       case (?entityEntry) {
-  //         // add to existing entry for entityId
-  //         let updatedEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = entityEntry.ownerCreatedBridges;
-  //           otherBridges = List.push<Text>(bridge.internalId, entityEntry.otherBridges);
-  //         };
-  //         toBridgesStorage.put(bridge.toEntityId, updatedEntityEntry);
-  //       };
-  //     };
-  //   };
-  //   return bridge.internalId;
-  // };
-
-  // func getBridgeIdsByEntityId(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : [Text] {
-  //   var bridgeIdsToReturn = List.nil<Text>();
-  //   if (includeBridgesFromEntity) {
-  //     switch(fromBridgesStorage.get(entityId)) {
-  //       case null {};
-  //       case (?entityEntry) {
-  //         bridgeIdsToReturn := List.append<Text>(bridgeIdsToReturn, entityEntry.otherBridges); // TODO: determine which category's list/categories' lists in entry to return
-  //       };
-  //     };
-  //   };
-  //   if (includeBridgesToEntity) {
-  //     switch(toBridgesStorage.get(entityId)) {
-  //       case null {};
-  //       case (?entityEntry) {
-  //         bridgeIdsToReturn := List.append<Text>(bridgeIdsToReturn, entityEntry.otherBridges); // TODO: determine which category's list/categories' lists in entry to return
-  //       };
-  //     };
-  //   };
-  //   if (includeBridgesPendingForEntity) {
-  //     switch(pendingFromBridgesStorage.get(entityId)) {
-  //       case null {};
-  //       case (?entityEntry) {
-  //         bridgeIdsToReturn := List.append<Text>(bridgeIdsToReturn, entityEntry.otherBridges); // TODO: determine which category's list/categories' lists in entry to return
-  //       };
-  //     };
-  //     switch(pendingToBridgesStorage.get(entityId)) {
-  //       case null {};
-  //       case (?entityEntry) {
-  //         bridgeIdsToReturn := List.append<Text>(bridgeIdsToReturn, entityEntry.otherBridges); // TODO: determine which category's list/categories' lists in entry to return
-  //       };
-  //     };
-  //   };
-  //   return List.toArray<Text>(bridgeIdsToReturn);
-  // };
-
-  // func getBridgesByEntityId(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : [Bridge.Bridge] {
-  //   let bridgeIdsToRetrieve = getBridgeIdsByEntityId(entityId, includeBridgesFromEntity, includeBridgesToEntity, includeBridgesPendingForEntity);
-  //   // adapted from https://forum.dfinity.org/t/motoko-sharable-generics/9021/3
-  //   let executingFunctionsBuffer = Buffer.Buffer<?Bridge.Bridge>(bridgeIdsToRetrieve.size());
-  //   for (bridgeId in bridgeIdsToRetrieve.vals()) {
-  //     executingFunctionsBuffer.add(getBridge(bridgeId));
-  //   };
-  //   let collectingResultsBuffer = Buffer.Buffer<Bridge.Bridge>(bridgeIdsToRetrieve.size());
-  //   var i = 0;
-  //   for (bridgeId in bridgeIdsToRetrieve.vals()) {
-  //     switch(executingFunctionsBuffer.get(i)) {
-  //       case null {};
-  //       case (?bridge) { collectingResultsBuffer.add(bridge); };
-  //     };
-  //     i += 1;
-  //   };
-  //   return collectingResultsBuffer.toArray();
-  // };
-
-  // func createEntityAndBridge(caller : Principal, entityToCreate : Entity.EntityInitiationObject, bridgeToCreate : Bridge.BridgeInitiationObject) : async (Entity.Entity, ?Bridge.Bridge) {
-  //   let createdEntity : Entity.Entity = await createEntity(caller, entityToCreate);
-  //   var updatedBridgeToCreate = bridgeToCreate;
-  //   switch(bridgeToCreate._fromEntityId) {
-  //     case ("") {
-  //       updatedBridgeToCreate := {
-  //         _internalId = bridgeToCreate._internalId;
-  //         _creator = bridgeToCreate._creator;
-  //         _owner = bridgeToCreate._owner;
-  //         _settings = bridgeToCreate._settings;
-  //         _entityType = bridgeToCreate._entityType;
-  //         _name = bridgeToCreate._name;
-  //         _description = bridgeToCreate._description;
-  //         _keywords = bridgeToCreate._keywords;
-  //         _externalId = bridgeToCreate._externalId;
-  //         _entitySpecificFields = bridgeToCreate._entitySpecificFields;
-  //         _bridgeType = bridgeToCreate._bridgeType;
-  //         _fromEntityId = createdEntity.internalId; // only field that needs update, rest is peasantry
-  //         _toEntityId = bridgeToCreate._toEntityId;
-  //         _state = bridgeToCreate._state;
-  //       };
-  //     };
-  //     case (_) {
-  //       updatedBridgeToCreate := {
-  //         _internalId = bridgeToCreate._internalId;
-  //         _creator = bridgeToCreate._creator;
-  //         _owner = bridgeToCreate._owner;
-  //         _settings = bridgeToCreate._settings;
-  //         _entityType = bridgeToCreate._entityType;
-  //         _name = bridgeToCreate._name;
-  //         _description = bridgeToCreate._description;
-  //         _keywords = bridgeToCreate._keywords;
-  //         _externalId = bridgeToCreate._externalId;
-  //         _entitySpecificFields = bridgeToCreate._entitySpecificFields;
-  //         _bridgeType = bridgeToCreate._bridgeType;
-  //         _fromEntityId = bridgeToCreate._fromEntityId;
-  //         _toEntityId = createdEntity.internalId; // only field that needs update, rest is peasantry
-  //         _state = bridgeToCreate._state;
-  //       };
-  //     };
-  //   };
-  //   let bridge : ?Bridge.Bridge = await createBridge(caller, updatedBridgeToCreate);
-  //   return (createdEntity, bridge);
-  // };
-
-  // func getBridgedEntitiesByEntityId(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : [Entity.Entity] {
-  //   let entityBridges : [Bridge.Bridge] = getBridgesByEntityId(entityId, includeBridgesFromEntity, includeBridgesToEntity, includeBridgesPendingForEntity);
-  //   if (entityBridges.size() == 0) {
-  //     return [];
-  //   };
-  //   let bridgedEntityIds : [var Text] = Array.init<Text>(entityBridges.size(), "");
-  //   var i = 0;
-  //   for (entityBridge in entityBridges.vals()) {
-  //     if (entityBridge.fromEntityId == entityId) {
-  //       bridgedEntityIds[i] := entityBridge.toEntityId;
-  //     } else {
-  //       bridgedEntityIds[i] := entityBridge.fromEntityId;
-  //     };
-  //     i += 1;
-  //   };
-  //   let executingFunctionsBuffer = Buffer.Buffer<?Entity.Entity>(bridgedEntityIds.size());
-  //   for (entityId in bridgedEntityIds.vals()) {
-  //     executingFunctionsBuffer.add(getEntity(entityId));
-  //   };
-  //   let collectingResultsBuffer = Buffer.Buffer<Entity.Entity>(bridgedEntityIds.size());
-  //   i := 0;
-  //   for (entityId in bridgedEntityIds.vals()) {
-  //     switch(executingFunctionsBuffer.get(i)) {
-  //       case null {};
-  //       case (?entity) { collectingResultsBuffer.add(entity); };
-  //     };
-  //     i += 1;
-  //   };
-  //   let bridgedEntities : [Entity.Entity] = collectingResultsBuffer.toArray();
-  //   return bridgedEntities;
-  // };
-
-  // func getEntityAndBridgeIds(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : (?Entity.Entity, [Text]) {
-  //   switch(getEntity(entityId)) {
-  //     case null {
-  //       return (null, []);
-  //     };
-  //     case (?entity) {
-  //       let bridgeIds : [Text] = getBridgeIdsByEntityId(entityId, includeBridgesFromEntity, includeBridgesToEntity, includeBridgesPendingForEntity);
-  //       return (?entity, bridgeIds);
-  //     };
-  //   };
-  // };
-
-  // func detachBridgeFromEntities(bridge : Bridge.Bridge) : Bool {
-  //   // Delete Bridge's references from Entities' entries
-  //   if (bridge.state == #Pending) {
-  //   // delete from pending from storage
-  //     switch(pendingFromBridgesStorage.get(bridge.fromEntityId)) {
-  //       case null {
-  //         return false;
-  //       };
-  //       case (?entityEntry) {
-  //         // delete from entry for entityId by filtering out the bridge's id
-  //         let updatedEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = List.filter<Text>(entityEntry.ownerCreatedBridges, func id { id !=  bridge.internalId });
-  //           otherBridges = List.filter<Text>(entityEntry.otherBridges, func id { id !=  bridge.internalId });
-  //         };
-  //         pendingFromBridgesStorage.put(bridge.fromEntityId, updatedEntityEntry);
-  //       };
-  //     };
-  //   // delete from pending to storage
-  //     switch(pendingToBridgesStorage.get(bridge.toEntityId)) {
-  //       case null {
-  //         return false;
-  //       };
-  //       case (?entityEntry) {
-  //         // delete from entry for entityId by filtering out the bridge's id
-  //         let updatedEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = List.filter<Text>(entityEntry.ownerCreatedBridges, func id { id !=  bridge.internalId });
-  //           otherBridges = List.filter<Text>(entityEntry.otherBridges, func id { id !=  bridge.internalId });
-  //         };
-  //         pendingToBridgesStorage.put(bridge.toEntityId, updatedEntityEntry);
-  //       };
-  //     };
-  //   } else {
-  //     // delete Bridge from Entities bridged to and from
-  //     // delete from storage for Bridges from Entity
-  //     switch(fromBridgesStorage.get(bridge.fromEntityId)) {
-  //       case null {
-  //         return false;
-  //       };
-  //       case (?entityEntry) {
-  //         // delete from entry for entityId
-  //         let updatedEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = List.filter<Text>(entityEntry.ownerCreatedBridges, func id { id !=  bridge.internalId });
-  //           otherBridges = List.filter<Text>(entityEntry.otherBridges, func id { id !=  bridge.internalId });
-  //         };
-  //         fromBridgesStorage.put(bridge.fromEntityId, updatedEntityEntry);
-  //       };
-  //     };
-  //   // delete from storage for Bridges to Entity
-  //     switch(toBridgesStorage.get(bridge.toEntityId)) {
-  //       case null {
-  //         return false;
-  //       };
-  //       case (?entityEntry) {
-  //         // delete from entry for entityId
-  //         let updatedEntityEntry : BridgeCategories = {
-  //           ownerCreatedBridges = List.filter<Text>(entityEntry.ownerCreatedBridges, func id { id !=  bridge.internalId });
-  //           otherBridges = List.filter<Text>(entityEntry.otherBridges, func id { id !=  bridge.internalId });
-  //         };
-  //         toBridgesStorage.put(bridge.toEntityId, updatedEntityEntry);
-  //       };
-  //     };
-  //   };
-
-  //   return true;
-  // };
-
   func deleteBridge(caller : Principal, bridgeId : Text) : async Bridge.BridgeIdResult {
     switch (getBridge(bridgeId)) {
       case null { return #Err(#BridgeNotFound) };
@@ -756,22 +389,7 @@ actor {
             return #Err(#Unauthorized);
           }; // Only owner may update the Bridge
           case true {
-            // TBD: other update constraints
-            let updatedBridge : Bridge.Bridge = {
-              id : Text = bridgeToUpdate.id;
-              creationTimestamp : Nat64 = bridgeToUpdate.creationTimestamp;
-              creator : Principal = bridgeToUpdate.creator;
-              owner : Principal = bridgeToUpdate.owner;
-              settings : Bridge.BridgeSettings = Option.get<Bridge.BridgeSettings>(bridgeUpdateObject.settings, bridgeToUpdate.settings);
-              name : ?Text = Option.get<?Text>(?bridgeUpdateObject.name, bridgeToUpdate.name);
-              description : ?Text = Option.get<?Text>(?bridgeUpdateObject.description, bridgeToUpdate.description);
-              keywords : ?[Text] = Option.get<?[Text]>(?bridgeUpdateObject.keywords, bridgeToUpdate.keywords);
-              bridgeType : Bridge.BridgeType = bridgeToUpdate.bridgeType;
-              fromEntityId : Text = bridgeToUpdate.fromEntityId;
-              toEntityId : Text = bridgeToUpdate.toEntityId;
-              state : Bridge.BridgeState = bridgeToUpdate.state;
-              listOfBridgeSpecificFieldKeys = bridgeToUpdate.listOfBridgeSpecificFieldKeys;
-            };
+            let updatedBridge : Bridge.Bridge = Bridge.updateBridgeFromUpdateObject(bridgeUpdateObject, bridgeToUpdate);
             let result = bridgesStorage.put(updatedBridge.id, updatedBridge);
             return #Ok(updatedBridge.id);
           };
@@ -797,15 +415,9 @@ actor {
           };
           // Only owner may update the Entity
           case true {
-            // entityToUpdate.settings := Option.get<Entity.EntitySettings>(entityUpdateObject.settings, entityToUpdate.settings);
-            // entityToUpdate.entityType := entityToUpdate.entityType;
-            // entityToUpdate.name := Option.get<?Text>(?entityUpdateObject.name, entityToUpdate.name);
-            // entityToUpdate.description := Option.get<?Text>(?entityUpdateObject.description, entityToUpdate.description);
-            // entityToUpdate.keywords := Option.get<?[Text]>(?entityUpdateObject.keywords, entityToUpdate.keywords);
-
-            // let result = putEntity(entityToUpdate);
-            // Fix the updating when mototko stops being dumb
-            return #Err(#Error);
+            let updatedEntity : Entity.Entity = Entity.updateEntityFromUpdateObject(entityUpdateObject, entityToUpdate);
+            let result = putEntity(updatedEntity);
+            return #Ok(updatedEntity.id);
           };
         };
       };
@@ -816,10 +428,6 @@ actor {
   system func preupgrade() {
     entitiesStorageStable := Iter.toArray(entitiesStorage.entries());
     bridgesStorageStable := Iter.toArray(bridgesStorage.entries());
-    // pendingFromBridgesStorageStable := Iter.toArray(pendingFromBridgesStorage.entries());
-    // pendingToBridgesStorageStable := Iter.toArray(pendingToBridgesStorage.entries());
-    // fromBridgesStorageStable := Iter.toArray(fromBridgesStorage.entries());
-    // toBridgesStorageStable := Iter.toArray(toBridgesStorage.entries());
   };
 
   system func postupgrade() {
@@ -827,13 +435,5 @@ actor {
     entitiesStorageStable := [];
     bridgesStorage := HashMap.fromIter(Iter.fromArray(bridgesStorageStable), bridgesStorageStable.size(), Text.equal, Text.hash);
     bridgesStorageStable := [];
-    // pendingFromBridgesStorage := HashMap.fromIter(Iter.fromArray(pendingFromBridgesStorageStable), pendingFromBridgesStorageStable.size(), Text.equal, Text.hash);
-    // pendingFromBridgesStorageStable := [];
-    // pendingToBridgesStorage := HashMap.fromIter(Iter.fromArray(pendingToBridgesStorageStable), pendingToBridgesStorageStable.size(), Text.equal, Text.hash);
-    // pendingToBridgesStorageStable := [];
-    // fromBridgesStorage := HashMap.fromIter(Iter.fromArray(fromBridgesStorageStable), fromBridgesStorageStable.size(), Text.equal, Text.hash);
-    // fromBridgesStorageStable := [];
-    // toBridgesStorage := HashMap.fromIter(Iter.fromArray(toBridgesStorageStable), toBridgesStorageStable.size(), Text.equal, Text.hash);
-    // toBridgesStorageStable := [];
   };
 };

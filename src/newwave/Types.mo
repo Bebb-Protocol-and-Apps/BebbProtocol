@@ -9,9 +9,6 @@ import Principal "mo:base/Principal";
 import List "mo:base/List";
 import AssocList "mo:base/AssocList";
 
-import NewWaveError "errors";
-
-
 module {
   public type Dip721NonFungibleToken = {
     logo: LogoResult;

@@ -225,6 +225,30 @@ module {
   };
 
   /**
+   * Function takes a entity update object and an already created entity and updates the entity with the new values
+   * provided by the entity update object
+   *
+   * @return The new entity with the values updated with the entity update values
+  */
+  public func updateEntityFromUpdateObject(entityUpdateObject : EntityUpdateObject, originalEntity : Entity) : Entity {
+    return {
+      id = originalEntity.id;
+      creationTimestamp = originalEntity.creationTimestamp;
+      creator = originalEntity.creator;
+      owner = originalEntity.owner;
+      settings = Option.get<EntitySettings>(entityUpdateObject.settings, originalEntity.settings);
+      entityType = originalEntity.entityType;
+      name =  Option.get<?Text>(?entityUpdateObject.name, originalEntity.name);
+      description : ?Text = Option.get<?Text>(?entityUpdateObject.description, originalEntity.description);
+      keywords : ?[Text] = Option.get<?[Text]>(?entityUpdateObject.keywords, originalEntity.keywords);
+      entitySpecificFields = originalEntity.entitySpecificFields;
+      listOfEntitySpecificFieldKeys = originalEntity.listOfEntitySpecificFieldKeys;
+      fromIds = originalEntity.fromIds;
+      toIds = originalEntity.toIds;
+    };
+  };
+
+  /**
    This type defines the fields that the current owner is allowed
    to modify and use to update the entity
   */

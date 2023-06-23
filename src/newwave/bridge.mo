@@ -18,7 +18,6 @@ import Random "mo:base/Random";
 import Blob "mo:base/Blob";
 import Utils "Utils";
 import Types "Types";
-import NewWaveError "errors";
 
 module {
 
@@ -180,6 +179,30 @@ module {
       fromEntityId : Text = initiationObject.fromEntityId;
       toEntityId : Text = initiationObject.toEntityId;
       state : BridgeState = #Confirmed;
+    };
+  };
+
+  /**
+   * Function takes a bidge update object and an already created bridge and updates the bridge with the new values
+   * provided by the bridge update object
+   *
+   * @return The new bridge with the values updated with the bridge update values
+  */
+  public func updateBridgeFromUpdateObject(bridgeUpdateObject : BridgeUpdateObject, originalBridge : Bridge) : Bridge {
+    return {
+      id : Text = originalBridge.id;
+      creationTimestamp : Nat64 = originalBridge.creationTimestamp;
+      creator : Principal = originalBridge.creator;
+      owner : Principal = originalBridge.owner;
+      settings : BridgeSettings = Option.get<BridgeSettings>(bridgeUpdateObject.settings, originalBridge.settings);
+      name : ?Text = Option.get<?Text>(?bridgeUpdateObject.name, originalBridge.name);
+      description : ?Text = Option.get<?Text>(?bridgeUpdateObject.description, originalBridge.description);
+      keywords : ?[Text] = Option.get<?[Text]>(?bridgeUpdateObject.keywords, originalBridge.keywords);
+      bridgeType : BridgeType = originalBridge.bridgeType;
+      fromEntityId : Text = originalBridge.fromEntityId;
+      toEntityId : Text = originalBridge.toEntityId;
+      state : BridgeState = originalBridge.state;
+      listOfBridgeSpecificFieldKeys = originalBridge.listOfBridgeSpecificFieldKeys;
     };
   };
 
