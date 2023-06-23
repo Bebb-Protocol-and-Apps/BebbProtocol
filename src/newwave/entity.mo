@@ -22,6 +22,20 @@ import Text "mo:base/Text";
 import Types "Types";
 
 module {
+
+  /**
+   * Types of errors for finding the attached bridges
+  */
+  public type EntityAttachedBridgesErrors = {
+    #EntityNotFound;
+    #Error;
+  };
+
+  /**
+   * Return type for when finding the ids of attached bridges
+  */
+  public type EntityAttachedBridges = Types.Result<[Text], EntityAttachedBridgesErrors>;
+
   /**
    * Defines the errors for the public API when trying to retrieve an Entity ID
   */

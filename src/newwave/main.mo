@@ -34,6 +34,11 @@ actor {
     };
   };
 
+  public shared ({ caller }) func update_entity(entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
+    let result = await updateEntity(caller, entityUpdateObject);
+    return result;
+  };
+
   public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async Bridge.BridgeIdResult {
     let result = await createBridge(caller, bridgeToCreate);
     switch (result) {
@@ -45,10 +50,8 @@ actor {
   public shared query ({ caller }) func get_bridge(entityId : Text) : async Bridge.BridgeResult {
     let result = getBridge(entityId);
     switch (result) {
-
       case (null) { return #Err(#Error) };
       case (?bridge) { return #Ok(bridge) };
-
     };
   };
 
@@ -62,9 +65,20 @@ actor {
     return result;
   };
 
-  public shared ({ caller }) func update_entity(entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
-    let result = await updateEntity(caller, entityUpdateObject);
-    return result;
+  public shared ({ caller }) func get_to_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridges {
+      let result = getEntity(entityId);
+      switch (result) {
+        case (null) { return #Err(#EntityNotFound) };
+        case (?entity) { return #Ok(entity.toIds); };
+      }
+  };
+
+  public shared ({ caller }) func get_from_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridges {
+    let result = getEntity(entityId);
+    switch (result) {
+      case (null) { return #Err(#EntityNotFound) };
+      case (?entity) { return #Ok(entity.fromIds); };
+    }
   };
 
   // HELPER FUNCTIONS
