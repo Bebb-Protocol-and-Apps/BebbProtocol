@@ -156,7 +156,7 @@ module {
    * and converts it into a Bridge. This bridge contains a null id and is not
    * saved in the database yet
    *
-   * @return The newly created bridge with a empty id 
+   * @return The newly created bridge with a empty id
   */
   public func generateBridgeFromInitializationObject(
     initiationObject : BridgeInitiationObject,

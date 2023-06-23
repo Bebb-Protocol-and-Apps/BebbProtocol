@@ -121,7 +121,7 @@ module {
     listOfEntitySpecificFieldKeys : [Text];
 
     /**
-     * Contains all the bridge ids that originate from this 
+     * Contains all the bridge ids that originate from this
      * Entity
     */
     fromIds : [Text];
@@ -151,7 +151,7 @@ module {
    * and converts it into an Entity. This entity contains a null id and is not
    * saved in the database yet
    *
-   * @return The newly created entity with a empty id 
+   * @return The newly created entity with a empty id
   */
   public func generateEntityFromInitializationObject(
     initiationObject : EntityInitiationObject,
@@ -183,44 +183,44 @@ module {
    *
    * @return A new entity with the new fromIds field
   */
-  public func updateEntityFromIds(entity: Entity, fromIds: [Text]) : Entity {
+  public func updateEntityFromIds(entity : Entity, fromIds : [Text]) : Entity {
     return {
-        id = entity.id;
-        creationTimestamp = entity.creationTimestamp;
-        creator = entity.creator;
-        owner = entity.owner;
-        settings = entity.settings;
-        entityType = entity.entityType;
-        name = entity.name;
-        description = entity.description;
-        keywords = entity.keywords;
-        entitySpecificFields = entity.entitySpecificFields;
-        listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
-        fromIds = fromIds;
-        toIds = entity.toIds;
+      id = entity.id;
+      creationTimestamp = entity.creationTimestamp;
+      creator = entity.creator;
+      owner = entity.owner;
+      settings = entity.settings;
+      entityType = entity.entityType;
+      name = entity.name;
+      description = entity.description;
+      keywords = entity.keywords;
+      entitySpecificFields = entity.entitySpecificFields;
+      listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
+      fromIds = fromIds;
+      toIds = entity.toIds;
     };
   };
 
-    /**
+  /**
    * Function updates an entity and returns a new entity with the toIds updated to the new value
    *
    * @return A new entity with the new toIds field
   */
-  public func updateEntityToIds(entity: Entity, toIds: [Text]) : Entity {
+  public func updateEntityToIds(entity : Entity, toIds : [Text]) : Entity {
     return {
-        id = entity.id;
-        creationTimestamp = entity.creationTimestamp;
-        creator = entity.creator;
-        owner = entity.owner;
-        settings = entity.settings;
-        entityType = entity.entityType;
-        name = entity.name;
-        description = entity.description;
-        keywords = entity.keywords;
-        entitySpecificFields = entity.entitySpecificFields;
-        listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
-        fromIds = entity.fromIds;
-        toIds = toIds;
+      id = entity.id;
+      creationTimestamp = entity.creationTimestamp;
+      creator = entity.creator;
+      owner = entity.owner;
+      settings = entity.settings;
+      entityType = entity.entityType;
+      name = entity.name;
+      description = entity.description;
+      keywords = entity.keywords;
+      entitySpecificFields = entity.entitySpecificFields;
+      listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
+      fromIds = entity.fromIds;
+      toIds = toIds;
     };
   };
 
