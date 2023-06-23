@@ -183,7 +183,7 @@ module {
   };
 
   /**
-   * Function takes a bidge update object and an already created bridge and updates the bridge with the new values
+   * Function takes a bridge update object and an already created bridge and updates the bridge with the new values
    * provided by the bridge update object
    *
    * @return The new bridge with the values updated with the bridge update values

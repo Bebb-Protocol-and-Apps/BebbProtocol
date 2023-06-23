@@ -336,7 +336,7 @@ actor {
 
   /**
    * This function takes a bridge and adds the bridge ID to the fromIds field
-   * to the entity that this Bridge Links from
+   * of the entity it is linked from
    *
    * @return True if the bridge ID was added to the from ID list, otherwise
    * false is returned if it couldn't
@@ -357,7 +357,7 @@ actor {
 
   /**
    * This function takes a bridge and adds the bridge ID to the toIds field
-   * to the entity that this Bridge Links to
+   * of the entity it is linked to
    *
    * @return True if the bridge ID was added to the to ID list, otherwise
    * false is returned if it couldn't
