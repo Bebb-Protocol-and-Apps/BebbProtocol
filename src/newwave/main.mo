@@ -115,7 +115,7 @@ actor {
    *
    * @return A list of bridge ids of bridges pointed to a specied entity if the eneityId matches a valid entity, otherwise an error
   */
-  public shared ({ caller }) func get_to_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridges {
+  public shared query ({ caller }) func get_to_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridges {
     let result = getEntity(entityId);
     switch (result) {
       case (null) { return #Err(#EntityNotFound) };
@@ -128,7 +128,7 @@ actor {
    *
    * @return A list of bridge ids of bridges pointed from a specied entity if the eneityId matches a valid entity, otherwise an error
   */
-  public shared ({ caller }) func get_from_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridges {
+  public shared query ({ caller }) func get_from_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridges {
     let result = getEntity(entityId);
     switch (result) {
       case (null) { return #Err(#EntityNotFound) };
