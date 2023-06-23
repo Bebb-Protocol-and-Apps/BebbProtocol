@@ -252,7 +252,7 @@ module {
       owner = originalEntity.owner;
       settings = Option.get<EntitySettings>(entityUpdateObject.settings, originalEntity.settings);
       entityType = originalEntity.entityType;
-      name =  Option.get<?Text>(?entityUpdateObject.name, originalEntity.name);
+      name = Option.get<?Text>(?entityUpdateObject.name, originalEntity.name);
       description : ?Text = Option.get<?Text>(?entityUpdateObject.description, originalEntity.description);
       keywords : ?[Text] = Option.get<?[Text]>(?entityUpdateObject.keywords, originalEntity.keywords);
       entitySpecificFields = originalEntity.entitySpecificFields;

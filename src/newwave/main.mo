@@ -18,6 +18,13 @@ import Utils "./Utils";
 
 actor {
   // INTERFACE
+
+  /**
+   * Public interface for creating an entity. This will attempt to create the entity and return the id if it does so
+   * successfully
+   *
+   * @return Returns the entity id if it was successfully created, otherwise it returns an error
+  */
   public shared ({ caller }) func create_entity(entityToCreate : Entity.EntityInitiationObject) : async Entity.EntityIdResult {
     let result = await createEntity(caller, entityToCreate);
     switch (result) {
@@ -26,6 +33,13 @@ actor {
     };
   };
 
+  /**
+   * Public interface for retreiving an entity. Retrieving an entity is subject to any permission and rules defined by the entity.
+   * If the entity is found, the entity is returned, otherwise an error is returned.
+   *
+   * @note Currently there are no permissions and anyone that knows the entity Id can retrieve it
+   * @return The entity if the id matches an entity, otherwise an error
+  */
   public shared query ({ caller }) func get_entity(entityId : Text) : async Entity.EntityResult {
     let result = getEntity(entityId);
     switch (result) {
@@ -34,11 +48,23 @@ actor {
     };
   };
 
+  /**
+   * Public interface for updating an entity. Only the owner of the entity is allowed to update the values specified in the
+   * entity update object
+   *
+   * @return The entity id if the update was sucessful, otherwise an error
+  */
   public shared ({ caller }) func update_entity(entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
     let result = await updateEntity(caller, entityUpdateObject);
     return result;
   };
 
+  /**
+   * Public interface for creating a new bridge. When a bridge is created, it will add the bridge to the database and also
+   * add the bridge id to the attached entities for reference
+   *
+   * @return The bridge id if the bridge was successfully created, otherwise an error
+  */
   public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async Bridge.BridgeIdResult {
     let result = await createBridge(caller, bridgeToCreate);
     switch (result) {
@@ -47,38 +73,65 @@ actor {
     };
   };
 
-  public shared query ({ caller }) func get_bridge(entityId : Text) : async Bridge.BridgeResult {
-    let result = getBridge(entityId);
+  /**
+   * Public interface for retrieving a bridge.
+   *
+   * @return Returns the bridge if the id matches a stored bridge, otherwise an error
+  */
+  public shared query ({ caller }) func get_bridge(bridgeId : Text) : async Bridge.BridgeResult {
+    let result = getBridge(bridgeId);
     switch (result) {
       case (null) { return #Err(#Error) };
       case (?bridge) { return #Ok(bridge) };
     };
   };
 
+  /**
+   * Public interface for deleting a bridge. Currently only an owner can delete a bridge. This will also delete the reference
+   * of the bridge in the attached entities
+   *
+   * @return The bridge id if the bridge is successfully deleted, otherwise an error
+  */
   public shared ({ caller }) func delete_bridge(bridgeId : Text) : async Bridge.BridgeIdResult {
     let result = await deleteBridge(caller, bridgeId);
     return result;
   };
 
+  /**
+   * Public interface for updating a bridge. Only the owner is allowed to update a brige. Updates the bridge with the info
+   * contained within the bridge update object
+   *
+   * @return The bridge id if the update was successful, otherwise an error
+  */
   public shared ({ caller }) func update_bridge(bridgeUpdateObject : Bridge.BridgeUpdateObject) : async Bridge.BridgeIdResult {
     let result = await updateBridge(caller, bridgeUpdateObject);
     return result;
   };
 
+  /**
+   * Public interface for retrieving all the to bridge ids attached to an entity
+   *
+   * @return A list of bridge ids of bridges pointed to a specied entity if the eneityId matches a valid entity, otherwise an error
+  */
   public shared ({ caller }) func get_to_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridges {
-      let result = getEntity(entityId);
-      switch (result) {
-        case (null) { return #Err(#EntityNotFound) };
-        case (?entity) { return #Ok(entity.toIds); };
-      }
+    let result = getEntity(entityId);
+    switch (result) {
+      case (null) { return #Err(#EntityNotFound) };
+      case (?entity) { return #Ok(entity.toIds) };
+    };
   };
 
+  /**
+   * Public interface for retrieving all the from bridge ids attached to an entity
+   *
+   * @return A list of bridge ids of bridges pointed from a specied entity if the eneityId matches a valid entity, otherwise an error
+  */
   public shared ({ caller }) func get_from_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridges {
     let result = getEntity(entityId);
     switch (result) {
       case (null) { return #Err(#EntityNotFound) };
-      case (?entity) { return #Ok(entity.fromIds); };
-    }
+      case (?entity) { return #Ok(entity.fromIds) };
+    };
   };
 
   // HELPER FUNCTIONS
@@ -200,7 +253,6 @@ actor {
   */
   stable var bridgesStorageStable : [(Text, Bridge.Bridge)] = [];
   var bridgesStorage : HashMap.HashMap<Text, Bridge.Bridge> = HashMap.HashMap(0, Text.equal, Text.hash);
-
 
   /**
    * Function creates a new bridge based on the input initialization object. If it is able
@@ -453,7 +505,6 @@ actor {
       };
     };
   };
-
 
   /*************************************************
               Code related to system upgrades
