@@ -52,31 +52,6 @@ actor {
     };
   };
 
-  // public shared query ({ caller }) func get_bridge_ids_by_entity_id(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : async [Text] {
-  //   let result = getBridgeIdsByEntityId(entityId, includeBridgesFromEntity, includeBridgesToEntity, includeBridgesPendingForEntity);
-  //   return result;
-  // };
-
-  // public shared query ({ caller }) func get_bridges_by_entity_id(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : async [Bridge.Bridge] {
-  //   let result = getBridgesByEntityId(entityId, includeBridgesFromEntity, includeBridgesToEntity, includeBridgesPendingForEntity);
-  //   return result;
-  // };
-
-  // public shared ({ caller }) func create_entity_and_bridge(entityToCreate : Entity.EntityInitiationObject, bridgeToCreate : Bridge.BridgeInitiationObject) : async (Entity.Entity, ?Bridge.Bridge) {
-  //   let result = await createEntityAndBridge(caller, entityToCreate, bridgeToCreate);
-  //   return result;
-  // };
-
-  // public shared query ({ caller }) func get_bridged_entities_by_entity_id(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : async [Entity.Entity] {
-  //   let result = getBridgedEntitiesByEntityId(entityId, includeBridgesFromEntity, includeBridgesToEntity, includeBridgesPendingForEntity);
-  //   return result;
-  // };
-
-  // public shared query ({ caller }) func get_entity_and_bridge_ids(entityId : Text, includeBridgesFromEntity : Bool, includeBridgesToEntity : Bool, includeBridgesPendingForEntity : Bool) : async (?Entity.Entity, [Text]) {
-  //   let result = getEntityAndBridgeIds(entityId, includeBridgesFromEntity, includeBridgesToEntity, includeBridgesPendingForEntity);
-  //   return result;
-  // };
-
   public shared ({ caller }) func delete_bridge(bridgeId : Text) : async Bridge.BridgeIdResult {
     let result = await deleteBridge(caller, bridgeId);
     return result;
@@ -130,15 +105,30 @@ actor {
     return "";
   };
 
+  /**
+   * The format to store entities in the canister
+  */
   stable var entitiesStorageStable : [(Text, Entity.Entity)] = [];
   var entitiesStorage : HashMap.HashMap<Text, Entity.Entity> = HashMap.HashMap(0, Text.equal, Text.hash);
 
-  func putEntity(entity : Entity.Entity) : Text {
+  /**
+   * Simple function to store an entity in the database. There are no protections so this function should only
+   * be called if the caller has permissions to store the entity to the database
+   *
+   * @return The entity id of the stored entity
+  */
+  private func putEntity(entity : Entity.Entity) : Text {
     entitiesStorage.put(entity.id, entity);
     return entity.id;
   };
 
-  func getEntity(entityId : Text) : ?Entity.Entity {
+  /**
+   * A simple function to retrieve an entity by the entity id, this provides no protection so should only be called if
+   * the caller has permissions to read the entity data
+   *
+   * @return The entity if it exists, otherwise null
+  */
+  private func getEntity(entityId : Text) : ?Entity.Entity {
     let result = entitiesStorage.get(entityId);
     return result;
   };
@@ -212,6 +202,7 @@ actor {
       return null;
     };
 
+    // Add the bridge of the bridge database and add the bridge id to the related entities
     let result = putBridge(bridge);
     let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge.id);
     let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge.id);
@@ -356,6 +347,12 @@ actor {
     };
   };
 
+  /**
+   * Function takes in a caller and the bridge id and attempts to delete the bridge. If the caller is the bridge owner,
+   * the bridge will be deleted as long as the reference within the entity will be deleted
+   *
+   * @return The Bridge id of the deleted bridge or an error
+  */
   func deleteBridge(caller : Principal, bridgeId : Text) : async Bridge.BridgeIdResult {
     switch (getBridge(bridgeId)) {
       case null { return #Err(#BridgeNotFound) };
@@ -380,6 +377,12 @@ actor {
     };
   };
 
+  /**
+   * Function takes in a caller and a bridge update object. If the caller is the bridge owner,
+   * the bridge will be updated with the data within the bridge update object
+   *
+   * @return The Bridge id of the updated bridge or an error
+  */
   func updateBridge(caller : Principal, bridgeUpdateObject : Bridge.BridgeUpdateObject) : async Bridge.BridgeIdResult {
     switch (getBridge(bridgeUpdateObject.id)) {
       case null { return #Err(#BridgeNotFound) };
@@ -390,7 +393,7 @@ actor {
           }; // Only owner may update the Bridge
           case true {
             let updatedBridge : Bridge.Bridge = Bridge.updateBridgeFromUpdateObject(bridgeUpdateObject, bridgeToUpdate);
-            let result = bridgesStorage.put(updatedBridge.id, updatedBridge);
+            let result = putBridge(updatedBridge);
             return #Ok(updatedBridge.id);
           };
         };
