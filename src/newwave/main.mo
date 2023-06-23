@@ -68,6 +68,11 @@ actor {
   };
 
   // HELPER FUNCTIONS
+
+  /*************************************************
+              Code related to entities
+  *************************************************/
+
   /**
    * Function creates a new entity based on the input initialization object. If it is able
    * to make the object, it stores it and return the id, otherwise it will not
@@ -147,6 +152,43 @@ actor {
   };
 
   /**
+  * Function takes in an entity update object and updates the entity that corresponds with the update
+  * if it exists and the caller has permissions. Otherwise an error is returned
+  *
+  * @return Either the Entity ID if the call was successful or an error if not
+  */
+  private func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
+    var entity = getEntity(entityUpdateObject.id);
+    switch (entity) {
+      case null { return #Err(#EntityNotFound) };
+      case (?entityToUpdate) {
+        switch (Principal.equal(entityToUpdate.owner, caller)) {
+          case false {
+            return #Err(#Unauthorized);
+          };
+          // Only owner may update the Entity
+          case true {
+            let updatedEntity : Entity.Entity = Entity.updateEntityFromUpdateObject(entityUpdateObject, entityToUpdate);
+            let result = putEntity(updatedEntity);
+            return #Ok(updatedEntity.id);
+          };
+        };
+      };
+    };
+  };
+
+  /*************************************************
+              Code related to bridges
+  *************************************************/
+
+  /**
+   * The format to store bridges in the canister
+  */
+  stable var bridgesStorageStable : [(Text, Bridge.Bridge)] = [];
+  var bridgesStorage : HashMap.HashMap<Text, Bridge.Bridge> = HashMap.HashMap(0, Text.equal, Text.hash);
+
+
+  /**
    * Function creates a new bridge based on the input initialization object. If it is able
    * to make the object, it stores it and return the id, otherwise it will not
    * store an object and return an empty string
@@ -184,9 +226,6 @@ actor {
     };
     return null;
   };
-
-  stable var bridgesStorageStable : [(Text, Bridge.Bridge)] = [];
-  var bridgesStorage : HashMap.HashMap<Text, Bridge.Bridge> = HashMap.HashMap(0, Text.equal, Text.hash);
 
   /**
    * Function adds a new bridge and attempts to add the bridge to the entities
@@ -401,33 +440,11 @@ actor {
     };
   };
 
-  /**
-  * Function takes in an entity update object and updates the entity that corresponds with the update
-  * if it exists and the caller has permissions. Otherwise an error is returned
-  *
-  * @return Either the Entity ID if the call was successful or an error if not
-  */
-  private func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
-    var entity = getEntity(entityUpdateObject.id);
-    switch (entity) {
-      case null { return #Err(#EntityNotFound) };
-      case (?entityToUpdate) {
-        switch (Principal.equal(entityToUpdate.owner, caller)) {
-          case false {
-            return #Err(#Unauthorized);
-          };
-          // Only owner may update the Entity
-          case true {
-            let updatedEntity : Entity.Entity = Entity.updateEntityFromUpdateObject(entityUpdateObject, entityToUpdate);
-            let result = putEntity(updatedEntity);
-            return #Ok(updatedEntity.id);
-          };
-        };
-      };
-    };
-  };
 
-  // Upgrade Hooks
+  /*************************************************
+              Code related to system upgrades
+  *************************************************/
+
   system func preupgrade() {
     entitiesStorageStable := Iter.toArray(entitiesStorage.entries());
     bridgesStorageStable := Iter.toArray(bridgesStorage.entries());
