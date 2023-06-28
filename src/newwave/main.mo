@@ -309,12 +309,21 @@ actor {
 
     // Add the bridge of the bridge database and add the bridge id to the related entities
     let result = putBridge(bridge);
-    let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge.id);
-    let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge.id);
 
-    // Ensure the bridge could be added to both entities bridge lookup tables
-    if (fromIdResult == false or toIdResult == false) {
-      // Delete the bridge since it failed to get created
+    // If the from id result fails, then just delete the bridge but no connections were added
+    let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge.id);
+    if (fromIdResult == false)
+    {
+      bridgesStorage.delete(bridge.id);
+      return null;
+    };
+
+    // If the to id result fails, then the from id was also added, so make sure to delete the from id as well
+    // as the bridge itself
+    let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge.id);
+    if (toIdResult == false)
+    {
+      let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridge.fromEntityId, bridge.id);
       bridgesStorage.delete(bridge.id);
       return null;
     };
