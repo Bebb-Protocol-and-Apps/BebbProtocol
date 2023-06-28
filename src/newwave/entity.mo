@@ -33,9 +33,14 @@ module {
   };
 
   /**
+   * Defines the return type when returning the attach bridges of an entity
+  */
+  public type EntityAttachedBridges = [Text];
+
+  /**
    * Return type for when finding the ids of attached bridges
   */
-  public type EntityAttachedBridges = Types.Result<[Text], EntityAttachedBridgesErrors>;
+  public type EntityAttachedBridgesResult = Types.Result<EntityAttachedBridges, EntityAttachedBridgesErrors>;
 
   /**
    * Defines the errors for the public API when trying to retrieve an Entity ID

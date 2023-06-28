@@ -183,6 +183,7 @@ module {
   public type BridgeUpdateObject = {
     /**
      * The id of the bridge to update
+     * Note: This value cannot be updated and only used to identify the Bridge to update
     */
     id : Text;
     /**
