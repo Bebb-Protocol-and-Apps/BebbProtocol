@@ -62,6 +62,17 @@ actor {
   };
 
   /**
+   * Public interface for deleting a bridge. Currently only an owner can delete a bridge. This will also delete the reference
+   * of the bridge in the attached entities
+   *
+   * @return The bridge id if the bridge is successfully deleted, otherwise an error
+  */
+  public shared ({ caller }) func delete_entity(entityId : Text) : async Entity.EntityIdResult {
+    let result = await deleteEntity(caller, entityId);
+    return result;
+  };
+
+  /**
    * Public interface for creating a new bridge. When a bridge is created, it will add the bridge to the database and also
    * add the bridge id to the attached entities for reference
    *
@@ -244,6 +255,71 @@ actor {
     };
   };
 
+  /**
+   * Function takes in a caller and the bridge id and attempts to delete the bridge. If the caller is the bridge owner,
+   * the bridge will be deleted as long as the reference within the entity will be deleted
+   *
+   * @return The Bridge id of the deleted bridge or an error
+  */
+  func deleteEntity(caller : Principal, entityId : Text) : async Entity.EntityIdResult {
+    switch (getEntity(entityId)) {
+      case null { return #Err(#EntityNotFound) };
+      case (?entityToDelete) {
+        switch (Principal.equal(entityToDelete.owner, caller)) {
+          case false {
+            return #Err(#Unauthorized);
+          }; // Only owner may delete the Entity
+          case true {
+            // First delete all the bridges pointing to this Entity
+            for (toBridge in entityToDelete.toIds.vals()) {
+              let bridge = getBridge(toBridge);
+              switch (bridge) {
+                case (null) {};
+                case (?bridgeToDelete) {
+                  // Since this bridge points to the current Entity being deleted, we need to 
+                  // delete the reference to where the bridge was pointing from and delete the reference to
+                  // this bridge in the Entity it was pointing from before deleting the bridge
+                  let deleteReferenceResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeToDelete.id);
+                  let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
+                };
+              };
+            };
+            
+            // Second delete all the bridges pointing from this Entity
+            for (fromBridge in entityToDelete.fromIds.vals()) {
+              let bridge = getBridge(fromBridge);
+              switch (bridge) {
+                case (null) {};
+                case (?bridgeToDelete) {
+                  // Since this bridge points from the current Entity being deleted, we need to 
+                  // delete the reference to where the bridge was pointing to and delete the reference to
+                  // this bridge in the Entity it was pointing to before deleting the bridge
+                  let deleteReferenceResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeToDelete.id);
+                  let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
+                };
+              };
+            };
+
+            // Finally delete the entity itself
+            let result = deleteEntityFromStorage(entityToDelete.id);
+            return #Ok(entityToDelete.id);
+          };
+        };
+      };
+    };
+  };
+
+  /**
+   * Function deletes an entity from storage. Ensure to delete the connections from the Bridges
+   * before removing the entity
+   *
+   * @ return True if the entity was successfully deleted, false otherwise
+  */
+  func deleteEntityFromStorage(entityId : Text) : Bool {
+    entitiesStorage.delete(entityId);
+    return true;
+  };
+
   /*************************************************
           Helper Functions related to bridges
   *************************************************/
@@ -312,17 +388,15 @@ actor {
 
     // If the from id result fails, then just delete the bridge but no connections were added
     let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge.id);
-    if (fromIdResult == false)
-    {
+    if (fromIdResult == false) {
       bridgesStorage.delete(bridge.id);
       return null;
     };
 
-    // If the to id result fails, then the from id was also added, so make sure to delete the from id as well
+    // If the to id result fails, then the from id was added, so make sure to delete the from id on the Entity as well
     // as the bridge itself
     let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge.id);
-    if (toIdResult == false)
-    {
+    if (toIdResult == false) {
       let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridge.fromEntityId, bridge.id);
       bridgesStorage.delete(bridge.id);
       return null;
