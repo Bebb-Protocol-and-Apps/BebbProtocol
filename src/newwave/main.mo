@@ -276,7 +276,7 @@ actor {
               switch (bridge) {
                 case (null) {};
                 case (?bridgeToDelete) {
-                  // Since this bridge points to the current Entity being deleted, we need to 
+                  // Since this bridge points to the current Entity being deleted, we need to
                   // delete the reference to where the bridge was pointing from and delete the reference to
                   // this bridge in the Entity it was pointing from before deleting the bridge
                   let deleteReferenceResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeToDelete.id);
@@ -284,14 +284,14 @@ actor {
                 };
               };
             };
-            
+
             // Second delete all the bridges pointing from this Entity
             for (fromBridge in entityToDelete.fromIds.vals()) {
               let bridge = getBridge(fromBridge);
               switch (bridge) {
                 case (null) {};
                 case (?bridgeToDelete) {
-                  // Since this bridge points from the current Entity being deleted, we need to 
+                  // Since this bridge points from the current Entity being deleted, we need to
                   // delete the reference to where the bridge was pointing to and delete the reference to
                   // this bridge in the Entity it was pointing to before deleting the bridge
                   let deleteReferenceResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeToDelete.id);
