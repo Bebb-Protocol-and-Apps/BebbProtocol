@@ -62,10 +62,10 @@ actor {
   };
 
   /**
-   * Public interface for deleting a bridge. Currently only an owner can delete a bridge. This will also delete the reference
-   * of the bridge in the attached entities
+   * Public interface for deleting an entity. Currently only an owner can delete an entity. This will also delete all the bridges
+   * either pointing to or from this Entity
    *
-   * @return The bridge id if the bridge is successfully deleted, otherwise an error
+   * @return The entity id if the entity is successfully deleted, otherwise an error
   */
   public shared ({ caller }) func delete_entity(entityId : Text) : async Entity.EntityIdResult {
     let result = await deleteEntity(caller, entityId);
