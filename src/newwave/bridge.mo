@@ -18,6 +18,7 @@ import Random "mo:base/Random";
 import Blob "mo:base/Blob";
 import Utils "Utils";
 import Types "Types";
+import BaseEntity "base_entity";
 
 module {
 
@@ -75,47 +76,13 @@ module {
   };
 
   /**
-    * The type that defines the attributes for a Bridge
+   * The type that defines the attributes for a Bridge
   */
-  public type Bridge = {
-    /**
-     * The ID of the Bridge that is used to store it in
-     * in the bridge database
-    */
-    id : Text;
-    /**
-     * The timestamp in UTC (maybe) that the bridge was created
-    */
-    creationTimestamp : Nat64;
-    /**
-     * The original creator of the bridge.
-    */
-    creator : Principal;
-    /**
-     * The current owner of the bridge
-    */
-    owner : Principal;
+  public type Bridge = BaseEntity.BaseEntity and {
     /**
      * Settings for the bridge
     */
     settings : BridgeSettings;
-    /**
-     * A human readable name? for the bridge
-    */
-    name : ?Text;
-    /**
-     * An owner defined description for what the bridge is
-    */
-    description : ?Text;
-    /**
-     * Keywords that are used to descripe the bridge to
-     * enable more efficient lookup of the bridge?
-    */
-    keywords : ?[Text];
-    /**
-     * Unknown
-    */
-    listOfBridgeSpecificFieldKeys : [Text];
     /**
      * The type of the bridge
     */
@@ -148,6 +115,7 @@ module {
     fromEntityId : Text;
     toEntityId : Text;
     state : ?BridgeState;
+    entitySpecificFields : ?Text;
   };
 
   /**
@@ -174,7 +142,8 @@ module {
       name : ?Text = initiationObject.name;
       description : ?Text = initiationObject.description;
       keywords : ?[Text] = initiationObject.keywords;
-      listOfBridgeSpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId", "state"];
+      entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
+      listOfEntitySpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId", "state"];
       bridgeType : BridgeType = initiationObject.bridgeType;
       fromEntityId : Text = initiationObject.fromEntityId;
       toEntityId : Text = initiationObject.toEntityId;
@@ -202,7 +171,8 @@ module {
       fromEntityId : Text = originalBridge.fromEntityId;
       toEntityId : Text = originalBridge.toEntityId;
       state : BridgeState = originalBridge.state;
-      listOfBridgeSpecificFieldKeys = originalBridge.listOfBridgeSpecificFieldKeys;
+      entitySpecificFields = originalBridge.entitySpecificFields;
+      listOfEntitySpecificFieldKeys = originalBridge.listOfEntitySpecificFieldKeys;
     };
   };
 

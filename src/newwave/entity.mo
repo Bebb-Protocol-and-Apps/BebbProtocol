@@ -20,6 +20,7 @@ import Blob "mo:base/Blob";
 import Utils "Utils";
 import Text "mo:base/Text";
 import Types "Types";
+import BaseEntity "base_entity";
 
 module {
 
@@ -86,24 +87,7 @@ module {
   /**
    * Type that defines the attributes for an Entity
   */
-  public type Entity = {
-    /**
-     * The ID of the Entity that is used to store it in
-     * in the entity database
-    */
-    id : Text;
-    /**
-     * The timestamp in UTC (maybe) that the entity was created
-    */
-    creationTimestamp : Nat64;
-    /**
-     * The original creator of the entity.
-    */
-    creator : Principal;
-    /**
-     * The current owner of the entity
-    */
-    owner : Principal;
+  public type Entity = BaseEntity.BaseEntity and {
     /**
      * Settings for the entity
     */
@@ -112,28 +96,6 @@ module {
      * The type that defines the entity
     */
     entityType : EntityType;
-    /**
-     * A human readable name? for the entity
-    */
-    name : ?Text;
-    /**
-     * An owner defined description for what the entity is
-    */
-    description : ?Text;
-    /**
-     * Keywords that are used to descripe the entity to
-     * enable more efficient lookup of the entity?
-    */
-    keywords : ?[Text];
-    /**
-     * Unknown
-    */
-    entitySpecificFields : ?Text;
-    /**
-     * Unknown
-    */
-    listOfEntitySpecificFieldKeys : [Text];
-
     /**
      * Contains all the bridge ids that originate from this
      * Entity
@@ -186,7 +148,7 @@ module {
       description : ?Text = initiationObject.description;
       keywords : ?[Text] = initiationObject.keywords;
       entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
-      listOfEntitySpecificFieldKeys : [Text] = [];
+      listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
       toIds : [Text] = [];
       fromIds : [Text] = [];
     };
