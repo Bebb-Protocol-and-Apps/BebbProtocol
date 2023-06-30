@@ -256,10 +256,10 @@ actor {
   };
 
   /**
-   * Function takes in a caller and the bridge id and attempts to delete the bridge. If the caller is the bridge owner,
-   * the bridge will be deleted as long as the reference within the entity will be deleted
+   * Function takes in a caller and the entity id and attempts to delete the entity. If the caller is the entity owner,
+   * the entity will as well as all the linking bridges to and from this Entity
    *
-   * @return The Bridge id of the deleted bridge or an error
+   * @return The Entity id of the deleted entity or an error
   */
   func deleteEntity(caller : Principal, entityId : Text) : async Entity.EntityIdResult {
     switch (getEntity(entityId)) {
