@@ -21,6 +21,7 @@ import Utils "Utils";
 import Text "mo:base/Text";
 import Types "Types";
 import BaseEntity "base_entity";
+import Bridge "bridge";
 
 module {
 
@@ -33,9 +34,44 @@ module {
   };
 
   /**
-   * Defines the return type when returning the attach bridges of an entity
+   * Stores the possible link status which describe how the Entity is linked to the Bridge
+   * This status is owned by the Entity to allow the Entity control over how it views the Bridge and
+   * provide info to others looking at the connection
   */
-  public type EntityAttachedBridges = [Text];
+  public type BridgeLinkStatus = {
+    #CreatedOwner;
+    #CreatedOther;
+  };
+
+  /**
+   * Defines the specific data to cache from a specific bridge connection. Provides Entity controlled data to describe
+   * the connection to the Bridge
+  */
+  public type EntityAttachedBridge = {
+    /**
+     * Stores the link status defining the relationship of the bridge as defined by 
+     * the Entity. I.e Did the Entity Owner created the bridge, did the Entity endorse the link etc
+    */
+    linkStatus: BridgeLinkStatus;
+    /**
+     * The id of the bridge that is associated with this link
+    */
+    id: Text;
+    /**
+     * The time that the bridge was added to the Entity
+    */
+    creationTime: Time.Time;
+    /**
+     * Stores the type of the bridge and how the bridge is related to the entity
+    */
+    bridgeType : Bridge.BridgeType;
+  };
+
+  /**
+   * Defines the bridge attachment types that Entities store when caching references to the Bridges either linked
+   * to them or from them.
+  */
+  public type EntityAttachedBridges = [EntityAttachedBridge];
 
   /**
    * Return type for when finding the ids of attached bridges
@@ -105,12 +141,12 @@ module {
      * Contains all the bridge ids that originate from this
      * Entity
     */
-    fromIds : [Text];
+    fromIds : EntityAttachedBridges;
 
     /**
      * Contains all the bridge ids that point to this entity
     */
-    toIds : [Text];
+    toIds : EntityAttachedBridges;
   };
 
   /**
@@ -154,8 +190,8 @@ module {
       keywords : ?[Text] = initiationObject.keywords;
       entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
       listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
-      toIds : [Text] = [];
-      fromIds : [Text] = [];
+      toIds : EntityAttachedBridges = [];
+      fromIds : EntityAttachedBridges = [];
     };
   };
 
@@ -164,7 +200,7 @@ module {
    *
    * @return A new entity with the new fromIds field
   */
-  public func updateEntityFromIds(entity : Entity, fromIds : [Text]) : Entity {
+  public func updateEntityFromIds(entity : Entity, fromIds : EntityAttachedBridges) : Entity {
     return {
       id = entity.id;
       creationTimestamp = entity.creationTimestamp;
@@ -187,7 +223,7 @@ module {
    *
    * @return A new entity with the new toIds field
   */
-  public func updateEntityToIds(entity : Entity, toIds : [Text]) : Entity {
+  public func updateEntityToIds(entity : Entity, toIds : EntityAttachedBridges) : Entity {
     return {
       id = entity.id;
       creationTimestamp = entity.creationTimestamp;
@@ -236,6 +272,7 @@ module {
   public type EntityUpdateObject = {
     /**
      * The ID of the entity to update
+     * Note: This value cannot be updated and only used to identify the Entity to update
     */
     id : Text;
     /**
@@ -255,4 +292,18 @@ module {
     */
     keywords : ?[Text];
   };
+
+  /**
+   * Determines the initial link bridge state to apply to the bridge attachment based on the ownership of the bridge
+   * and the Entity
+  */
+  public func determineBridgeLinkStatus(entity: Entity, bridge: Bridge.Bridge) : BridgeLinkStatus
+  {
+      if (entity.owner == bridge.owner)
+      {
+        return #CreatedOwner;
+      };
+
+      return #CreatedOther;
+  }
 };

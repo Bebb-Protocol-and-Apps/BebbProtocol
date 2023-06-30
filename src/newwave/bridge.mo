@@ -61,18 +61,12 @@ module {
 
   /**
    * The available bridge types that can be used to describe a bridge
+   * This defines the Bridges relationship to the Entity as defined by the Bridge owner
   */
   public type BridgeType = {
-    #OwnerCreated;
-  };
-
-  /**
-    * The bridge states that describe the current status of a bridge
-  */
-  public type BridgeState = {
-    #Pending;
-    #Rejected;
-    #Confirmed;
+    #IsPartOf;
+    #IsRelatedto;
+    #IsAttachedto;
   };
 
   /**
@@ -95,10 +89,6 @@ module {
      * The entity ID that specifies the ending entity for the bridge
     */
     toEntityId : Text;
-    /**
-     * The current bridge stated (TO BE DEPRECATED)
-    */
-    state : BridgeState;
   };
 
   /**
@@ -114,7 +104,6 @@ module {
     bridgeType : BridgeType;
     fromEntityId : Text;
     toEntityId : Text;
-    state : ?BridgeState;
     entitySpecificFields : ?Text;
   };
 
@@ -147,7 +136,6 @@ module {
       bridgeType : BridgeType = initiationObject.bridgeType;
       fromEntityId : Text = initiationObject.fromEntityId;
       toEntityId : Text = initiationObject.toEntityId;
-      state : BridgeState = #Confirmed;
     };
   };
 
@@ -170,7 +158,6 @@ module {
       bridgeType : BridgeType = originalBridge.bridgeType;
       fromEntityId : Text = originalBridge.fromEntityId;
       toEntityId : Text = originalBridge.toEntityId;
-      state : BridgeState = originalBridge.state;
       entitySpecificFields = originalBridge.entitySpecificFields;
       listOfEntitySpecificFieldKeys = originalBridge.listOfEntitySpecificFieldKeys;
     };
