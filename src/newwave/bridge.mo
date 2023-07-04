@@ -132,7 +132,7 @@ module {
       description : ?Text = initiationObject.description;
       keywords : ?[Text] = initiationObject.keywords;
       entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
-      listOfEntitySpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId", "state"];
+      listOfEntitySpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId"];
       bridgeType : BridgeType = initiationObject.bridgeType;
       fromEntityId : Text = initiationObject.fromEntityId;
       toEntityId : Text = initiationObject.toEntityId;
