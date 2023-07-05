@@ -15,6 +15,7 @@ import Bridge "bridge";
 import HTTP "./Http";
 import Types "./Types";
 import Utils "./Utils";
+import Time "mo:base/Time";
 
 actor {
   /*************************************************
@@ -272,7 +273,7 @@ actor {
           case true {
             // First delete all the bridges pointing to this Entity
             for (toBridge in entityToDelete.toIds.vals()) {
-              let bridge = getBridge(toBridge);
+              let bridge = getBridge(toBridge.id);
               switch (bridge) {
                 case (null) {};
                 case (?bridgeToDelete) {
@@ -287,7 +288,7 @@ actor {
 
             // Second delete all the bridges pointing from this Entity
             for (fromBridge in entityToDelete.fromIds.vals()) {
-              let bridge = getBridge(fromBridge);
+              let bridge = getBridge(fromBridge.id);
               switch (bridge) {
                 case (null) {};
                 case (?bridgeToDelete) {
@@ -387,7 +388,7 @@ actor {
     let result = putBridge(bridge);
 
     // If the from id result fails, then just delete the bridge but no connections were added
-    let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge.id);
+    let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge);
     if (fromIdResult == false) {
       bridgesStorage.delete(bridge.id);
       return null;
@@ -395,7 +396,7 @@ actor {
 
     // If the to id result fails, then the from id was added, so make sure to delete the from id on the Entity as well
     // as the bridge itself
-    let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge.id);
+    let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge);
     if (toIdResult == false) {
       let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridge.fromEntityId, bridge.id);
       bridgesStorage.delete(bridge.id);
@@ -424,14 +425,20 @@ actor {
    * @return True if the bridge ID was added to the from ID list, otherwise
    * false is returned if it couldn't
   */
-  private func addBridgeToEntityFromIds(entityId : Text, bridgeId : Text) : Bool {
+  private func addBridgeToEntityFromIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
     let entity = getEntity(entityId);
     switch (entity) {
       case (null) {
         return false;
       };
       case (?retrievedEntity) {
-        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Text>(retrievedEntity.fromIds, [bridgeId]));
+        let newEntityAttachedBridge = {
+          linkStatus=Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+          id=bridge.id;
+          creationTime = Time.now();
+          bridgeType = bridge.bridgeType;
+        };
+        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, [newEntityAttachedBridge]));
         let result = putEntity(newEntity);
         return true;
       };
@@ -445,14 +452,20 @@ actor {
    * @return True if the bridge ID was added to the to ID list, otherwise
    * false is returned if it couldn't
   */
-  private func addBridgeToEntityToIds(entityId : Text, bridgeId : Text) : Bool {
+  private func addBridgeToEntityToIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
     var entity = getEntity(entityId);
     switch (entity) {
       case (null) {
         return false;
       };
       case (?retrievedEntity) {
-        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.append<Text>(retrievedEntity.toIds, [bridgeId]));
+         let newEntityAttachedBridge = {
+          linkStatus=Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+          id=bridge.id;
+          creationTime = Time.now();
+          bridgeType = bridge.bridgeType;
+        };
+        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.toIds, [newEntityAttachedBridge]));
         let result = putEntity(newEntity);
         return true;
       };
@@ -473,7 +486,7 @@ actor {
         return false;
       };
       case (?retrievedEntity) {
-        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.filter<Text>(retrievedEntity.fromIds, func x = x != bridgeId));
+        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.filter<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, func x = x.id != bridgeId));
         let result = putEntity(newEntity);
         return true;
       };
@@ -494,7 +507,7 @@ actor {
         return false;
       };
       case (?retrievedEntity) {
-        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.filter<Text>(retrievedEntity.toIds, func x = x != bridgeId));
+        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.filter<Entity.EntityAttachedBridge>(retrievedEntity.toIds, func x = x.id != bridgeId));
         let result = putEntity(newEntity);
         return true;
       };
