@@ -1,10 +1,8 @@
-# NewWave Protocol v0.0.3
+# Bebb Protocol v0.0.4
 
 A decentralized protocol to store and manage a form of hyperlinks between all different kinds of nodes.
 
 This protocol, which enables everyone to create and retrieve connections, build applications on top of it and together establish a wide-spanning network of connections between different kinds of nodes, will serve as a fundamental building block of proof-of-concept applications building on top (e.g. Personal NFT Gallery).
-
-Version 0.0.3 implements the same functionality as v0.0.2 but does so with a mono-canister architecture (versus v0.0.2's multi-canister approach resembling a microservices architecture) sacrificing an arguably superior protocol design in favor of practicality. While v0.0.2's architecture was chosen to allow the protocol to scale out automatically if needed (e.g. by spinning up new Entity or Bridge storage canisters) and aimed to improve throughput by utilizing a collection of dedicated canisters for the different functions supported, inter-canister query calls not being supported yet by the IC (and logical query calls thus having to be executed like update calls) rendered this design unusable in practice as of now as the time it takes to retrieve data from the protocol appeared too long for any meaningful user-interaction-based application. While users probably have a slightly higher tolerance in terms of responsiveness of update calls, the multi-level canister approach as developed (i.e. a create operation involves 7 canisters for Entities and up to 9 canisters for Bridges) would still be too slow for a reasonable user experience. v0.0.3 thus aims to speed up the protocol's response times significantly by circumventing any inter-canister calls and relying on a single canister to provide all functionality.
 
 The protocol's functionality includes creating and retrieving an Entity (node), creating and retrieving a Bridge (connection) and retrieving Bridges attached to an Entity. The file main.mo defines these respective functions along others and serves as the central entry point to the protocol. 
 
@@ -63,7 +61,7 @@ dfx wallet --network ic balance
 dfx canister --network ic status newwave
 dfx canister --network ic --wallet 3v5vy-2aaaa-aaaai-aapla-cai deposit-cycles 3000000000000 newwave
 
-2022-11-15: topped up 3.3T cycles, has balance of 7.2T (2023-02-20: basically hasn't changed)
+2022-11-15: topped up 3.3T cycles, has balance of 7.2T (2023-02-20: basically hasn't changed, 2023-07-05: 7.186)
 
 Fund wallet with cycles (from ICP): https://medium.com/dfinity/internet-computer-basics-part-3-funding-a-cycles-wallet-a724efebd111
 
