@@ -1,4 +1,4 @@
-import { newwave } from "../../declarations/newwave";
+import { bebb } from "../../declarations/bebb";
 
 document.querySelector("form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -20,13 +20,13 @@ document.querySelector("form").addEventListener("submit", async (e) => {
     _externalId: ["_externalId"],
     _entitySpecificFields: [],
   };
-  const entity = await newwave.create_entity(entityToCreate);
+  const entity = await bebb.create_entity(entityToCreate);
   console.log('entity');
   console.log(entity);
   const entityId = entity.internalId;
   console.log('entityId');
   console.log(entityId);
-  const retrievedEntity = await newwave.get_entity(entityId);
+  const retrievedEntity = await bebb.get_entity(entityId);
   console.log('retrievedEntity');
   console.log(retrievedEntity);
   let entityToCreate2 = {
@@ -42,7 +42,7 @@ document.querySelector("form").addEventListener("submit", async (e) => {
     _externalId: ["_externalId"],
     _entitySpecificFields: [],
   };
-  const entity2 = await newwave.create_entity(entityToCreate2);
+  const entity2 = await bebb.create_entity(entityToCreate2);
   console.log('entity2');
   console.log(entity2);
   const entityId2 = entity2.internalId;
@@ -65,12 +65,12 @@ document.querySelector("form").addEventListener("submit", async (e) => {
     _toEntityId: entityId2,
     _state: [],
   };
-  const bridge = await newwave.create_bridge(bridgeToCreate);
+  const bridge = await bebb.create_bridge(bridgeToCreate);
   console.log('bridge');
   console.log(bridge);
   console.log('bridge internalId');
   console.log(bridge.internalId);
-  const retrievedBridge = await newwave.get_bridge(bridge.internalId);
+  const retrievedBridge = await bebb.get_bridge(bridge.internalId);
   console.log('retrievedBridge');
   console.log(retrievedBridge);
   let bridgeToCreatePending = {
@@ -90,31 +90,31 @@ document.querySelector("form").addEventListener("submit", async (e) => {
     _toEntityId: entityId,
     _state: [{ Pending: null }],
   };
-  const bridgePending = await newwave.create_bridge(bridgeToCreatePending);
+  const bridgePending = await bebb.create_bridge(bridgeToCreatePending);
   console.log('bridgePending');
   console.log(bridgePending);
-  const bridgeIdsForEntityNone = await newwave.get_bridge_ids_by_entity_id(entityId, false, false, false);
+  const bridgeIdsForEntityNone = await bebb.get_bridge_ids_by_entity_id(entityId, false, false, false);
   console.log('bridgeIdsForEntityNone');
   console.log(bridgeIdsForEntityNone);
-  const bridgeIdsForEntityFrom = await newwave.get_bridge_ids_by_entity_id(entityId, true, false, false);
+  const bridgeIdsForEntityFrom = await bebb.get_bridge_ids_by_entity_id(entityId, true, false, false);
   console.log('bridgeIdsForEntityFrom');
   console.log(bridgeIdsForEntityFrom);
-  const bridgeIdsForEntityTo = await newwave.get_bridge_ids_by_entity_id(entityId, false, true, false);
+  const bridgeIdsForEntityTo = await bebb.get_bridge_ids_by_entity_id(entityId, false, true, false);
   console.log('bridgeIdsForEntityTo');
   console.log(bridgeIdsForEntityTo);
-  const bridgeIdsForEntityTo2 = await newwave.get_bridge_ids_by_entity_id(entityId2, false, true, false);
+  const bridgeIdsForEntityTo2 = await bebb.get_bridge_ids_by_entity_id(entityId2, false, true, false);
   console.log('bridgeIdsForEntityTo2');
   console.log(bridgeIdsForEntityTo2);
-  const bridgeIdsForEntityPending = await newwave.get_bridge_ids_by_entity_id(entityId, false, false, true);
+  const bridgeIdsForEntityPending = await bebb.get_bridge_ids_by_entity_id(entityId, false, false, true);
   console.log('bridgeIdsForEntityPending');
   console.log(bridgeIdsForEntityPending);
-  const bridgeIdsForEntityNoPending = await newwave.get_bridge_ids_by_entity_id(entityId, true, true, false);
+  const bridgeIdsForEntityNoPending = await bebb.get_bridge_ids_by_entity_id(entityId, true, true, false);
   console.log('bridgeIdsForEntityNoPending');
   console.log(bridgeIdsForEntityNoPending);
-  const bridgeIdsForEntityAll = await newwave.get_bridge_ids_by_entity_id(entityId, true, true, true);
+  const bridgeIdsForEntityAll = await bebb.get_bridge_ids_by_entity_id(entityId, true, true, true);
   console.log('bridgeIdsForEntityAll');
   console.log(bridgeIdsForEntityAll);
-  const bridgesForEntityAll = await newwave.get_bridges_by_entity_id(entityId, true, true, true);
+  const bridgesForEntityAll = await bebb.get_bridges_by_entity_id(entityId, true, true, true);
   console.log('bridgesForEntityAll');
   console.log(bridgesForEntityAll);
   let entityToCreate3 = {
@@ -147,7 +147,7 @@ document.querySelector("form").addEventListener("submit", async (e) => {
     _toEntityId: "",
     _state: [{ Pending: null }],
   };
-  const createEntityAndBridgeTo = await newwave.create_entity_and_bridge(entityToCreate3, bridgeToCreate3);
+  const createEntityAndBridgeTo = await bebb.create_entity_and_bridge(entityToCreate3, bridgeToCreate3);
   console.log('createEntityAndBridgeTo');
   console.log(createEntityAndBridgeTo);
   let entityToCreate4 = {
@@ -180,13 +180,13 @@ document.querySelector("form").addEventListener("submit", async (e) => {
     _toEntityId: entityId2,
     _state: [{ Confirmed: null }],
   };
-  const createEntityAndBridgeFrom = await newwave.create_entity_and_bridge(entityToCreate4, bridgeToCreate4);
+  const createEntityAndBridgeFrom = await bebb.create_entity_and_bridge(entityToCreate4, bridgeToCreate4);
   console.log('createEntityAndBridgeFrom');
   console.log(createEntityAndBridgeFrom);
-  const getBridgedEntitiesByEntityId = await newwave.get_bridged_entities_by_entity_id(entityId, true, true, true);
+  const getBridgedEntitiesByEntityId = await bebb.get_bridged_entities_by_entity_id(entityId, true, true, true);
   console.log('getBridgedEntitiesByEntityId');
   console.log(getBridgedEntitiesByEntityId);
-  const getEntityAndBridgeIds = await newwave.get_entity_and_bridge_ids(entityId, true, true, true);
+  const getEntityAndBridgeIds = await bebb.get_entity_and_bridge_ids(entityId, true, true, true);
   console.log('getEntityAndBridgeIds');
   console.log(getEntityAndBridgeIds);
 

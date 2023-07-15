@@ -1,12 +1,12 @@
 {
   "canisters": {
-    "newwave": {
-      "main": "src/newwave/main.mo",
+    "bebb": {
+      "main": "src/bebb/main.mo",
       "type": "motoko"
     },
     "test_assets": {
       "dependencies": [
-        "newwave"
+        "bebb"
       ],
       "frontend": {
         "entrypoint": "src/hello_assets/src/index.html"
