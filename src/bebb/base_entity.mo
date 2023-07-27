@@ -35,7 +35,7 @@ module {
         description : Text;
         /**
         * Keywords that are used to descripe the entity to
-        * enable more efficient lookup of the entity?
+        * enable more efficient lookup of the entity
         */
         keywords : [Text];
         /**
