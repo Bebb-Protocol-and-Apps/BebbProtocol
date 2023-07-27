@@ -229,10 +229,10 @@ module {
         case (?customSettings) { customSettings };
       };
       entityType : EntityType = initiationObject.entityType;
-      name : ?Text = initiationObject.name;
-      description : ?Text = initiationObject.description;
-      keywords : ?[Text] = initiationObject.keywords;
-      entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
+      name : Text = Option.get<Text>(initiationObject.name, "");
+      description : Text = Option.get<Text>(initiationObject.description, "");
+      keywords : [Text] =  [];
+      entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
       listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
       toIds : EntityAttachedBridges = [];
       fromIds : EntityAttachedBridges = [];
@@ -302,11 +302,9 @@ module {
       owner = originalEntity.owner;
       settings = Option.get<EntitySettings>(entityUpdateObject.settings, originalEntity.settings);
       entityType = originalEntity.entityType;
-      name = Option.get<?Text>(?entityUpdateObject.name, originalEntity.name);
-      // TODO: This isn't working properly. If you keep description null when updating, it will set it back to null and 
-      // not keep it the same value. This is true for name as well. Preview seems to work as expected
-      description : ?Text = Option.get<?Text>(?entityUpdateObject.description, originalEntity.description);
-      keywords : ?[Text] = Option.get<?[Text]>(?entityUpdateObject.keywords, originalEntity.keywords);
+      name = Option.get<Text>(entityUpdateObject.name, originalEntity.name);
+      description : Text = Option.get<Text>(entityUpdateObject.description, originalEntity.description);
+      keywords = Option.get<[Text]>(entityUpdateObject.keywords, originalEntity.keywords);
       entitySpecificFields = originalEntity.entitySpecificFields;
       listOfEntitySpecificFieldKeys = originalEntity.listOfEntitySpecificFieldKeys;
       fromIds = originalEntity.fromIds;

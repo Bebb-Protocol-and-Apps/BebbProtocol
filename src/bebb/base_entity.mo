@@ -28,20 +28,20 @@ module {
         /**
         * A human readable name? for the entity
         */
-        name : ?Text;
+        name : Text;
         /**
         * An owner defined description for what the entity is
         */
-        description : ?Text;
+        description : Text;
         /**
         * Keywords that are used to descripe the entity to
         * enable more efficient lookup of the entity?
         */
-        keywords : ?[Text];
+        keywords : [Text];
         /**
         * Unknown
         */
-        entitySpecificFields : ?Text;
+        entitySpecificFields : Text;
         /**
         * Unknown
         */
