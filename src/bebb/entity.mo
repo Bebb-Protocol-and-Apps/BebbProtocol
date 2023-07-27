@@ -147,7 +147,7 @@ module {
   public type EntityPreview = {
     /**
      * Stores the type of the preview. This is used to determine how to 
-     * render the stored preview data:
+     * render the stored preview data
     */
     previewType: EntityPreviewSupportedTypes;
 
