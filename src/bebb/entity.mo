@@ -84,6 +84,7 @@ module {
   public type EntityIdErrors = {
     #Unauthorized;
     #EntityNotFound;
+    #TooManyPreviews;
     // Returns the index of the preview that is too large
     #PreviewTooLarge : Int;
     #Error;

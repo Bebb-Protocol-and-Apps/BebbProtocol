@@ -237,7 +237,8 @@ actor {
   * @return Either the Entity ID if the call was successful or an error if not
   */
   let oneMB : Nat = 1048576; // 1 MB
-  private let maxPreviewBlobSize : Nat = 5 * oneMB; 
+  private let maxPreviewBlobSize : Nat = 5; 
+  private let maxNumPreviews = 5;
   private func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
     var entity = getEntity(entityUpdateObject.id);
     switch (entity) {
@@ -249,7 +250,7 @@ actor {
           };
           // Only owner may update the Entity
           case true {
-            // Ensure that the preivews are not too large
+            // Ensure that the preivews are not too large and that there aren't too many previews
             // If any of the previews are too large then return an error with
             // the preview index that caused the error of being too large
             var counter = 0;
@@ -258,9 +259,16 @@ actor {
               case(null) {};
               case(?new_previews)
               {
+                // Check to ensure there aren't too many previews
+                if (new_previews.size() > maxNumPreviews)
+                {
+                    return #Err(#TooManyPreviews);
+                };
+
+                // Check all the previews and make sure they aren't too big
                 for (preview in new_previews.vals()) {
                     let fileSize = preview.previewData.size();
-                    if (fileSize >= maxPreviewBlobSize)
+                    if (fileSize > maxPreviewBlobSize)
                     {
                       return #Err(#PreviewTooLarge(counter));
                     };
