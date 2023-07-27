@@ -1,5 +1,4 @@
-# Bebb Protocol v0.0.4
-
+# Bebb Protocol
 A decentralized protocol to store and manage a form of hyperlinks between all different kinds of nodes.
 
 This protocol, which enables everyone to create and retrieve connections, build applications on top of it and together establish a wide-spanning network of connections between different kinds of nodes, will serve as a fundamental building block of proof-of-concept applications building on top (e.g. Personal NFT Gallery).
@@ -20,9 +19,16 @@ dfx start --background
 dfx deploy
 ```
 
-Once the job completes, your application will be available at `http://localhost:8000?canisterId={asset_canister_id}`.
+## Testing Backend Changes
+The majority of the changes are tested via the candid backend. To access the Candid backend, after you run
+```bash
+dfx deploy
+```
+as shown above. It will provide the URL to the canister backend Candid UI. You can test the API calls through that interface
 
-Additionally, if you are making frontend changes, you can start a development server with
+## Testing Frontend Changes
+
+If you are making frontend changes, you can start a development server with
 
 ```bash
 npm start
@@ -31,79 +37,3 @@ npm start
 Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 8000.
 
 Note: while the protocol doesn't need or have a UI, the asset's canister here serves as a simple way of testing the protocol by simulating how an application might create Entities and connect them via Bridges.
-
-Call from CLI (local):
-dfx canister call newwave create_entity "(record { _internalId = null; _creator = null; _entityType = variant {Webasset}; })"
-dfx canister call newwave get_entity '("D6C65674-91BE-170D-BCC0-000000000000")'
-dfx canister call newwave create_bridge '(record { _internalId = null; _creator = null; _entityType = variant {Webasset}; _bridgeType = variant {OwnerCreated}; _fromEntityId = "20621F98-91B0-170D-B0F5-000000000000"; _toEntityId = "D6C65674-91BE-170D-BCC0-000000000000";  })'
-dfx canister call newwave get_bridge '("76CBDF90-9246-170D-9C79-000000000000")'
-dfx canister call newwave get_bridge_ids_by_entity_id '("D6C65674-91BE-170D-BCC0-000000000000", true, true, true)'
-dfx canister call newwave get_bridges_by_entity_id '("D6C65674-91BE-170D-BCC0-000000000000", true, true, true)'
- dfx canister call newwave create_entity_and_bridge '(record { _internalId = null; _creator = null; _entityType = variant {Webasset}; }, record { _internalId = null; _creator = null; _entityType = variant {Webasset}; _bridgeType = variant {OwnerCreated}; _fromEntityId = "20621F98-91B0-170D-B0F5-000000000000"; _toEntityId = "D6C65674-91BE-170D-BCC0-000000000000";  })'
- dfx canister call newwave get_bridged_entities_by_entity_id '("D6C65674-91BE-170D-BCC0-000000000000", true, true, true)'
- dfx canister call newwave get_entity_and_bridge_ids '("D6C65674-91BE-170D-BCC0-000000000000", true, true, true)'
-
-Call from CLI (IC):
- first deploy to IC mainnet: dfx deploy --network ic
- dfx canister --network ic call newwave create_entity "(record { _internalId = null; _creator = null; _entityType = variant {Webasset}; })"
- dfx canister --network ic call newwave get_entity '("C923CD99-92E1-170D-908C-000000000000")'
- dfx canister --network ic call newwave create_bridge '(record { _internalId = null; _creator = null; _entityType = variant {Webasset}; _bridgeType = variant {OwnerCreated}; _fromEntityId = "01A90437-92F8-170D-9F6C-000000000000"; _toEntityId = "C923CD99-92E1-170D-908C-000000000000";  })'
- dfx canister --network ic call newwave get_bridge '("E64582AA-9302-170D-A43D-000000000000")'
- dfx canister --network ic call newwave get_bridge_ids_by_entity_id '("C923CD99-92E1-170D-908C-000000000000", true, true, true)'
-dfx canister --network ic call newwave get_bridges_by_entity_id '("C923CD99-92E1-170D-908C-000000000000", true, true, true)'
-dfx canister --network ic call newwave create_entity_and_bridge '(record { _internalId = null; _creator = null; _entityType = variant {Person}; }, record { _internalId = null; _creator = null; _entityType = variant {Webasset}; _bridgeType = variant {OwnerCreated}; _fromEntityId = "C923CD99-92E1-170D-908C-000000000000"; _toEntityId = "";  })'
- dfx canister --network ic call newwave get_bridged_entities_by_entity_id '("C923CD99-92E1-170D-908C-000000000000", true, true, true)'
- dfx canister --network ic call newwave get_entity_and_bridge_ids '("C923CD99-92E1-170D-908C-000000000000", true, true, true)'
-
-Top up cycles:
-dfx identity --network=ic get-wallet
-dfx wallet --network ic balance
-dfx canister --network ic status newwave
-dfx canister --network ic --wallet 3v5vy-2aaaa-aaaai-aapla-cai deposit-cycles 3000000000000 newwave
-
-2022-11-15: topped up 3.3T cycles, has balance of 7.2T (2023-02-20: basically hasn't changed, 2023-07-05: 7.186)
-
-Fund wallet with cycles (from ICP): https://medium.com/dfinity/internet-computer-basics-part-3-funding-a-cycles-wallet-a724efebd111
-
-## Dev notes
-
-dynamically expand storage canisters: https://github.com/dfinity/examples/tree/master/motoko/classes
-work with subaccounts: https://github.com/krpeacock/invoice-canister 
-
-using Entity type cuts other fields from entities -> flexible input and output format needed
-with Text? like stringifying object and parsing Text to object of entity type
-https://forum.dfinity.org/t/how-do-i-send-a-blob-from-js-frontend-to-motoko-backend/9148/2
-https://itnext.io/typescript-utilities-for-candid-bf5bdd92a9a3
-https://github.com/dfinity/motoko-base/blob/master/src/Blob.mo
-with HashMap? instead of object type use HashMap input and convert key-value pairs to entity type
-https://github.com/dfinity/motoko-base/blob/master/src/HashMap.mo
-having HashMap<Text,Text> as a field on Entity gives error: is or contains non-shared type Text -> ()
-function on Entity to retrieve entityType specific fields (or a static field)
-work with JSON: https://github.com/Toniq-Labs/creator-nfts/blob/main/canisters/nft/main.mo
-UI sends in JSON encoded as Blob: https://github.com/Toniq-Labs/creator-nfts/blob/main/frontend/src/canisters/nft/minting.ts
-potentially String / Text also works (i.e. no en-/decoding) --> work with Text for now, probably change to Blob later (after finding out about its potential benefits)
-
-Generate ID:
-Motoko library with example: https://github.com/aviate-labs/uuid.mo/tree/main/example
-import with vessel package manager: https://github.com/dfinity/vessel
-use synchronous:
-private let rr = XorShift.toReader(XorShift.XorShift64(null));
-	private let c : [Nat8] = [0, 0, 0, 0, 0, 0]; // Replace with identifier of canister f.e.
-	private let se = Source.Source(rr, c);
-    let id = se.new();
-	UUID.toText(id); 
-to get identifier of canister: get canister principal (let canisterId = Principal.fromActor(Invoice);), Principal.toBlob(p), Blob to [Nat8] (https://forum.dfinity.org/t/type-mismatch-in-ledger-canister-and-invoice-canister/13300/4)
-
-## TODOs
-TODO: bug in create_entity_and_bridge: Entity's and Bridge's internalIds are the same
-TODO: bug in create functions: canister's id is taken as owner and creator
-TODO: update and delete functions
-TODO: Replace with identifier of canister f.e.
-TODO: should bridge id be assignable? probably: always assign random id
-TODO: fill as stringified object with fields as listed in listOfEntitySpecificFieldKeys
-TODO: state has to be correctly assigned (e.g. Confirmed if created by Entity owner)
-TODO: define bridge categories
-TODO: determine which category's list/categories' lists in entry to return [multiple]
-TODO: potentially update entityToCreate fields (might vary depending on EntityType)
-TODO: potentially assign final internal_id to Entity (might vary depending on EntityType)
-TODO: possible to return promise? Would this speed up this canister? e.g. try ... : async (async Entity.Entity) [multiple, all files]

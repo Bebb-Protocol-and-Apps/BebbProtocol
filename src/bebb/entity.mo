@@ -119,13 +119,20 @@ module {
   };
 
   /**
+   * Stores the types of resources entity types that are supported
+  */
+  public type EntityTypeResourceTypes = {
+    #Web;
+    #DigitalAsset;
+    #Content;
+  };
+
+  /**
    * The available entity types that can be used to describe an entity
   */
   public type EntityType = {
-    #BridgeEntity;
-    #Webasset;
-    #Person;
-    #Location;
+    #Resource : EntityTypeResourceTypes;
+    #Other : Text;
   };
 
   /**
