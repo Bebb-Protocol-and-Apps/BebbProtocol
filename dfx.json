@@ -1,7 +1,7 @@
 {
   "canisters": {
-    "newwave": {
-      "main": "src/newwave/main.mo",
+    "bebb": {
+      "main": "src/bebb/main.mo",
       "type": "motoko"
     }
   },
