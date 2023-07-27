@@ -237,7 +237,7 @@ actor {
   * @return Either the Entity ID if the call was successful or an error if not
   */
   let oneMB : Nat = 1048576; // 1 MB
-  private let maxPreviewBlobSize : Nat = 5; 
+  private let maxPreviewBlobSize : Nat = 5 * oneMB; 
   private let maxNumPreviews = 5;
   private func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
     var entity = getEntity(entityUpdateObject.id);
