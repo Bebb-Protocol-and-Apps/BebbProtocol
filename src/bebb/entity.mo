@@ -84,6 +84,9 @@ module {
   public type EntityIdErrors = {
     #Unauthorized;
     #EntityNotFound;
+    #TooManyPreviews;
+    // Returns the index of the preview that is too large
+    #PreviewTooLarge : Int;
     #Error;
   };
 
@@ -126,6 +129,35 @@ module {
   };
 
   /**
+   * Stores the supported preview types
+   * Standard types are enumerated to create a standarized preview format.
+   * Unique formats can be stored via the other tag and labelled as such
+  */
+  public type EntityPreviewSupportedTypes = {
+      #Jpg;
+      #Png;
+      #Glb;
+      #Gltf;
+      #Other : Text;
+  };
+
+  /**
+   * Defines the type for the various previews of an entity
+  */
+  public type EntityPreview = {
+    /**
+     * Stores the type of the preview. This is used to determine how to 
+     * render the stored preview data
+    */
+    previewType: EntityPreviewSupportedTypes;
+
+    /**
+     * The actual preview data associated with the preview
+    */
+    previewData: Blob;
+  };
+
+  /**
    * Type that defines the attributes for an Entity
   */
   public type Entity = BaseEntity.BaseEntity and {
@@ -147,6 +179,11 @@ module {
      * Contains all the bridge ids that point to this entity
     */
     toIds : EntityAttachedBridges;
+
+    /**
+     * Stores all the previews that are available for the current entity
+    */
+    previews : [EntityPreview];
   };
 
   /**
@@ -192,6 +229,7 @@ module {
       listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
       toIds : EntityAttachedBridges = [];
       fromIds : EntityAttachedBridges = [];
+      previews : [EntityPreview] = [];
     };
   };
 
@@ -215,6 +253,7 @@ module {
       listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
       fromIds = fromIds;
       toIds = entity.toIds;
+      previews = entity.previews;
     };
   };
 
@@ -238,6 +277,7 @@ module {
       listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
       fromIds = entity.fromIds;
       toIds = toIds;
+      previews = entity.previews;
     };
   };
 
@@ -247,7 +287,7 @@ module {
    *
    * @return The new entity with the values updated with the entity update values
   */
-  public func updateEntityFromUpdateObject(entityUpdateObject : EntityUpdateObject, originalEntity : Entity) : Entity {
+  public func updateEntityFromUpdateObject(entityUpdateObject : EntityUpdateObject, originalEntity : Entity) : Entity { 
     return {
       id = originalEntity.id;
       creationTimestamp = originalEntity.creationTimestamp;
@@ -256,12 +296,15 @@ module {
       settings = Option.get<EntitySettings>(entityUpdateObject.settings, originalEntity.settings);
       entityType = originalEntity.entityType;
       name = Option.get<?Text>(?entityUpdateObject.name, originalEntity.name);
+      // TODO: This isn't working properly. If you keep description null when updating, it will set it back to null and 
+      // not keep it the same value. This is true for name as well. Preview seems to work as expected
       description : ?Text = Option.get<?Text>(?entityUpdateObject.description, originalEntity.description);
       keywords : ?[Text] = Option.get<?[Text]>(?entityUpdateObject.keywords, originalEntity.keywords);
       entitySpecificFields = originalEntity.entitySpecificFields;
       listOfEntitySpecificFieldKeys = originalEntity.listOfEntitySpecificFieldKeys;
       fromIds = originalEntity.fromIds;
       toIds = originalEntity.toIds;
+      previews : [EntityPreview] = Option.get<[EntityPreview]>(entityUpdateObject.previews, originalEntity.previews);
     };
   };
 
@@ -291,6 +334,10 @@ module {
      * The Updated keywords for the entity
     */
     keywords : ?[Text];
+    /**
+     * Used to update the available previews for the entity 
+    */
+    previews : ?[EntityPreview]
   };
 
   /**
