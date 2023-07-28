@@ -130,7 +130,7 @@ module {
       };
       name : Text = Option.get<Text>(initiationObject.name, "");
       description : Text = Option.get<Text>(initiationObject.description, "");
-      keywords : [Text] =  [];
+      keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
       entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
       listOfEntitySpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId"];
       bridgeType : BridgeType = initiationObject.bridgeType;

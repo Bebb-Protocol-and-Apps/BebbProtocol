@@ -26,7 +26,7 @@ module {
         */
         owner : Principal;
         /**
-        * A human readable name? for the entity
+        * A human readable name for the entity
         */
         name : Text;
         /**
