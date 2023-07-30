@@ -19,6 +19,19 @@ dfx start --background
 dfx deploy
 ```
 
+## Different Stages
+Local:
+dfx deploy
+
+Development:
+dfx deploy --network development
+
+Testing:
+dfx deploy --network testing
+
+Production:
+dfx deploy --network ic
+
 ## Testing Backend Changes
 The majority of the changes are tested via the candid backend. To access the Candid backend, after you run
 ```bash

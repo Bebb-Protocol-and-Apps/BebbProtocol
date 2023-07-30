@@ -25,11 +25,14 @@ export const idlFactory = ({ IDL }) => {
     'Err' : BridgeIdErrors,
   });
   const EntitySettings = IDL.Record({});
+  const EntityTypeResourceTypes = IDL.Variant({
+    'Web' : IDL.Null,
+    'DigitalAsset' : IDL.Null,
+    'Content' : IDL.Null,
+  });
   const EntityType = IDL.Variant({
-    'Webasset' : IDL.Null,
-    'BridgeEntity' : IDL.Null,
-    'Person' : IDL.Null,
-    'Location' : IDL.Null,
+    'Other' : IDL.Text,
+    'Resource' : EntityTypeResourceTypes,
   });
   const EntityInitiationObject = IDL.Record({
     'name' : IDL.Opt(IDL.Text),
@@ -41,7 +44,9 @@ export const idlFactory = ({ IDL }) => {
   });
   const EntityIdErrors = IDL.Variant({
     'Error' : IDL.Null,
+    'PreviewTooLarge' : IDL.Int,
     'EntityNotFound' : IDL.Null,
+    'TooManyPreviews' : IDL.Null,
     'Unauthorized' : IDL.Null,
   });
   const EntityIdResult = IDL.Variant({
@@ -55,13 +60,13 @@ export const idlFactory = ({ IDL }) => {
     'fromEntityId' : IDL.Text,
     'owner' : IDL.Principal,
     'creationTimestamp' : IDL.Nat64,
-    'name' : IDL.Opt(IDL.Text),
-    'description' : IDL.Opt(IDL.Text),
-    'keywords' : IDL.Opt(IDL.Vec(IDL.Text)),
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'keywords' : IDL.Vec(IDL.Text),
     'settings' : BridgeSettings,
     'listOfEntitySpecificFieldKeys' : IDL.Vec(IDL.Text),
     'bridgeType' : BridgeType,
-    'entitySpecificFields' : IDL.Opt(IDL.Text),
+    'entitySpecificFields' : IDL.Text,
   });
   const BridgeErrors = IDL.Variant({
     'Error' : IDL.Null,
@@ -81,20 +86,32 @@ export const idlFactory = ({ IDL }) => {
     'linkStatus' : BridgeLinkStatus,
   });
   const EntityAttachedBridges = IDL.Vec(EntityAttachedBridge);
+  const EntityPreviewSupportedTypes = IDL.Variant({
+    'Glb' : IDL.Null,
+    'Jpg' : IDL.Null,
+    'Png' : IDL.Null,
+    'Gltf' : IDL.Null,
+    'Other' : IDL.Text,
+  });
+  const EntityPreview = IDL.Record({
+    'previewData' : IDL.Vec(IDL.Nat8),
+    'previewType' : EntityPreviewSupportedTypes,
+  });
   const Entity = IDL.Record({
     'id' : IDL.Text,
     'creator' : IDL.Principal,
     'toIds' : EntityAttachedBridges,
+    'previews' : IDL.Vec(EntityPreview),
     'owner' : IDL.Principal,
     'creationTimestamp' : IDL.Nat64,
-    'name' : IDL.Opt(IDL.Text),
+    'name' : IDL.Text,
     'fromIds' : EntityAttachedBridges,
-    'description' : IDL.Opt(IDL.Text),
-    'keywords' : IDL.Opt(IDL.Vec(IDL.Text)),
+    'description' : IDL.Text,
+    'keywords' : IDL.Vec(IDL.Text),
     'settings' : EntitySettings,
     'listOfEntitySpecificFieldKeys' : IDL.Vec(IDL.Text),
     'entityType' : EntityType,
-    'entitySpecificFields' : IDL.Opt(IDL.Text),
+    'entitySpecificFields' : IDL.Text,
   });
   const EntityErrors = IDL.Variant({
     'Error' : IDL.Null,
@@ -119,6 +136,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const EntityUpdateObject = IDL.Record({
     'id' : IDL.Text,
+    'previews' : IDL.Opt(IDL.Vec(EntityPreview)),
     'name' : IDL.Opt(IDL.Text),
     'description' : IDL.Opt(IDL.Text),
     'keywords' : IDL.Opt(IDL.Vec(IDL.Text)),
