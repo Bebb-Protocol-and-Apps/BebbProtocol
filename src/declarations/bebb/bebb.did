@@ -5,20 +5,38 @@ type EntityUpdateObject =
    id: text;
    keywords: opt vec text;
    name: opt text;
+   previews: opt vec EntityPreview;
    settings: opt EntitySettings;
+ };
+type EntityTypeResourceTypes = 
+ variant {
+   Content;
+   DigitalAsset;
+   Web;
  };
 type EntityType = 
  variant {
-   BridgeEntity;
-   Location;
-   Person;
-   Webasset;
+   Other: text;
+   Resource: EntityTypeResourceTypes;
  };
 type EntitySettings = record {};
 type EntityResult = 
  variant {
    Err: EntityErrors;
    Ok: Entity;
+ };
+type EntityPreviewSupportedTypes = 
+ variant {
+   Glb;
+   Gltf;
+   Jpg;
+   Other: text;
+   Png;
+ };
+type EntityPreview = 
+ record {
+   previewData: blob;
+   previewType: EntityPreviewSupportedTypes;
  };
 type EntityInitiationObject = 
  record {
@@ -38,6 +56,8 @@ type EntityIdErrors =
  variant {
    EntityNotFound;
    Error;
+   PreviewTooLarge: int;
+   TooManyPreviews;
    Unauthorized;
  };
 type EntityErrors = 
@@ -68,15 +88,16 @@ type Entity =
  record {
    creationTimestamp: nat64;
    creator: principal;
-   description: opt text;
-   entitySpecificFields: opt text;
+   description: text;
+   entitySpecificFields: text;
    entityType: EntityType;
    fromIds: EntityAttachedBridges;
    id: text;
-   keywords: opt vec text;
+   keywords: vec text;
    listOfEntitySpecificFieldKeys: vec text;
-   name: opt text;
+   name: text;
    owner: principal;
+   previews: vec EntityPreview;
    settings: EntitySettings;
    toIds: EntityAttachedBridges;
  };
@@ -138,13 +159,13 @@ type Bridge =
    bridgeType: BridgeType;
    creationTimestamp: nat64;
    creator: principal;
-   description: opt text;
-   entitySpecificFields: opt text;
+   description: text;
+   entitySpecificFields: text;
    fromEntityId: text;
    id: text;
-   keywords: opt vec text;
+   keywords: vec text;
    listOfEntitySpecificFieldKeys: vec text;
-   name: opt text;
+   name: text;
    owner: principal;
    settings: BridgeSettings;
    toEntityId: text;

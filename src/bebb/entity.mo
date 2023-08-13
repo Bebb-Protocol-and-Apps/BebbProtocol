@@ -49,18 +49,18 @@ module {
   */
   public type EntityAttachedBridge = {
     /**
-     * Stores the link status defining the relationship of the bridge as defined by 
+     * Stores the link status defining the relationship of the bridge as defined by
      * the Entity. I.e Did the Entity Owner created the bridge, did the Entity endorse the link etc
     */
-    linkStatus: BridgeLinkStatus;
+    linkStatus : BridgeLinkStatus;
     /**
      * The id of the bridge that is associated with this link
     */
-    id: Text;
+    id : Text;
     /**
      * The time that the bridge was added to the Entity
     */
-    creationTime: Time.Time;
+    creationTime : Time.Time;
     /**
      * Stores the type of the bridge and how the bridge is related to the entity
     */
@@ -119,13 +119,20 @@ module {
   };
 
   /**
+   * Stores the types of resources entity types that are supported
+  */
+  public type EntityTypeResourceTypes = {
+    #Web;
+    #DigitalAsset;
+    #Content;
+  };
+
+  /**
    * The available entity types that can be used to describe an entity
   */
   public type EntityType = {
-    #BridgeEntity;
-    #Webasset;
-    #Person;
-    #Location;
+    #Resource : EntityTypeResourceTypes;
+    #Other : Text;
   };
 
   /**
@@ -134,11 +141,11 @@ module {
    * Unique formats can be stored via the other tag and labelled as such
   */
   public type EntityPreviewSupportedTypes = {
-      #Jpg;
-      #Png;
-      #Glb;
-      #Gltf;
-      #Other : Text;
+    #Jpg;
+    #Png;
+    #Glb;
+    #Gltf;
+    #Other : Text;
   };
 
   /**
@@ -146,15 +153,15 @@ module {
   */
   public type EntityPreview = {
     /**
-     * Stores the type of the preview. This is used to determine how to 
+     * Stores the type of the preview. This is used to determine how to
      * render the stored preview data
     */
-    previewType: EntityPreviewSupportedTypes;
+    previewType : EntityPreviewSupportedTypes;
 
     /**
      * The actual preview data associated with the preview
     */
-    previewData: Blob;
+    previewData : Blob;
   };
 
   /**
@@ -222,10 +229,10 @@ module {
         case (?customSettings) { customSettings };
       };
       entityType : EntityType = initiationObject.entityType;
-      name : ?Text = initiationObject.name;
-      description : ?Text = initiationObject.description;
-      keywords : ?[Text] = initiationObject.keywords;
-      entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
+      name : Text = Option.get<Text>(initiationObject.name, "");
+      description : Text = Option.get<Text>(initiationObject.description, "");
+      keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
+      entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
       listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
       toIds : EntityAttachedBridges = [];
       fromIds : EntityAttachedBridges = [];
@@ -287,7 +294,7 @@ module {
    *
    * @return The new entity with the values updated with the entity update values
   */
-  public func updateEntityFromUpdateObject(entityUpdateObject : EntityUpdateObject, originalEntity : Entity) : Entity { 
+  public func updateEntityFromUpdateObject(entityUpdateObject : EntityUpdateObject, originalEntity : Entity) : Entity {
     return {
       id = originalEntity.id;
       creationTimestamp = originalEntity.creationTimestamp;
@@ -295,11 +302,9 @@ module {
       owner = originalEntity.owner;
       settings = Option.get<EntitySettings>(entityUpdateObject.settings, originalEntity.settings);
       entityType = originalEntity.entityType;
-      name = Option.get<?Text>(?entityUpdateObject.name, originalEntity.name);
-      // TODO: This isn't working properly. If you keep description null when updating, it will set it back to null and 
-      // not keep it the same value. This is true for name as well. Preview seems to work as expected
-      description : ?Text = Option.get<?Text>(?entityUpdateObject.description, originalEntity.description);
-      keywords : ?[Text] = Option.get<?[Text]>(?entityUpdateObject.keywords, originalEntity.keywords);
+      name = Option.get<Text>(entityUpdateObject.name, originalEntity.name);
+      description : Text = Option.get<Text>(entityUpdateObject.description, originalEntity.description);
+      keywords = Option.get<[Text]>(entityUpdateObject.keywords, originalEntity.keywords);
       entitySpecificFields = originalEntity.entitySpecificFields;
       listOfEntitySpecificFieldKeys = originalEntity.listOfEntitySpecificFieldKeys;
       fromIds = originalEntity.fromIds;
@@ -335,22 +340,20 @@ module {
     */
     keywords : ?[Text];
     /**
-     * Used to update the available previews for the entity 
+     * Used to update the available previews for the entity
     */
-    previews : ?[EntityPreview]
+    previews : ?[EntityPreview];
   };
 
   /**
    * Determines the initial link bridge state to apply to the bridge attachment based on the ownership of the bridge
    * and the Entity
   */
-  public func determineBridgeLinkStatus(entity: Entity, bridge: Bridge.Bridge) : BridgeLinkStatus
-  {
-      if (entity.owner == bridge.owner)
-      {
-        return #CreatedOwner;
-      };
+  public func determineBridgeLinkStatus(entity : Entity, bridge : Bridge.Bridge) : BridgeLinkStatus {
+    if (entity.owner == bridge.owner) {
+      return #CreatedOwner;
+    };
 
-      return #CreatedOther;
-  }
+    return #CreatedOther;
+  };
 };

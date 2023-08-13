@@ -8,13 +8,13 @@ export interface Bridge {
   'fromEntityId' : string,
   'owner' : Principal,
   'creationTimestamp' : bigint,
-  'name' : [] | [string],
-  'description' : [] | [string],
-  'keywords' : [] | [Array<string>],
+  'name' : string,
+  'description' : string,
+  'keywords' : Array<string>,
   'settings' : BridgeSettings,
   'listOfEntitySpecificFieldKeys' : Array<string>,
   'bridgeType' : BridgeType,
-  'entitySpecificFields' : [] | [string],
+  'entitySpecificFields' : string,
 }
 export type BridgeErrors = { 'Error' : null } |
   { 'Unauthorized' : string } |
@@ -53,16 +53,17 @@ export interface Entity {
   'id' : string,
   'creator' : Principal,
   'toIds' : EntityAttachedBridges,
+  'previews' : Array<EntityPreview>,
   'owner' : Principal,
   'creationTimestamp' : bigint,
-  'name' : [] | [string],
+  'name' : string,
   'fromIds' : EntityAttachedBridges,
-  'description' : [] | [string],
-  'keywords' : [] | [Array<string>],
+  'description' : string,
+  'keywords' : Array<string>,
   'settings' : EntitySettings,
   'listOfEntitySpecificFieldKeys' : Array<string>,
   'entityType' : EntityType,
-  'entitySpecificFields' : [] | [string],
+  'entitySpecificFields' : string,
 }
 export interface EntityAttachedBridge {
   'id' : string,
@@ -79,7 +80,9 @@ export type EntityErrors = { 'Error' : null } |
   { 'EntityNotFound' : null } |
   { 'Unauthorized' : string };
 export type EntityIdErrors = { 'Error' : null } |
+  { 'PreviewTooLarge' : bigint } |
   { 'EntityNotFound' : null } |
+  { 'TooManyPreviews' : null } |
   { 'Unauthorized' : null };
 export type EntityIdResult = { 'Ok' : string } |
   { 'Err' : EntityIdErrors };
@@ -91,15 +94,26 @@ export interface EntityInitiationObject {
   'entityType' : EntityType,
   'entitySpecificFields' : [] | [string],
 }
+export interface EntityPreview {
+  'previewData' : Uint8Array | number[],
+  'previewType' : EntityPreviewSupportedTypes,
+}
+export type EntityPreviewSupportedTypes = { 'Glb' : null } |
+  { 'Jpg' : null } |
+  { 'Png' : null } |
+  { 'Gltf' : null } |
+  { 'Other' : string };
 export type EntityResult = { 'Ok' : Entity } |
   { 'Err' : EntityErrors };
 export type EntitySettings = {};
-export type EntityType = { 'Webasset' : null } |
-  { 'BridgeEntity' : null } |
-  { 'Person' : null } |
-  { 'Location' : null };
+export type EntityType = { 'Other' : string } |
+  { 'Resource' : EntityTypeResourceTypes };
+export type EntityTypeResourceTypes = { 'Web' : null } |
+  { 'DigitalAsset' : null } |
+  { 'Content' : null };
 export interface EntityUpdateObject {
   'id' : string,
+  'previews' : [] | [Array<EntityPreview>],
   'name' : [] | [string],
   'description' : [] | [string],
   'keywords' : [] | [Array<string>],

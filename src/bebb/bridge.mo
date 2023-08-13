@@ -128,10 +128,10 @@ module {
         case null { BridgeSettings() };
         case (?customSettings) { customSettings };
       };
-      name : ?Text = initiationObject.name;
-      description : ?Text = initiationObject.description;
-      keywords : ?[Text] = initiationObject.keywords;
-      entitySpecificFields : ?Text = initiationObject.entitySpecificFields;
+      name : Text = Option.get<Text>(initiationObject.name, "");
+      description : Text = Option.get<Text>(initiationObject.description, "");
+      keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
+      entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
       listOfEntitySpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId"];
       bridgeType : BridgeType = initiationObject.bridgeType;
       fromEntityId : Text = initiationObject.fromEntityId;
@@ -152,9 +152,9 @@ module {
       creator : Principal = originalBridge.creator;
       owner : Principal = originalBridge.owner;
       settings : BridgeSettings = Option.get<BridgeSettings>(bridgeUpdateObject.settings, originalBridge.settings);
-      name : ?Text = Option.get<?Text>(?bridgeUpdateObject.name, originalBridge.name);
-      description : ?Text = Option.get<?Text>(?bridgeUpdateObject.description, originalBridge.description);
-      keywords : ?[Text] = Option.get<?[Text]>(?bridgeUpdateObject.keywords, originalBridge.keywords);
+      name = Option.get<Text>(bridgeUpdateObject.name, originalBridge.name);
+      description : Text = Option.get<Text>(bridgeUpdateObject.description, originalBridge.description);
+      keywords = Option.get<[Text]>(bridgeUpdateObject.keywords, originalBridge.keywords);
       bridgeType : BridgeType = originalBridge.bridgeType;
       fromEntityId : Text = originalBridge.fromEntityId;
       toEntityId : Text = originalBridge.toEntityId;
