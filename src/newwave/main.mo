@@ -1364,6 +1364,31 @@ actor {
     }
   };
 
+// Migration
+  public shared query func downloadEntitiesStorage() : async [(Text, Entity.Entity)] {
+    return Iter.toArray(entitiesStorage.entries());
+  };
+
+  public shared query func downloadBridgesStorage() : async [(Text, BridgeEntity.BridgeEntity)] {
+    return Iter.toArray(bridgesStorage.entries());
+  };
+
+  public shared query func downloadPendingFromBridgesStorage() : async [(Text, BridgeCategories)] {
+    return Iter.toArray(pendingFromBridgesStorage.entries());
+  };
+
+  public shared query func downloadPendingToBridgesStorage() : async [(Text, BridgeCategories)] {
+    return Iter.toArray(pendingToBridgesStorage.entries());
+  };
+
+  public shared query func downloadFromBridgesStorage() : async [(Text, BridgeCategories)] {
+    return Iter.toArray(fromBridgesStorage.entries());
+  };
+
+  public shared query func downloadToBridgesStorage() : async [(Text, BridgeCategories)] {
+    return Iter.toArray(toBridgesStorage.entries());
+  };
+
 // Upgrade Hooks
   system func preupgrade() {
     entitiesStorageStable := Iter.toArray(entitiesStorage.entries());
