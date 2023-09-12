@@ -631,19 +631,86 @@ actor {
     };
   };
 
+// Migration
+dfx canister install --mode=reinstall
+  public type OldEntityType = {
+      #BridgeEntity;
+      #Webasset;
+      #Person;
+      #Location;
+  };
+  public type OldEntity = {
+    internalId : Text;
+    creationTimestamp : Nat64;
+    creator : Principal;
+    owner : Principal;
+    settings : Entity.EntitySettings;
+    entityType : OldEntityType;
+    name : ?Text;
+    description : ?Text;
+    keywords : ?[Text];
+    externalId : ?Text;
+    entitySpecificFields : ?Text;
+    listOfEntitySpecificFieldKeys : [Text];
+    // resolveRepresentedEntity : () -> T; // if possible, generic return value, otherwise probably Text
+  };
+  type BridgeCategories = { // TODO: define bridge categories, probably import from a dedicated file (BridgeType)
+    ownerCreatedBridges : List.List<Text>;
+    otherBridges : List.List<Text>;
+  };
+  stable var pendingFromBridgesStorageStable : [(Text, BridgeCategories)] = [];
+  var pendingFromBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
+  stable var pendingToBridgesStorageStable : [(Text, BridgeCategories)] = [];
+  var pendingToBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
+  stable var fromBridgesStorageStable : [(Text, BridgeCategories)] = [];
+  var fromBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
+  stable var toBridgesStorageStable : [(Text, BridgeCategories)] = [];
+  var toBridgesStorage : HashMap.HashMap<Text, BridgeCategories> = HashMap.HashMap(0, Text.equal, Text.hash);
+
+
   /*************************************************
               Code related to system upgrades
   *************************************************/
 
+  
   system func preupgrade() {
     entitiesStorageStable := Iter.toArray(entitiesStorage.entries());
     bridgesStorageStable := Iter.toArray(bridgesStorage.entries());
+
+    // Migration
+    pendingFromBridgesStorageStable := Iter.toArray(pendingFromBridgesStorage.entries());
+    pendingToBridgesStorageStable := Iter.toArray(pendingToBridgesStorage.entries());
+    fromBridgesStorageStable := Iter.toArray(fromBridgesStorage.entries());
+    toBridgesStorageStable := Iter.toArray(toBridgesStorage.entries());
   };
 
   system func postupgrade() {
-    entitiesStorage := HashMap.fromIter(Iter.fromArray(entitiesStorageStable), entitiesStorageStable.size(), Text.equal, Text.hash);
+    //entitiesStorage := HashMap.fromIter(Iter.fromArray(entitiesStorageStable), entitiesStorageStable.size(), Text.equal, Text.hash);
     entitiesStorageStable := [];
-    bridgesStorage := HashMap.fromIter(Iter.fromArray(bridgesStorageStable), bridgesStorageStable.size(), Text.equal, Text.hash);
+    //bridgesStorage := HashMap.fromIter(Iter.fromArray(bridgesStorageStable), bridgesStorageStable.size(), Text.equal, Text.hash);
     bridgesStorageStable := [];
+
+    // Migration
+    entitiesStorage := HashMap.HashMap(0, Text.equal, Text.hash);
+    for ((id, oldEntity) in entitiesStorageStable.vals()) {
+      let newEntity = {
+        id = oldEntity.internalId;
+        creationTimestamp = oldEntity.creationTimestamp;
+        creator = oldEntity.creator;
+        owner = oldEntity.owner;
+        settings = Entity.EntitySettings();
+        entityType = #Resource(#Web);
+        name : Text = Option.get<Text>(oldEntity.name, "");
+        description : Text = Option.get<Text>(oldEntity.description, "");
+        keywords : [Text] = Option.get<[Text]>(oldEntity.keywords, []);
+        entitySpecificFields : Text = Option.get<Text>(oldEntity.entitySpecificFields, "");
+        listOfEntitySpecificFieldKeys : [Text] = oldEntity.listOfEntitySpecificFieldKeys;
+        toIds = [];
+        fromIds = [];
+        previews = [];
+      };
+      
+      entitiesStorage.put(oldEntity.internalId, newEntity);
+    };
   };
 };
