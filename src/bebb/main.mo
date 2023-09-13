@@ -631,14 +631,14 @@ actor {
   };
 
 // Migration
-// Force canister update (deletes all data): dfx canister install --mode=reinstall bebb
+// Force canister update (deletes all data): dfx canister install --mode=reinstall bebb --network ic 
 // Commands to check:
   // Entities
-  // should not exist before migration but after (incl. attached Bridges): dfx canister call bebb get_entity '("83D99219-8B46-4624-BC1D-D821671E4CEC")'
-  // should not exist before migration but after (incl. attached Bridges): dfx canister call bebb get_entity '("2BD20745-5BE3-4BF9-9CCE-D97BB88FC071")'
+  // should not exist before migration but after (incl. attached Bridges): dfx canister --network ic call bebb get_entity '("83D99219-8B46-4624-BC1D-D821671E4CEC")'
+  // should not exist before migration but after (incl. attached Bridges): dfx canister --network ic call bebb get_entity '("2BD20745-5BE3-4BF9-9CCE-D97BB88FC071")'
   // Bridges
-  // should not exist before migration but after: dfx canister call bebb get_bridge '("7A44FFFE-E64A-4DC2-89C2-1A84999BEA0D")'
-  // should not exist before migration but after: dfx canister call bebb get_bridge '("5035EFBF-E66F-1718-A31E-000000000000")'
+  // should not exist before migration but after: dfx canister --network ic call bebb get_bridge '("7A44FFFE-E64A-4DC2-89C2-1A84999BEA0D")'
+  // should not exist before migration but after: dfx canister --network ic call bebb get_bridge '("5035EFBF-E66F-1718-A31E-000000000000")'
 // Commands to run:
   // Entities: dfx canister call bebb uploadEntities '[replace with (vec{...})]'
   // Bridges: dfx canister call bebb uploadBridges '[replace with (vec{...})]'
