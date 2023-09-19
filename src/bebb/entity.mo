@@ -27,6 +27,8 @@ import Entity "mo:candb/Entity";
 
 module {
 
+  public type CanDbAttributes = [(Entity.AttributeKey, Entity.AttributeValue)];
+
   /**
    * Types of errors for finding the attached bridges
   */
@@ -249,26 +251,45 @@ module {
    *
    * @return The array with the Entity's attributes
   */
-  public func getEntityAttributesFromEntityObject( entity : Entity ) : Entity {
-    return {
-      id : Text = entityId;
-      creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
-      creator : Principal = caller;
-      owner : Principal = caller;
+  public func getEntityAttributesFromEntityObject( entity : Entity ) : CanDbAttributes {
+    return [
+      ("id", #text(entity.id)),
+      ("creationTimestamp", #int(entity.creationTimestamp)),
+      ("creator", #text(Principal.toText(entity.creator))),
+      ("owner", #text(Principal.toText(entity.owner))),
+      // TODO: settings
+      // TODO: entityType
+      ("name", #text(entity.name)),
+      ("description", #text(entity.description)),
+      ("keywords", #arrayText(entity.keywords)),
+      ("entitySpecificFields", #text(entity.entitySpecificFields)),
+      ("listOfEntitySpecificFieldKeys", #arrayText(entity.listOfEntitySpecificFieldKeys)),
+      // TODO: toIds
+      // TODO: fromIds
+      // TODO: previews      
+    ];
+
+    // for TODOs: these are custom types, probably they can be added as AttributeValueCandyPrimitive (https://github.com/ORIGYN-SA/CanDB/blob/beta/src/Entity.mo#L68C5-L68C33)
+      // this example (meta) could be helpful: https://github.com/ORIGYN-SA/CanDB/blob/beta/examples/singleCanister/customSingle/src/main.mo 
+    /* return {
+      //id : Text = entityId;
+      //creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
+      //creator : Principal = caller;
+      //owner : Principal = caller;
       settings : EntitySettings = switch (initiationObject.settings) {
         case null { EntitySettings() };
         case (?customSettings) { customSettings };
       };
       entityType : EntityType = initiationObject.entityType;
-      name : Text = Option.get<Text>(initiationObject.name, "");
-      description : Text = Option.get<Text>(initiationObject.description, "");
-      keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
-      entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
-      listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
+      //name : Text = Option.get<Text>(initiationObject.name, "");
+      //description : Text = Option.get<Text>(initiationObject.description, "");
+      //keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
+      //entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
+      //listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
       toIds : EntityAttachedBridges = [];
       fromIds : EntityAttachedBridges = [];
       previews : [EntityPreview] = [];
-    };
+    }; */
   };
 
   /**

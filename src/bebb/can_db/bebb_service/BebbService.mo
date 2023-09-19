@@ -7,6 +7,8 @@ import Types "../../Types";
 import Utils "../../Utils";
 import Time "mo:base/Time";
 
+import Entity "mo:candb/Entity";
+
 shared ({ caller = owner }) actor class BebbService({
   // the partition key of this canister
   partitionKey: Text;
@@ -36,6 +38,8 @@ shared ({ caller = owner }) actor class BebbService({
       return await CA.transferCycles(caller);
     };
   };
+
+  public type CanDbEntity = Entity.Entity;
 
   /**
    * Public interface for creating an entity. This will attempt to create the entity and return the id if it does so
@@ -92,7 +96,69 @@ shared ({ caller = owner }) actor class BebbService({
    * @return The entity if it exists, otherwise null
   */
   private func getEntity(entityId : Text) : ?Entity.Entity {
-    let result = entitiesStorage.get(entityId);
-    return result;
+    let entityData = switch(CanDB.get(db, { pk= "entity"; sk = entityId }))  { // TODO: double-check pk and sk
+      case null { null };
+      case (?canDbEntity) { unwrapEntity(canDbEntity)};
+    };
+
+    switch(entityData) {
+      case(?e) ? { e };
+      case null { null };
+    };
+  };
+
+  func unwrapEntity(canDbEntity: CanDbEntity): ?Entity.Entity {
+    let { sk; pk; attributes } = canDbEntity;
+    // TODO: add missing values
+    let idValue = Entity.getAttributeMapValueForKey(attributes, "id");
+    let creationTimestampValue = Entity.getAttributeMapValueForKey(attributes, "creationTimestamp");
+    let creatorValue = Entity.getAttributeMapValueForKey(attributes, "creator");
+    let ownerValue = Entity.getAttributeMapValueForKey(attributes, "owner");
+    // TODO: settings
+    // TODO: entityType
+    let nameValue = Entity.getAttributeMapValueForKey(attributes, "name");
+    let descriptionValue = Entity.getAttributeMapValueForKey(attributes, "description");
+    let keywordsValue = Entity.getAttributeMapValueForKey(attributes, "keywords");
+    let entitySpecificFieldsValue = Entity.getAttributeMapValueForKey(attributes, "entitySpecificFields");
+    let listOfEntitySpecificFieldKeysValue = Entity.getAttributeMapValueForKey(attributes, "listOfEntitySpecificFieldKeys");
+    // TODO: toIds
+    // TODO: fromIds
+    // TODO: previews
+
+    switch(idValue, creationTimestampValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue) {
+      case (
+          ?(#text(id)),
+          ?(#int(creationTimestamp)),
+          ?(#text(creator)),
+          ?(#text(owner)),
+          // TODO: settings
+          // TODO: entityType
+          ?(#text(name)),
+          ?(#text(description)),
+          ?(#arrayText(keywords)),
+          ?(#text(entitySpecificFields)),
+          ?(#arrayText(listOfEntitySpecificFieldKeys)),
+          // TODO: toIds
+          // TODO: fromIds
+          // TODO: previews 
+      ) { ? {
+          id;
+          creationTimestamp;
+          creator = Principal.fromText(creator);
+          owner = Principal.fromText(owner);
+          // TODO: settings
+          // TODO: entityType
+          name;
+          description;
+          keywords;
+          entitySpecificFields;
+          listOfEntitySpecificFieldKeys;
+          // TODO: toIds
+          // TODO: fromIds
+          // TODO: previews 
+        }
+      };
+      case _ { null };
+    };
   };
 }
