@@ -23,6 +23,26 @@ let
       , repo = "https://github.com/aviate-labs/uuid.mo"
       , dependencies = [ "base", "encoding", "io" ]
       },
+      { name = "stable-rbtree"
+      , repo = "https://github.com/canscale/StableRBTree"
+      , version = "v0.6.1"
+      , dependencies = [ "base" ]
+      },
+      { name = "stable-buffer"
+      , repo = "https://github.com/canscale/StableBuffer"
+      , version = "v0.2.0"
+      , dependencies = [ "base" ]
+      },
+      { name = "btree"
+      , repo = "https://github.com/canscale/StableHeapBTreeMap"
+      , version = "v0.3.1"
+      , dependencies = [ "base" ]
+      },
+      { name = "candb"
+      , repo = "git@github.com:canscale/CanDB.git"
+      , version = "beta"
+      , dependencies = [ "base" ]
+      },
     ] : List Package
 
 let

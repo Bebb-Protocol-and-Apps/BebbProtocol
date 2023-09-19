@@ -1,0 +1,10 @@
+[dependencies]
+base = "0.9.3"
+matchers = "https://github.com/kritzcreek/motoko-matchers#v1.2.0"
+rand = "https://github.com/aviate-labs/rand.mo#v0.2.1"
+uuid = "https://github.com/aviate-labs/uuid.mo#88871a6e1801c61ba54d42966f08be0604bb2a2d"
+stable-hash-map = "https://github.com/canscale/StableHashMap#v0.2.1"
+btree = "https://github.com/canscale/StableHeapBTreeMap#v0.3.2"
+stable-rbtree = "https://github.com/canscale/StableRBTree#v0.6.1"
+stablebuffer = "https://github.com/skilesare/StableBuffer#v0.2.0"
+candb = "1.0.2"

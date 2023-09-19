@@ -23,6 +23,8 @@ import Types "Types";
 import BaseEntity "base_entity";
 import Bridge "bridge";
 
+import Entity "mo:candb/Entity";
+
 module {
 
   /**
@@ -219,6 +221,35 @@ module {
     entityId : Text,
     caller : Principal,
   ) : Entity {
+    return {
+      id : Text = entityId;
+      creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
+      creator : Principal = caller;
+      owner : Principal = caller;
+      settings : EntitySettings = switch (initiationObject.settings) {
+        case null { EntitySettings() };
+        case (?customSettings) { customSettings };
+      };
+      entityType : EntityType = initiationObject.entityType;
+      name : Text = Option.get<Text>(initiationObject.name, "");
+      description : Text = Option.get<Text>(initiationObject.description, "");
+      keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
+      entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
+      listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
+      toIds : EntityAttachedBridges = [];
+      fromIds : EntityAttachedBridges = [];
+      previews : [EntityPreview] = [];
+    };
+  };
+
+  /**
+   * This function is used to convert an Entity object 
+   * into an array with the Entity's attributes.
+   * This array is used to store the Entity in CanDB
+   *
+   * @return The array with the Entity's attributes
+  */
+  public func getEntityAttributesFromEntityObject( entity : Entity ) : Entity {
     return {
       id : Text = entityId;
       creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
