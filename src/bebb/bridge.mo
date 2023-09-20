@@ -20,7 +20,12 @@ import Utils "Utils";
 import Types "Types";
 import BaseEntity "base_entity";
 
+import Entity "mo:candb/Entity";
+import CandyTypes "mo:candy/types";
+
 module {
+
+  public type CanDbAttributes = [(Entity.AttributeKey, Entity.AttributeValue)];
 
   /**
    * Defines the errors for the public API when trying to retrieve a Bridge ID
@@ -137,6 +142,32 @@ module {
       fromEntityId : Text = initiationObject.fromEntityId;
       toEntityId : Text = initiationObject.toEntityId;
     };
+  };
+
+  /**
+   * This function is used to convert a Bridge object 
+   * into an array with the Bridge's attributes.
+   * This array is used to store the Bridge in CanDB
+   *
+   * @return The array with the Bridge's attributes
+  */
+  public func getBridgeAttributesFromBridgeObject( bridge : Bridge ) : CanDbAttributes {
+    return [
+      ("id", #text(bridge.id)),
+      ("creationTimestamp", #int(bridge.creationTimestamp)),
+      ("creator", #text(Principal.toText(bridge.creator))),
+      ("owner", #text(Principal.toText(bridge.owner))),
+      ("settings", #candy(bridge.settings)), // TODO: to verify
+      ("entityType", #candy(bridge.entityType)), // TODO: to verify
+      ("name", #text(bridge.name)),
+      ("description", #text(bridge.description)),
+      ("keywords", #arrayText(bridge.keywords)),
+      ("entitySpecificFields", #text(bridge.entitySpecificFields)),
+      ("listOfEntitySpecificFieldKeys", #arrayText(bridge.listOfEntitySpecificFieldKeys)),
+      ("bridgeType", #candy(bridge.bridgeType)), // TODO: to verify
+      ("fromEntityId", #candy(bridge.fromEntityId)), // TODO: to verify
+      ("toEntityId", #candy(bridge.toEntityId)), // TODO: to verify     
+    ];
   };
 
   /**

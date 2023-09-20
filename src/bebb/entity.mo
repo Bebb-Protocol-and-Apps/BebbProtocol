@@ -24,6 +24,7 @@ import BaseEntity "base_entity";
 import Bridge "bridge";
 
 import Entity "mo:candb/Entity";
+import CandyTypes "mo:candy/types";
 
 module {
 
@@ -257,16 +258,16 @@ module {
       ("creationTimestamp", #int(entity.creationTimestamp)),
       ("creator", #text(Principal.toText(entity.creator))),
       ("owner", #text(Principal.toText(entity.owner))),
-      // TODO: settings
-      // TODO: entityType
+      ("settings", #candy(entity.settings)), // TODO: to verify
+      ("entityType", #candy(entity.entityType)), // TODO: to verify
       ("name", #text(entity.name)),
       ("description", #text(entity.description)),
       ("keywords", #arrayText(entity.keywords)),
       ("entitySpecificFields", #text(entity.entitySpecificFields)),
       ("listOfEntitySpecificFieldKeys", #arrayText(entity.listOfEntitySpecificFieldKeys)),
-      // TODO: toIds
-      // TODO: fromIds
-      // TODO: previews      
+      ("toIds", #candy(entity.toIds)), // TODO: to verify
+      ("fromIds", #candy(entity.fromIds)), // TODO: to verify
+      ("previews", #candy(entity.previews)), // TODO: to verify     
     ];
 
     // for TODOs: these are custom types, probably they can be added as AttributeValueCandyPrimitive (https://github.com/ORIGYN-SA/CanDB/blob/beta/src/Entity.mo#L68C5-L68C33)

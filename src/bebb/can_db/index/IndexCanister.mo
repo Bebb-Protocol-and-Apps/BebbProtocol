@@ -44,7 +44,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   // Partition BebbService canisters by the type (Entity, Bridge, File, User) passed in
   public shared({caller = creator}) func createBebbServiceCanisterByType(serviceType: Text): async ?Text {
-    let pk = "type#" # serviceType;
+    let pk = "type#" # serviceType; // TODO: determine exact pk
     let canisterIds = getCanisterIdsIfExists(pk);
     if (canisterIds == []) {
       ?(await createBebbServiceCanister(pk, ?[owner, Principal.fromActor(this)]));
@@ -66,7 +66,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       partitionKey = pk;
       scalingOptions = {
         autoScalingHook = autoScaleBebbServiceCanister;
-        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO: increase?
+        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO: increase (as this seems low)?
         // for auto-scaling testing
         //sizeLimit = #count(3); // Scale out at 3 entities inserted
       };
@@ -77,8 +77,8 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       canisterId = newBebbServiceCanisterPrincipal;
       settings = {
         controllers = controllers;
-        compute_allocation = ?0;
-        memory_allocation = ?0;
+        compute_allocation = ?0; // TODO: change?
+        memory_allocation = ?0; // TODO: change?
         freezing_threshold = ?2592000;
       }
     });
