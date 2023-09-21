@@ -14,6 +14,9 @@ import SourceAsync "mo:uuid/async/SourceV4";
 //import AsyncSource "mo:uuid/async/SourceV4";
 import XorShift "mo:rand/XorShift";
 
+import ULID "mo:ulid/ULID";
+import UlidSource "mo:ulid/async/Source";
+
 module {
   public func newUniqueId() : Text {
     let rr = XorShift.toReader(XorShift.XorShift64(null));
@@ -26,5 +29,10 @@ module {
   public func newRandomUniqueId() : async Text {
     let g = SourceAsync.Source();
     UUID.toText(await g.new());
+	};
+
+  public func newRandomUlid() : async Text {
+    let e = UlidSource.Source(1);
+    ULID.toText(await e.new());
 	};
 }

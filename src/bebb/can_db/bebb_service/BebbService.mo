@@ -97,7 +97,7 @@ shared ({ caller = owner }) actor class BebbService({
   private func createEntity(caller : Principal, entityToCreate : Entity.EntityInitiationObject) : async Text {
     // Find a unique id for the new entity that will not
     // conflict with any current items
-    let newEntityId : Text = await Utils.newRandomUniqueId(); // TODO: via ULID
+    let newEntityId : Text = await Utils.newRandomUlid();
     let entity = Entity.generateEntityFromInitializationObject(entityToCreate, newEntityId, caller);
     return putEntity(entity);
   };
@@ -256,7 +256,7 @@ shared ({ caller = owner }) actor class BebbService({
 
     // Find a unique id for the new bridge that will not
     // conflict with any current items
-    var newBridgeId : Text = await Utils.newRandomUniqueId(); // TODO: via ULID
+    var newBridgeId : Text = await Utils.newRandomUlid();
     let bridge : Bridge.Bridge = Bridge.generateBridgeFromInitializationObject(bridgeToCreate, newBridgeId, caller);
     return addNewBridge(bridge);
   };
