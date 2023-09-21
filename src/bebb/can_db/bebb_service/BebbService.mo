@@ -7,7 +7,7 @@ import Types "../../Types";
 import Utils "../../Utils";
 import Time "mo:base/Time";
 
-import Entity "mo:candb/Entity";
+import CanDbEntity "mo:candb/Entity";
 
 shared ({ caller = owner }) actor class BebbService({
   // the partition key of this canister
@@ -38,8 +38,6 @@ shared ({ caller = owner }) actor class BebbService({
       return await CA.transferCycles(caller);
     };
   };
-
-  public type CanDbEntity = Entity.Entity;
 
   /*************************************************
           Public Interface for Entities
@@ -98,7 +96,7 @@ shared ({ caller = owner }) actor class BebbService({
     // Find a unique id for the new entity that will not
     // conflict with any current items
     let newEntityId : Text = await Utils.newRandomUlid();
-    let entity = Entity.generateEntityFromInitializationObject(entityToCreate, newEntityId, caller);
+    let entity = CanDbEntity.generateEntityFromInitializationObject(entityToCreate, newEntityId, caller);
     return putEntity(entity);
   };
 
@@ -135,23 +133,23 @@ shared ({ caller = owner }) actor class BebbService({
     };
   };
 
-  func unwrapEntity(canDbEntity: CanDbEntity): ?Entity.Entity {
+  func unwrapEntity(canDbEntity: CanDbEntity.Entity): ?Entity.Entity {
     let { sk; pk; attributes } = canDbEntity;
 
-    let idValue = Entity.getAttributeMapValueForKey(attributes, "id");
-    let creationTimestampValue = Entity.getAttributeMapValueForKey(attributes, "creationTimestamp");
-    let creatorValue = Entity.getAttributeMapValueForKey(attributes, "creator");
-    let ownerValue = Entity.getAttributeMapValueForKey(attributes, "owner");
-    let settingsValue = Entity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
-    let entityTypeValue = Entity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
-    let nameValue = Entity.getAttributeMapValueForKey(attributes, "name");
-    let descriptionValue = Entity.getAttributeMapValueForKey(attributes, "description");
-    let keywordsValue = Entity.getAttributeMapValueForKey(attributes, "keywords");
-    let entitySpecificFieldsValue = Entity.getAttributeMapValueForKey(attributes, "entitySpecificFields");
-    let listOfEntitySpecificFieldKeysValue = Entity.getAttributeMapValueForKey(attributes, "listOfEntitySpecificFieldKeys");
-    let toIdsValue = Entity.getAttributeMapValueForKey(attributes, "toIds"); // TODO: to verify
-    let fromIdsValue = Entity.getAttributeMapValueForKey(attributes, "fromIds"); // TODO: to verify
-    let previewsValue = Entity.getAttributeMapValueForKey(attributes, "previews"); // TODO: to verify
+    let idValue = CanDbEntity.getAttributeMapValueForKey(attributes, "id");
+    let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
+    let creatorValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creator");
+    let ownerValue = CanDbEntity.getAttributeMapValueForKey(attributes, "owner");
+    let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
+    let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
+    let nameValue = CanDbEntity.getAttributeMapValueForKey(attributes, "name");
+    let descriptionValue = CanDbEntity.getAttributeMapValueForKey(attributes, "description");
+    let keywordsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "keywords");
+    let entitySpecificFieldsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entitySpecificFields");
+    let listOfEntitySpecificFieldKeysValue = CanDbEntity.getAttributeMapValueForKey(attributes, "listOfEntitySpecificFieldKeys");
+    let toIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toIds"); // TODO: to verify
+    let fromIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromIds"); // TODO: to verify
+    let previewsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "previews"); // TODO: to verify
 
     switch(idValue, creationTimestampValue, creatorValue, ownerValue, settingsValue, entityTypeValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue, toIdsValue, fromIdsValue, previewsValue) {
       case (
@@ -334,7 +332,7 @@ shared ({ caller = owner }) actor class BebbService({
       };
       case (?retrievedEntity) {
         let newEntityAttachedBridge = {
-          linkStatus=Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+          linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
           id=bridge.id;
           creationTime = Time.now();
           bridgeType = bridge.bridgeType;
@@ -363,7 +361,7 @@ shared ({ caller = owner }) actor class BebbService({
       };
       case (?retrievedEntity) {
          let newEntityAttachedBridge = {
-          linkStatus=Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+          linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
           id=bridge.id;
           creationTime = Time.now();
           bridgeType = bridge.bridgeType;
@@ -392,23 +390,23 @@ shared ({ caller = owner }) actor class BebbService({
     };
   };
 
-  func unwrapBridge(canDbEntity: CanDbEntity): ?Bridge.Bridge {
+  func unwrapBridge(canDbEntity: CanDbEntity.Entity): ?Bridge.Bridge {
     let { sk; pk; attributes } = canDbEntity;
 
-    let idValue = Entity.getAttributeMapValueForKey(attributes, "id");
-    let creationTimestampValue = Entity.getAttributeMapValueForKey(attributes, "creationTimestamp");
-    let creatorValue = Entity.getAttributeMapValueForKey(attributes, "creator");
-    let ownerValue = Entity.getAttributeMapValueForKey(attributes, "owner");
-    let settingsValue = Entity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
-    let entityTypeValue = Entity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
-    let nameValue = Entity.getAttributeMapValueForKey(attributes, "name");
-    let descriptionValue = Entity.getAttributeMapValueForKey(attributes, "description");
-    let keywordsValue = Entity.getAttributeMapValueForKey(attributes, "keywords");
-    let entitySpecificFieldsValue = Entity.getAttributeMapValueForKey(attributes, "entitySpecificFields");
-    let listOfEntitySpecificFieldKeysValue = Entity.getAttributeMapValueForKey(attributes, "listOfEntitySpecificFieldKeys");
-    let bridgeTypeValue = Entity.getAttributeMapValueForKey(attributes, "bridgeType"); // TODO: to verify
-    let fromEntityIdValue = Entity.getAttributeMapValueForKey(attributes, "fromEntityId"); // TODO: to verify
-    let toEntityIdValue = Entity.getAttributeMapValueForKey(attributes, "toEntityId"); // TODO: to verify
+    let idValue = CanDbEntity.getAttributeMapValueForKey(attributes, "id");
+    let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
+    let creatorValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creator");
+    let ownerValue = CanDbEntity.getAttributeMapValueForKey(attributes, "owner");
+    let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
+    let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
+    let nameValue = CanDbEntity.getAttributeMapValueForKey(attributes, "name");
+    let descriptionValue = CanDbEntity.getAttributeMapValueForKey(attributes, "description");
+    let keywordsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "keywords");
+    let entitySpecificFieldsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entitySpecificFields");
+    let listOfEntitySpecificFieldKeysValue = CanDbEntity.getAttributeMapValueForKey(attributes, "listOfEntitySpecificFieldKeys");
+    let bridgeTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "bridgeType"); // TODO: to verify
+    let fromEntityIdValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromEntityId"); // TODO: to verify
+    let toEntityIdValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toEntityId"); // TODO: to verify
 
     switch(idValue, creationTimestampValue, creatorValue, ownerValue, settingsValue, entityTypeValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue, bridgeTypeValue, fromEntityIdValue, toEntityIdValue) {
       case (
@@ -476,6 +474,5 @@ shared ({ caller = owner }) actor class BebbService({
       case (entity) { return true };
     };
   };
-
 
 }

@@ -23,12 +23,12 @@ import Types "Types";
 import BaseEntity "base_entity";
 import Bridge "bridge";
 
-import Entity "mo:candb/Entity";
+import CanDbEntity "mo:candb/Entity";
 import CandyTypes "mo:candy/types";
 
 module {
 
-  public type CanDbAttributes = [(Entity.AttributeKey, Entity.AttributeValue)];
+  public type CanDbAttributes = [(CanDbEntity.AttributeKey, CanDbEntity.AttributeValue)];
 
   /**
    * Types of errors for finding the attached bridges

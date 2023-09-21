@@ -20,12 +20,12 @@ import Utils "Utils";
 import Types "Types";
 import BaseEntity "base_entity";
 
-import Entity "mo:candb/Entity";
+import CanDbEntity "mo:candb/Entity";
 import CandyTypes "mo:candy/types";
 
 module {
 
-  public type CanDbAttributes = [(Entity.AttributeKey, Entity.AttributeValue)];
+  public type CanDbAttributes = [(CanDbEntity.AttributeKey, CanDbEntity.AttributeValue)];
 
   /**
    * Defines the errors for the public API when trying to retrieve a Bridge ID
