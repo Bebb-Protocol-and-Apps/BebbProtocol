@@ -157,13 +157,13 @@ shared ({ caller = owner }) actor class BebbService({
           ?(#int(creationTimestamp)),
           ?(#text(creator)),
           ?(#text(owner)),
-          ?(#candy(settings)), // TODO: to verify
-          ?(#candy(entityType)), // TODO: to verify
           ?(#text(name)),
           ?(#text(description)),
           ?(#arrayText(keywords)),
           ?(#text(entitySpecificFields)),
           ?(#arrayText(listOfEntitySpecificFieldKeys)),
+          ?(#candy(settings)), // TODO: to verify
+          ?(#candy(entityType)), // TODO: to verify
           ?(#candy(toIds)), // TODO: to verify
           ?(#candy(fromIds)), // TODO: to verify
           ?(#candy(previews)), // TODO: to verify
@@ -172,13 +172,13 @@ shared ({ caller = owner }) actor class BebbService({
           creationTimestamp;
           creator = Principal.fromText(creator);
           owner = Principal.fromText(owner);
-          settings;
-          entityType;
           name;
           description;
           keywords;
           entitySpecificFields;
           listOfEntitySpecificFieldKeys;
+          settings; // TODO: to verify
+          entityType; // TODO: to verify
           toIds; // TODO: to verify
           fromIds; // TODO: to verify
           previews; // TODO: to verify
@@ -414,31 +414,29 @@ shared ({ caller = owner }) actor class BebbService({
           ?(#int(creationTimestamp)),
           ?(#text(creator)),
           ?(#text(owner)),
-          ?(#candy(settings)), // TODO: to verify
-          ?(#candy(entityType)), // TODO: to verify
           ?(#text(name)),
           ?(#text(description)),
           ?(#arrayText(keywords)),
           ?(#text(entitySpecificFields)),
           ?(#arrayText(listOfEntitySpecificFieldKeys)),
+          ?(#candy(settings)), // TODO: to verify
           ?(#candy(bridgeType)), // TODO: to verify
-          ?(#candy(fromEntityId)), // TODO: to verify
-          ?(#candy(toEntityId)), // TODO: to verify
+          ?(#text(fromEntityId)),
+          ?(#text(toEntityId)),
       ) { ? {
           id;
           creationTimestamp;
           creator = Principal.fromText(creator);
           owner = Principal.fromText(owner);
-          settings;
-          entityType;
           name;
           description;
           keywords;
           entitySpecificFields;
           listOfEntitySpecificFieldKeys;
+          settings; // TODO: to verify
           bridgeType; // TODO: to verify
-          fromEntityId; // TODO: to verify
-          toEntityId; // TODO: to verify
+          fromEntityId;
+          toEntityId;
         }
       };
       case _ { null };

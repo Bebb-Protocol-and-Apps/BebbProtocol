@@ -152,21 +152,29 @@ module {
    * @return The array with the Bridge's attributes
   */
   public func getBridgeAttributesFromBridgeObject( bridge : Bridge ) : CanDbAttributes {
+    // https://mops.one/candy/docs/properties
+    // https://mops.one/candy/docs/conversion
+      // see e.g. propertySharedToText
+    let prop: [CandyTypes.PropertyShared] = [{
+      name = "name";
+      value = #Principal(Principal.fromText("abc"));
+      immutable = true;
+    }];
     return [
       ("id", #text(bridge.id)),
-      ("creationTimestamp", #int(bridge.creationTimestamp)),
+      ("creationTimestamp", #int(Nat64.toNat(bridge.creationTimestamp))),
       ("creator", #text(Principal.toText(bridge.creator))),
       ("owner", #text(Principal.toText(bridge.owner))),
-      ("settings", #candy(bridge.settings)), // TODO: to verify
-      ("entityType", #candy(bridge.entityType)), // TODO: to verify
       ("name", #text(bridge.name)),
       ("description", #text(bridge.description)),
       ("keywords", #arrayText(bridge.keywords)),
       ("entitySpecificFields", #text(bridge.entitySpecificFields)),
       ("listOfEntitySpecificFieldKeys", #arrayText(bridge.listOfEntitySpecificFieldKeys)),
+      ("settings", #candy(bridge.settings)), // TODO: to verify
       ("bridgeType", #candy(bridge.bridgeType)), // TODO: to verify
-      ("fromEntityId", #candy(bridge.fromEntityId)), // TODO: to verify
-      ("toEntityId", #candy(bridge.toEntityId)), // TODO: to verify     
+      ("fromEntityId", #text(bridge.fromEntityId)),
+      ("toEntityId", #text(bridge.toEntityId)),
+      ("test", #candy(#Class(prop))), //This does not show a type error (TODO: remove)
     ];
   };
 
