@@ -98,8 +98,8 @@ shared ({ caller = owner }) actor class BebbService({
     // Find a unique id for the new entity that will not
     // conflict with any current items
     let newEntityId : Text = await Utils.newRandomUlid();
-    let entity = CanDbEntity.generateEntityFromInitializationObject(entityToCreate, newEntityId, caller);
-    return putEntity(entity);
+    let entity = Entity.generateEntityFromInitializationObject(entityToCreate, newEntityId, caller);
+    return await putEntity(entity);
   };
 
   /**
@@ -108,10 +108,10 @@ shared ({ caller = owner }) actor class BebbService({
    *
    * @return The entity id of the stored entity
   */
-  private func putEntity(entity : Entity.Entity) : Text {
+  private func putEntity(entity : Entity.Entity) : async Text {
     let entityAttributes = Entity.getEntityAttributesFromEntityObject(entity);
     await* CanDB.put(db, {
-      sk = newEntityId;
+      sk = entity.id;
       attributes = entityAttributes;
     });
     return entity.id;
@@ -130,7 +130,7 @@ shared ({ caller = owner }) actor class BebbService({
     };
 
     switch(entityData) {
-      case(?e) ? { e };
+      case(?e) { ?e };
       case null { null };
     };
   };
@@ -153,7 +153,7 @@ shared ({ caller = owner }) actor class BebbService({
     // let fromIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromIds"); // TODO: to verify
     // let previewsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "previews"); // TODO: to verify
 
-    switch(idValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValu) {
+    switch(idValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue) {
       case (
           ?(#text(id)),
           // ?(#int(creationTimestamp)),
@@ -250,15 +250,15 @@ shared ({ caller = owner }) actor class BebbService({
     // let toEntityExists = checkIfEntityExists(bridgeToCreate.toEntityId);
     // let fromEntityExists = checkIfEntityExists(bridgeToCreate.fromEntityId);
 
-    if (toEntityExists == false or fromEntityExists == false) {
-      return null;
-    };
+    // if (toEntityExists == false or fromEntityExists == false) {
+    //   return null;
+    // };
 
     // Find a unique id for the new bridge that will not
     // conflict with any current items
     var newBridgeId : Text = await Utils.newRandomUlid();
     let bridge : Bridge.Bridge = Bridge.generateBridgeFromInitializationObject(bridgeToCreate, newBridgeId, caller);
-    return addNewBridge(bridge);
+    return await addNewBridge(bridge);
   };
 
   /**
@@ -269,7 +269,7 @@ shared ({ caller = owner }) actor class BebbService({
    * @return Returns null if the entitiy failed to get created, otherwise it returns
    * the bridge id of the newly created bridge
   */
-  private func addNewBridge(bridge : Bridge.Bridge) : ?Text {
+  private func addNewBridge(bridge : Bridge.Bridge) : async ?Text {
     // Don't allow creating the bridge if the bridge already exists
       // TODO: needs to be changed
     if (checkIfBridgeExists(bridge.id) == true) {
@@ -277,7 +277,7 @@ shared ({ caller = owner }) actor class BebbService({
     };
 
     // Add the bridge of the bridge database and add the bridge id to the related entities
-    let result = putBridge(bridge);
+    let result = await putBridge(bridge);
 
     // If the from id result fails, then just delete the bridge but no connections were added
       // TODO: needs to be changed
@@ -308,7 +308,7 @@ shared ({ caller = owner }) actor class BebbService({
    *
    * @return The newly created bridge
   */
-  private func putBridge(bridge : Bridge.Bridge) : Bridge.Bridge {
+  private func putBridge(bridge : Bridge.Bridge): async Bridge.Bridge {
     let bridgeAttributes = Bridge.getBridgeAttributesFromBridgeObject(bridge);
     await* CanDB.put(db, {
       sk = bridge.id;
@@ -381,13 +381,13 @@ shared ({ caller = owner }) actor class BebbService({
    * @return The bridge if it is found or null if not found
   */
   private func getBridge(bridgeId : Text) : ?Bridge.Bridge {
-    let bridgeData = switch(CanDB.get(db, { pk= "bridge"; sk = bridgeId }))  { // TODO: double-check pk and sk
+    let bridgeData = switch(CanDB.get(db, { sk = bridgeId }))  { // TODO: double-check pk and sk
       case null { null };
       case (?canDbEntity) { unwrapBridge(canDbEntity)};
     };
 
     switch(bridgeData) {
-      case(?b) ? { b };
+      case(?b)  { ?b };
       case null { null };
     };
   };
