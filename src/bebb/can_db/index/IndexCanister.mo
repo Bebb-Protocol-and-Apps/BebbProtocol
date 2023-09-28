@@ -1,9 +1,12 @@
 import Error "mo:base/Error";
 import Text "mo:base/Text";
 import Debug "mo:base/Debug";
+import Principal "mo:base/Principal";
 import Utils "mo:candb/Utils";
 import CanisterMap "mo:candb/CanisterMap";
 import Buffer "mo:stablebuffer/StableBuffer";
+import Cycles "mo:base/ExperimentalCycles";
+import CA "mo:candb/CanisterActions";
 
 import BebbService "../bebb_service/BebbService";
 

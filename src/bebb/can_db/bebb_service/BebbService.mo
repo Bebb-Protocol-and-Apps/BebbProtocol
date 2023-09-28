@@ -70,7 +70,7 @@ shared ({ caller = owner }) actor class BebbService({
   */
   public shared query ({ caller }) func get_entity(entityId : Text) : async Entity.EntityResult {
     if (partitionKey != "entity") {
-      return #Err(#Unauthorized);
+      return #Err(#Unauthorized("Wrong Partition"));
     };
     let result = getEntity(entityId);
     switch (result) {
@@ -217,7 +217,7 @@ shared ({ caller = owner }) actor class BebbService({
   */
   public shared query ({ caller }) func get_bridge(bridgeId : Text) : async Bridge.BridgeResult {
     if (partitionKey != "bridge") {
-      return #Err(#Unauthorized);
+      return #Err(#Unauthorized("Wrong Partition"));
     };
     let result = getBridge(bridgeId);
     switch (result) {
