@@ -8,6 +8,7 @@ import Utils "../../Utils";
 import Time "mo:base/Time";
 import Principal "mo:base/Principal";
 import Nat64 "mo:base/Nat64";
+import Option "mo:base/Option";
 
 import CanDbEntity "mo:candb/Entity";
 
@@ -139,24 +140,24 @@ shared ({ caller = owner }) actor class BebbService({
     let { sk; pk; attributes } = canDbEntity;
 
     let idValue = CanDbEntity.getAttributeMapValueForKey(attributes, "id");
-    // let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
+    let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
     let creatorValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creator");
     let ownerValue = CanDbEntity.getAttributeMapValueForKey(attributes, "owner");
-    // let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
-    // let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
     let nameValue = CanDbEntity.getAttributeMapValueForKey(attributes, "name");
     let descriptionValue = CanDbEntity.getAttributeMapValueForKey(attributes, "description");
     let keywordsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "keywords");
     let entitySpecificFieldsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entitySpecificFields");
     let listOfEntitySpecificFieldKeysValue = CanDbEntity.getAttributeMapValueForKey(attributes, "listOfEntitySpecificFieldKeys");
-    // let toIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toIds"); // TODO: to verify
-    // let fromIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromIds"); // TODO: to verify
-    // let previewsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "previews"); // TODO: to verify
+    let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings");
+    let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType");
+    let toIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toIds");
+    let fromIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromIds");
+    let previewsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "previews");
 
-    switch(idValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue) {
+    switch(idValue, creationTimestampValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue, settingsValue, entityTypeValue, toIdsValue, fromIdsValue, previewsValue) {
       case (
           ?(#text(id)),
-          // ?(#int(creationTimestamp)),
+          ?(#int(creationTimestamp)),
           ?(#text(creator)),
           ?(#text(owner)),
           ?(#text(name)),
@@ -164,14 +165,14 @@ shared ({ caller = owner }) actor class BebbService({
           ?(#arrayText(keywords)),
           ?(#text(entitySpecificFields)),
           ?(#arrayText(listOfEntitySpecificFieldKeys)),
-          // ?(#candy(settings)), // TODO: to verify
-          // ?(#candy(entityType)), // TODO: to verify
-          // ?(#candy(toIds)), // TODO: to verify
-          // ?(#candy(fromIds)), // TODO: to verify
-          // ?(#candy(previews)), // TODO: to verify
+          ?(#blob(settings)),
+          ?(#blob(entityType)),
+          ?(#blob(toIds)),
+          ?(#blob(fromIds)),
+          ?(#blob(previews)),
       ) { ? {
           id;
-          // creationTimestamp;
+          creationTimestamp = Nat64.fromIntWrap(creationTimestamp);
           creator = Principal.fromText(creator);
           owner = Principal.fromText(owner);
           name;
@@ -179,11 +180,11 @@ shared ({ caller = owner }) actor class BebbService({
           keywords;
           entitySpecificFields;
           listOfEntitySpecificFieldKeys;
-          // settings; // TODO: to verify
-          // entityType; // TODO: to verify
-          // toIds; // TODO: to verify
-          // fromIds; // TODO: to verify
-          // // previews; // TODO: to verify
+          settings = Option.get<Entity.EntitySettings>(from_candid(settings), Entity.EntitySettings()); // TODO: while the null case shouldn't happen, this is also a bad way of handling it
+          entityType = Option.get<Entity.EntityType>(from_candid(entityType), #Other("Autofilled in unwrapEntity")); // TODO: while the null case shouldn't happen, this is also a bad way of handling it
+          toIds = Option.get<Entity.EntityAttachedBridges>(from_candid(toIds), []); // TODO: while the null case shouldn't happen, this is also a bad way of handling it
+          fromIds = Option.get<Entity.EntityAttachedBridges>(from_candid(fromIds), []); // TODO: while the null case shouldn't happen, this is also a bad way of handling it
+          previews = Option.get<[Entity.EntityPreview]>(from_candid(previews), []); // TODO: while the null case shouldn't happen, this is also a bad way of handling it
         }
       };
       case _ { null };
@@ -396,24 +397,23 @@ shared ({ caller = owner }) actor class BebbService({
     let { sk; pk; attributes } = canDbEntity;
 
     let idValue = CanDbEntity.getAttributeMapValueForKey(attributes, "id");
-    // let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
+    let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
     let creatorValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creator");
     let ownerValue = CanDbEntity.getAttributeMapValueForKey(attributes, "owner");
-    // let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
-    // let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
     let nameValue = CanDbEntity.getAttributeMapValueForKey(attributes, "name");
     let descriptionValue = CanDbEntity.getAttributeMapValueForKey(attributes, "description");
     let keywordsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "keywords");
     let entitySpecificFieldsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entitySpecificFields");
     let listOfEntitySpecificFieldKeysValue = CanDbEntity.getAttributeMapValueForKey(attributes, "listOfEntitySpecificFieldKeys");
-    let bridgeTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "bridgeType"); // TODO: to verify
-    let fromEntityIdValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromEntityId"); // TODO: to verify
-    let toEntityIdValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toEntityId"); // TODO: to verify
+    let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings");
+    let bridgeTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "bridgeType");
+    let fromEntityIdValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromEntityId");
+    let toEntityIdValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toEntityId");
 
-    switch(idValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue, fromEntityIdValue, toEntityIdValue) {
+    switch(idValue, creationTimestampValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue, settingsValue, bridgeTypeValue, fromEntityIdValue, toEntityIdValue) {
       case (
           ?(#text(id)),
-          // ?(#Nat64(creationTimestamp)),
+          ?(#int(creationTimestamp)),
           ?(#text(creator)),
           ?(#text(owner)),
           ?(#text(name)),
@@ -421,13 +421,13 @@ shared ({ caller = owner }) actor class BebbService({
           ?(#arrayText(keywords)),
           ?(#text(entitySpecificFields)),
           ?(#arrayText(listOfEntitySpecificFieldKeys)),
-          // ?(#candy(settings)), // TODO: to verify
-          // ?(#candy(bridgeType)), // TODO: to verify
+          ?(#blob(settings)),
+          ?(#blob(bridgeType)),
           ?(#text(fromEntityId)),
           ?(#text(toEntityId)),
       ) { ? {
           id;
-          // creationTimestamp;
+          creationTimestamp = Nat64.fromIntWrap(creationTimestamp);
           creator = Principal.fromText(creator);
           owner = Principal.fromText(owner);
           name;
@@ -435,8 +435,8 @@ shared ({ caller = owner }) actor class BebbService({
           keywords;
           entitySpecificFields;
           listOfEntitySpecificFieldKeys;
-          // settings; // TODO: to verify
-          // bridgeType; // TODO: to verify
+          settings = Option.get<Bridge.BridgeSettings>(from_candid(settings), Bridge.BridgeSettings()); // TODO: while the null case shouldn't happen, this is also a bad way of handling it
+          bridgeType = Option.get<Bridge.BridgeType>(from_candid(bridgeType), #IsRelatedto); // TODO: while the null case shouldn't happen, this is also a bad way of handling it
           fromEntityId;
           toEntityId;
         }

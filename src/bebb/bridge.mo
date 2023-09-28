@@ -81,11 +81,11 @@ module {
     /**
      * Settings for the bridge
     */
-    // settings : BridgeSettings;
+    settings : BridgeSettings;
     /**
      * The type of the bridge
     */
-    // bridgeType : BridgeType;
+    bridgeType : BridgeType;
     /**
      * The entity ID that specifies the starting entity for the bridge
     */
@@ -102,11 +102,11 @@ module {
    * created by Bebb
   */
   public type BridgeInitiationObject = {
-    // settings : ?BridgeSettings;
+    settings : ?BridgeSettings;
     name : ?Text;
     description : ?Text;
     keywords : ?[Text];
-    // bridgeType : BridgeType;
+    bridgeType : BridgeType;
     fromEntityId : Text;
     toEntityId : Text;
     entitySpecificFields : ?Text;
@@ -126,19 +126,19 @@ module {
   ) : Bridge {
     return {
       id : Text = id;
-      // creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
+      creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
       creator : Principal = caller;
       owner : Principal = caller;
-      // settings : BridgeSettings = switch (initiationObject.settings) {
-      //   case null { BridgeSettings() };
-      //   case (?customSettings) { customSettings };
-      // };
       name : Text = Option.get<Text>(initiationObject.name, "");
       description : Text = Option.get<Text>(initiationObject.description, "");
       keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
       entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
       listOfEntitySpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId"];
-      // bridgeType : BridgeType = initiationObject.bridgeType;
+      settings : BridgeSettings = switch (initiationObject.settings) {
+        case null { BridgeSettings() };
+        case (?customSettings) { customSettings };
+      };
+      bridgeType : BridgeType = initiationObject.bridgeType;
       fromEntityId : Text = initiationObject.fromEntityId;
       toEntityId : Text = initiationObject.toEntityId;
     };
@@ -162,7 +162,7 @@ module {
     }];
     return [
       ("id", #text(bridge.id)),
-      // ("creationTimestamp", #int(Nat64.toNat(bridge.creationTimestamp))),
+      ("creationTimestamp", #int(Nat64.toNat(bridge.creationTimestamp))),
       ("creator", #text(Principal.toText(bridge.creator))),
       ("owner", #text(Principal.toText(bridge.owner))),
       ("name", #text(bridge.name)),
@@ -170,11 +170,10 @@ module {
       ("keywords", #arrayText(bridge.keywords)),
       ("entitySpecificFields", #text(bridge.entitySpecificFields)),
       ("listOfEntitySpecificFieldKeys", #arrayText(bridge.listOfEntitySpecificFieldKeys)),
-      // ("settings", #candy(bridge.settings)), // TODO: to verify
-      // ("bridgeType", #candy(bridge.bridgeType)), // TODO: to verify
+      ("settings", #blob(to_candid(bridge.settings))),
+      ("bridgeType", #blob(to_candid(bridge.bridgeType))),
       ("fromEntityId", #text(bridge.fromEntityId)),
       ("toEntityId", #text(bridge.toEntityId)),
-      // ("test", #candy(#Class(prop))), //This does not show a type error (TODO: remove)
     ];
   };
 
@@ -187,14 +186,14 @@ module {
   public func updateBridgeFromUpdateObject(bridgeUpdateObject : BridgeUpdateObject, originalBridge : Bridge) : Bridge {
     return {
       id : Text = originalBridge.id;
-      // creationTimestamp : Nat64 = originalBridge.creationTimestamp;
+      creationTimestamp : Nat64 = originalBridge.creationTimestamp;
       creator : Principal = originalBridge.creator;
       owner : Principal = originalBridge.owner;
-      // settings : BridgeSettings = Option.get<BridgeSettings>(bridgeUpdateObject.settings, originalBridge.settings);
+      settings : BridgeSettings = Option.get<BridgeSettings>(bridgeUpdateObject.settings, originalBridge.settings);
       name = Option.get<Text>(bridgeUpdateObject.name, originalBridge.name);
       description : Text = Option.get<Text>(bridgeUpdateObject.description, originalBridge.description);
       keywords = Option.get<[Text]>(bridgeUpdateObject.keywords, originalBridge.keywords);
-      // bridgeType : BridgeType = originalBridge.bridgeType;
+      bridgeType : BridgeType = originalBridge.bridgeType;
       fromEntityId : Text = originalBridge.fromEntityId;
       toEntityId : Text = originalBridge.toEntityId;
       entitySpecificFields = originalBridge.entitySpecificFields;

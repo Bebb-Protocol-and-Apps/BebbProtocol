@@ -176,26 +176,26 @@ module {
     /**
      * Settings for the entity
     */
-    // settings : EntitySettings;
+    settings : EntitySettings;
     /**
      * The type that defines the entity
     */
-    // entityType : EntityType;
+    entityType : EntityType;
     /**
      * Contains all the bridge ids that originate from this
      * Entity
     */
-    // fromIds : EntityAttachedBridges;
+    fromIds : EntityAttachedBridges;
 
     /**
      * Contains all the bridge ids that point to this entity
     */
-    // toIds : EntityAttachedBridges;
+    toIds : EntityAttachedBridges;
 
     /**
      * Stores all the previews that are available for the current entity
     */
-    // previews : [EntityPreview];
+    previews : [EntityPreview];
   };
 
   /**
@@ -204,8 +204,8 @@ module {
    * created by Bebb
   */
   public type EntityInitiationObject = {
-    // settings : ?EntitySettings;
-    // entityType : EntityType;
+    settings : ?EntitySettings;
+    entityType : EntityType;
     name : ?Text;
     description : ?Text;
     keywords : ?[Text];
@@ -226,22 +226,22 @@ module {
   ) : Entity {
     return {
       id : Text = entityId;
-      // creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
+      creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
       creator : Principal = caller;
       owner : Principal = caller;
-      // settings : EntitySettings = switch (initiationObject.settings) {
-      //   case null { EntitySettings() };
-      //   case (?customSettings) { customSettings };
-      // };
-      // entityType : EntityType = initiationObject.entityType;
       name : Text = Option.get<Text>(initiationObject.name, "");
       description : Text = Option.get<Text>(initiationObject.description, "");
       keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
       entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
       listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
-      // toIds : EntityAttachedBridges = [];
-      // fromIds : EntityAttachedBridges = [];
-      // previews : [EntityPreview] = [];
+      settings : EntitySettings = switch (initiationObject.settings) {
+        case null { EntitySettings() };
+        case (?customSettings) { customSettings };
+      };
+      entityType : EntityType = initiationObject.entityType;
+      toIds : EntityAttachedBridges = [];
+      fromIds : EntityAttachedBridges = [];
+      previews : [EntityPreview] = [];
     };
   };
 
@@ -255,7 +255,7 @@ module {
   public func getEntityAttributesFromEntityObject( entity : Entity ) : CanDbAttributes {
     return [
       ("id", #text(entity.id)),
-      // ("creationTimestamp",  #int(Nat64.toNat(entity.creationTimestamp))),
+      ("creationTimestamp",  #int(Nat64.toNat(entity.creationTimestamp))),
       ("creator", #text(Principal.toText(entity.creator))),
       ("owner", #text(Principal.toText(entity.owner))),
       ("name", #text(entity.name)),
@@ -263,34 +263,12 @@ module {
       ("keywords", #arrayText(entity.keywords)),
       ("entitySpecificFields", #text(entity.entitySpecificFields)),
       ("listOfEntitySpecificFieldKeys", #arrayText(entity.listOfEntitySpecificFieldKeys)),
-      // ("settings", #candy(entity.settings)), // TODO: to verify
-      // ("entityType", #candy(entity.entityType)), // TODO: to verify
-      // ("toIds", #candy(entity.toIds)), // TODO: to verify
-      // ("fromIds", #candy(entity.fromIds)), // TODO: to verify
-      // ("previews", #candy(entity.previews)), // TODO: to verify 
+      ("settings", #blob(to_candid(entity.settings))),
+      ("entityType", #blob(to_candid(entity.entityType))),
+      ("toIds", #blob(to_candid(entity.toIds))),
+      ("fromIds", #blob(to_candid(entity.fromIds))),
+      ("previews", #blob(to_candid(entity.previews))),
     ];
-
-    // for TODOs: these are custom types, probably they can be added as AttributeValueCandyPrimitive (https://github.com/ORIGYN-SA/CanDB/blob/beta/src/Entity.mo#L68C5-L68C33)
-      // this example (meta) could be helpful: https://github.com/ORIGYN-SA/CanDB/blob/beta/examples/singleCanister/customSingle/src/main.mo 
-    /* return {
-      //id : Text = entityId;
-      //creationTimestamp : Nat64 = Nat64.fromNat(Int.abs(Time.now()));
-      //creator : Principal = caller;
-      //owner : Principal = caller;
-      settings : EntitySettings = switch (initiationObject.settings) {
-        case null { EntitySettings() };
-        case (?customSettings) { customSettings };
-      };
-      entityType : EntityType = initiationObject.entityType;
-      //name : Text = Option.get<Text>(initiationObject.name, "");
-      //description : Text = Option.get<Text>(initiationObject.description, "");
-      //keywords : [Text] = Option.get<[Text]>(initiationObject.keywords, []);
-      //entitySpecificFields : Text = Option.get<Text>(initiationObject.entitySpecificFields, "");
-      //listOfEntitySpecificFieldKeys : [Text] = ["entityType", "fromIds", "toIds"];
-      toIds : EntityAttachedBridges = [];
-      fromIds : EntityAttachedBridges = [];
-      previews : [EntityPreview] = [];
-    }; */
   };
 
   /**
@@ -301,19 +279,19 @@ module {
   public func updateEntityFromIds(entity : Entity, fromIds : EntityAttachedBridges) : Entity {
     return {
       id = entity.id;
-      // creationTimestamp = entity.creationTimestamp;
+      creationTimestamp = entity.creationTimestamp;
       creator = entity.creator;
       owner = entity.owner;
-      // settings = entity.settings;
-      // entityType = entity.entityType;
       name = entity.name;
       description = entity.description;
       keywords = entity.keywords;
       entitySpecificFields = entity.entitySpecificFields;
       listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
-      // fromIds = fromIds;
-      // toIds = entity.toIds;
-      // previews = entity.previews;
+      settings = entity.settings;
+      entityType = entity.entityType;
+      fromIds = fromIds;
+      toIds = entity.toIds;
+      previews = entity.previews;
     };
   };
 
@@ -325,19 +303,19 @@ module {
   public func updateEntityToIds(entity : Entity, toIds : EntityAttachedBridges) : Entity {
     return {
       id = entity.id;
-      // creationTimestamp = entity.creationTimestamp;
+      creationTimestamp = entity.creationTimestamp;
       creator = entity.creator;
       owner = entity.owner;
-      // settings = entity.settings;
-      // entityType = entity.entityType;
       name = entity.name;
       description = entity.description;
       keywords = entity.keywords;
       entitySpecificFields = entity.entitySpecificFields;
       listOfEntitySpecificFieldKeys = entity.listOfEntitySpecificFieldKeys;
-      // fromIds = entity.fromIds;
-      // toIds = toIds;
-      // previews = entity.previews;
+      settings = entity.settings;
+      entityType = entity.entityType;
+      fromIds = entity.fromIds;
+      toIds = toIds;
+      previews = entity.previews;
     };
   };
 
@@ -350,19 +328,19 @@ module {
   public func updateEntityFromUpdateObject(entityUpdateObject : EntityUpdateObject, originalEntity : Entity) : Entity {
     return {
       id = originalEntity.id;
-      // creationTimestamp = originalEntity.creationTimestamp;
+      creationTimestamp = originalEntity.creationTimestamp;
       creator = originalEntity.creator;
       owner = originalEntity.owner;
-      // settings = Option.get<EntitySettings>(entityUpdateObject.settings, originalEntity.settings);
-      // entityType = originalEntity.entityType;
       name = Option.get<Text>(entityUpdateObject.name, originalEntity.name);
       description : Text = Option.get<Text>(entityUpdateObject.description, originalEntity.description);
       keywords = Option.get<[Text]>(entityUpdateObject.keywords, originalEntity.keywords);
       entitySpecificFields = originalEntity.entitySpecificFields;
       listOfEntitySpecificFieldKeys = originalEntity.listOfEntitySpecificFieldKeys;
-      // fromIds = originalEntity.fromIds;
-      // toIds = originalEntity.toIds;
-      // previews : [EntityPreview] = Option.get<[EntityPreview]>(entityUpdateObject.previews, originalEntity.previews);
+      settings = Option.get<EntitySettings>(entityUpdateObject.settings, originalEntity.settings);
+      entityType = originalEntity.entityType;
+      fromIds = originalEntity.fromIds;
+      toIds = originalEntity.toIds;
+      previews : [EntityPreview] = Option.get<[EntityPreview]>(entityUpdateObject.previews, originalEntity.previews);
     };
   };
 
@@ -379,7 +357,7 @@ module {
     /**
       * The new settings to add to the entity
     */
-    // settings : ?EntitySettings;
+    settings : ?EntitySettings;
     /**
      * The updated name for the entity
     */
@@ -395,7 +373,7 @@ module {
     /**
      * Used to update the available previews for the entity
     */
-    // previews : ?[EntityPreview];
+    previews : ?[EntityPreview];
   };
 
   /**

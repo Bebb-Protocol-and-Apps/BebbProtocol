@@ -1,22 +1,25 @@
 {
   "canisters": {
-    "bebb": {
-      "main": "src/bebb/main.mo",
-      "type": "motoko"
-    },
     "index": {
       "type": "motoko",
-      "main": "src/index/IndexCanister.mo",
+      "main": "src/bebb/can_db/index/IndexCanister.mo",
       "declarations": {
         "node_compatibility": true
       }
     },
-    "helloservice": {
+    "bebbservice": {
       "type": "motoko",
-      "main": "src/helloservice/HelloService.mo",
+      "main": "src/bebb/can_db/bebb_service/BebbService.mo",
       "declarations": {
         "node_compatibility": true
       }
+    },
+    "bebb": {
+      "main": "src/bebb/main.mo",
+      "type": "motoko",
+      "dependencies": [
+        "index"
+      ]
     }
   },
   "declarations": {
