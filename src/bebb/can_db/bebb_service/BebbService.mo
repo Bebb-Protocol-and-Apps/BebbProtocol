@@ -6,6 +6,8 @@ import Bridge "../../bridge";
 import Types "../../Types";
 import Utils "../../Utils";
 import Time "mo:base/Time";
+import Principal "mo:base/Principal";
+import Nat64 "mo:base/Nat64";
 
 import CanDbEntity "mo:candb/Entity";
 
@@ -137,24 +139,24 @@ shared ({ caller = owner }) actor class BebbService({
     let { sk; pk; attributes } = canDbEntity;
 
     let idValue = CanDbEntity.getAttributeMapValueForKey(attributes, "id");
-    let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
+    // let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
     let creatorValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creator");
     let ownerValue = CanDbEntity.getAttributeMapValueForKey(attributes, "owner");
-    let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
-    let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
+    // let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
+    // let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
     let nameValue = CanDbEntity.getAttributeMapValueForKey(attributes, "name");
     let descriptionValue = CanDbEntity.getAttributeMapValueForKey(attributes, "description");
     let keywordsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "keywords");
     let entitySpecificFieldsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entitySpecificFields");
     let listOfEntitySpecificFieldKeysValue = CanDbEntity.getAttributeMapValueForKey(attributes, "listOfEntitySpecificFieldKeys");
-    let toIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toIds"); // TODO: to verify
-    let fromIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromIds"); // TODO: to verify
-    let previewsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "previews"); // TODO: to verify
+    // let toIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toIds"); // TODO: to verify
+    // let fromIdsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromIds"); // TODO: to verify
+    // let previewsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "previews"); // TODO: to verify
 
-    switch(idValue, creationTimestampValue, creatorValue, ownerValue, settingsValue, entityTypeValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue, toIdsValue, fromIdsValue, previewsValue) {
+    switch(idValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValu) {
       case (
           ?(#text(id)),
-          ?(#int(creationTimestamp)),
+          // ?(#int(creationTimestamp)),
           ?(#text(creator)),
           ?(#text(owner)),
           ?(#text(name)),
@@ -162,14 +164,14 @@ shared ({ caller = owner }) actor class BebbService({
           ?(#arrayText(keywords)),
           ?(#text(entitySpecificFields)),
           ?(#arrayText(listOfEntitySpecificFieldKeys)),
-          ?(#candy(settings)), // TODO: to verify
-          ?(#candy(entityType)), // TODO: to verify
-          ?(#candy(toIds)), // TODO: to verify
-          ?(#candy(fromIds)), // TODO: to verify
-          ?(#candy(previews)), // TODO: to verify
+          // ?(#candy(settings)), // TODO: to verify
+          // ?(#candy(entityType)), // TODO: to verify
+          // ?(#candy(toIds)), // TODO: to verify
+          // ?(#candy(fromIds)), // TODO: to verify
+          // ?(#candy(previews)), // TODO: to verify
       ) { ? {
           id;
-          creationTimestamp;
+          // creationTimestamp;
           creator = Principal.fromText(creator);
           owner = Principal.fromText(owner);
           name;
@@ -177,11 +179,11 @@ shared ({ caller = owner }) actor class BebbService({
           keywords;
           entitySpecificFields;
           listOfEntitySpecificFieldKeys;
-          settings; // TODO: to verify
-          entityType; // TODO: to verify
-          toIds; // TODO: to verify
-          fromIds; // TODO: to verify
-          previews; // TODO: to verify
+          // settings; // TODO: to verify
+          // entityType; // TODO: to verify
+          // toIds; // TODO: to verify
+          // fromIds; // TODO: to verify
+          // // previews; // TODO: to verify
         }
       };
       case _ { null };
@@ -245,8 +247,8 @@ shared ({ caller = owner }) actor class BebbService({
   private func createBridge(caller : Principal, bridgeToCreate : Bridge.BridgeInitiationObject) : async ?Text {
     // Check if both the to and from entities exist for the bridge
     // TODO: needs to be changed
-    let toEntityExists = checkIfEntityExists(bridgeToCreate.toEntityId);
-    let fromEntityExists = checkIfEntityExists(bridgeToCreate.fromEntityId);
+    // let toEntityExists = checkIfEntityExists(bridgeToCreate.toEntityId);
+    // let fromEntityExists = checkIfEntityExists(bridgeToCreate.fromEntityId);
 
     if (toEntityExists == false or fromEntityExists == false) {
       return null;
@@ -279,22 +281,22 @@ shared ({ caller = owner }) actor class BebbService({
 
     // If the from id result fails, then just delete the bridge but no connections were added
       // TODO: needs to be changed
-    let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge);
-    if (fromIdResult == false) {
-      bridgesStorage.delete(bridge.id);
-      return null;
-    };
+    // let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge);
+    // if (fromIdResult == false) {
+    //   bridgesStorage.delete(bridge.id);
+    //   return null;
+    // };
 
-    // If the to id result fails, then the from id was added, so make sure to delete the from id on the Entity as well
-    // as the bridge itself
-      // TODO: needs to be changed
-    let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge);
-    if (toIdResult == false) {
-      // TODO: needs to be changed
-      let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridge.fromEntityId, bridge.id);
-      bridgesStorage.delete(bridge.id);
-      return null;
-    };
+    // // If the to id result fails, then the from id was added, so make sure to delete the from id on the Entity as well
+    // // as the bridge itself
+    //   // TODO: needs to be changed
+    // let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge);
+    // if (toIdResult == false) {
+    //   // TODO: needs to be changed
+    //   let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridge.fromEntityId, bridge.id);
+    //   bridgesStorage.delete(bridge.id);
+    //   return null;
+    // };
 
     return ?bridge.id;
   };
@@ -324,25 +326,25 @@ shared ({ caller = owner }) actor class BebbService({
    * @return True if the bridge ID was added to the from ID list, otherwise
    * false is returned if it couldn't
   */
-  private func addBridgeToEntityFromIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
-    let entity = getEntity(entityId);
-    switch (entity) {
-      case (null) {
-        return false;
-      };
-      case (?retrievedEntity) {
-        let newEntityAttachedBridge = {
-          linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
-          id=bridge.id;
-          creationTime = Time.now();
-          bridgeType = bridge.bridgeType;
-        };
-        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, [newEntityAttachedBridge]));
-        let result = putEntity(newEntity);
-        return true;
-      };
-    };
-  };
+  // private func addBridgeToEntityFromIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
+  //   let entity = getEntity(entityId);
+  //   switch (entity) {
+  //     case (null) {
+  //       return false;
+  //     };
+  //     case (?retrievedEntity) {
+  //       let newEntityAttachedBridge = {
+  //         linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+  //         id=bridge.id;
+  //         creationTime = Time.now();
+  //         bridgeType = bridge.bridgeType;
+  //       };
+  //       let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, [newEntityAttachedBridge]));
+  //       let result = putEntity(newEntity);
+  //       return true;
+  //     };
+  //   };
+  // };
 
   // TODO: this needs to be changed as the Entities are now stored in different canisters
     // This will currently fail
@@ -353,25 +355,25 @@ shared ({ caller = owner }) actor class BebbService({
    * @return True if the bridge ID was added to the to ID list, otherwise
    * false is returned if it couldn't
   */
-  private func addBridgeToEntityToIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
-    var entity = getEntity(entityId);
-    switch (entity) {
-      case (null) {
-        return false;
-      };
-      case (?retrievedEntity) {
-         let newEntityAttachedBridge = {
-          linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
-          id=bridge.id;
-          creationTime = Time.now();
-          bridgeType = bridge.bridgeType;
-        };
-        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.toIds, [newEntityAttachedBridge]));
-        let result = putEntity(newEntity);
-        return true;
-      };
-    };
-  };
+  // private func addBridgeToEntityToIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
+  //   var entity = getEntity(entityId);
+  //   switch (entity) {
+  //     case (null) {
+  //       return false;
+  //     };
+  //     case (?retrievedEntity) {
+  //        let newEntityAttachedBridge = {
+  //         linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+  //         id=bridge.id;
+  //         creationTime = Time.now();
+  //         bridgeType = bridge.bridgeType;
+  //       };
+  //       let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.toIds, [newEntityAttachedBridge]));
+  //       let result = putEntity(newEntity);
+  //       return true;
+  //     };
+  //   };
+  // };
 
   /**
    * Function retrieves a bridge based on the input ID
@@ -394,11 +396,11 @@ shared ({ caller = owner }) actor class BebbService({
     let { sk; pk; attributes } = canDbEntity;
 
     let idValue = CanDbEntity.getAttributeMapValueForKey(attributes, "id");
-    let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
+    // let creationTimestampValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creationTimestamp");
     let creatorValue = CanDbEntity.getAttributeMapValueForKey(attributes, "creator");
     let ownerValue = CanDbEntity.getAttributeMapValueForKey(attributes, "owner");
-    let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
-    let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
+    // let settingsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "settings"); // TODO: to verify
+    // let entityTypeValue = CanDbEntity.getAttributeMapValueForKey(attributes, "entityType"); // TODO: to verify
     let nameValue = CanDbEntity.getAttributeMapValueForKey(attributes, "name");
     let descriptionValue = CanDbEntity.getAttributeMapValueForKey(attributes, "description");
     let keywordsValue = CanDbEntity.getAttributeMapValueForKey(attributes, "keywords");
@@ -408,10 +410,10 @@ shared ({ caller = owner }) actor class BebbService({
     let fromEntityIdValue = CanDbEntity.getAttributeMapValueForKey(attributes, "fromEntityId"); // TODO: to verify
     let toEntityIdValue = CanDbEntity.getAttributeMapValueForKey(attributes, "toEntityId"); // TODO: to verify
 
-    switch(idValue, creationTimestampValue, creatorValue, ownerValue, settingsValue, entityTypeValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue, bridgeTypeValue, fromEntityIdValue, toEntityIdValue) {
+    switch(idValue, creatorValue, ownerValue, nameValue, descriptionValue, keywordsValue, entitySpecificFieldsValue, listOfEntitySpecificFieldKeysValue, fromEntityIdValue, toEntityIdValue) {
       case (
           ?(#text(id)),
-          ?(#int(creationTimestamp)),
+          // ?(#Nat64(creationTimestamp)),
           ?(#text(creator)),
           ?(#text(owner)),
           ?(#text(name)),
@@ -419,13 +421,13 @@ shared ({ caller = owner }) actor class BebbService({
           ?(#arrayText(keywords)),
           ?(#text(entitySpecificFields)),
           ?(#arrayText(listOfEntitySpecificFieldKeys)),
-          ?(#candy(settings)), // TODO: to verify
-          ?(#candy(bridgeType)), // TODO: to verify
+          // ?(#candy(settings)), // TODO: to verify
+          // ?(#candy(bridgeType)), // TODO: to verify
           ?(#text(fromEntityId)),
           ?(#text(toEntityId)),
       ) { ? {
           id;
-          creationTimestamp;
+          // creationTimestamp;
           creator = Principal.fromText(creator);
           owner = Principal.fromText(owner);
           name;
@@ -433,8 +435,8 @@ shared ({ caller = owner }) actor class BebbService({
           keywords;
           entitySpecificFields;
           listOfEntitySpecificFieldKeys;
-          settings; // TODO: to verify
-          bridgeType; // TODO: to verify
+          // settings; // TODO: to verify
+          // bridgeType; // TODO: to verify
           fromEntityId;
           toEntityId;
         }

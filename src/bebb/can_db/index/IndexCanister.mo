@@ -1,5 +1,6 @@
 import Error "mo:base/Error";
 import Text "mo:base/Text";
+import Debug "mo:base/Debug";
 import Utils "mo:candb/Utils";
 import CanisterMap "mo:candb/CanisterMap";
 import Buffer "mo:stablebuffer/StableBuffer";
@@ -44,7 +45,8 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   // Partition BebbService canisters by the type (Entity, Bridge, File, User) passed in
   public shared({caller = creator}) func createBebbServiceCanisterByType(serviceType: Text): async ?Text {
-    let pk = "type#" # serviceType; // TODO: determine exact pk
+    let pk = serviceType # "#"; // TODO: determine exact pk
+    Debug.print("PK used to create the new canister: " # pk);
     let canisterIds = getCanisterIdsIfExists(pk);
     if (canisterIds == []) {
       ?(await createBebbServiceCanister(pk, ?[owner, Principal.fromActor(this)]));

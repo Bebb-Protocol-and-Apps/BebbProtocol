@@ -16,7 +16,7 @@ module {
         /**
         * The timestamp in UTC (maybe) that the entity was created
         */
-        creationTimestamp : Nat64;
+        // creationTimestamp : Nat64;
         /**
         * The original creator of the entity.
         */

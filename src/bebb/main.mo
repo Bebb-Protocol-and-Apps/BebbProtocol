@@ -16,6 +16,7 @@ import HTTP "./Http";
 import Types "./Types";
 import Utils "./Utils";
 import Time "mo:base/Time";
+import IndexCanister "can_db/index/IndexCanister";
 
 actor {
   /*************************************************
@@ -127,26 +128,26 @@ actor {
    *
    * @return A list of bridge ids of bridges pointed to a specied entity if the eneityId matches a valid entity, otherwise an error
   */
-  public shared query ({ caller }) func get_to_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridgesResult {
-    let result = getEntity(entityId);
-    switch (result) {
-      case (null) { return #Err(#EntityNotFound) };
-      case (?entity) { return #Ok(entity.toIds) };
-    };
-  };
+  // public shared query ({ caller }) func get_to_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridgesResult {
+  //   let result = getEntity(entityId);
+  //   switch (result) {
+  //     case (null) { return #Err(#EntityNotFound) };
+  //     case (?entity) { return #Ok(entity.toIds) };
+  //   };
+  // };
 
   /**
    * Public interface for retrieving all the from bridge ids attached to an entity
    *
    * @return A list of bridge ids of bridges pointed from a specied entity if the eneityId matches a valid entity, otherwise an error
   */
-  public shared query ({ caller }) func get_from_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridgesResult {
-    let result = getEntity(entityId);
-    switch (result) {
-      case (null) { return #Err(#EntityNotFound) };
-      case (?entity) { return #Ok(entity.fromIds) };
-    };
-  };
+  // public shared query ({ caller }) func get_from_bridge_ids_by_entity_id(entityId : Text) : async Entity.EntityAttachedBridgesResult {
+  //   let result = getEntity(entityId);
+  //   switch (result) {
+  //     case (null) { return #Err(#EntityNotFound) };
+  //     case (?entity) { return #Ok(entity.fromIds) };
+  //   };
+  // };
 
   /*************************************************
           Helper Functions related to entities
@@ -161,6 +162,10 @@ actor {
   */
   private func createEntity(caller : Principal, entityToCreate : Entity.EntityInitiationObject) : async Text {
 
+    Debug.print("In create Entity");
+    let canisterId = IndexCanister.getCanisterIdsIfExists("entity#")
+    Debug.print("Response: " # canisterId);
+    return "";
     // Find a unique id for the new entity that will not
     // conflict with any current items
     var newEntityId : Text = "";
@@ -253,29 +258,29 @@ actor {
             // Ensure that the preivews are not too large and that there aren't too many previews
             // If any of the previews are too large then return an error with
             // the preview index that caused the error of being too large
-            var counter = 0;
-            switch(entityUpdateObject.previews)
-            {
-              case(null) {};
-              case(?new_previews)
-              {
-                // Check to ensure there aren't too many previews
-                if (new_previews.size() > maxNumPreviews)
-                {
-                    return #Err(#TooManyPreviews);
-                };
+            // var counter = 0;
+            // switch(entityUpdateObject.previews)
+            // {
+            //   case(null) {};
+            //   case(?new_previews)
+            //   {
+            //     // Check to ensure there aren't too many previews
+            //     if (new_previews.size() > maxNumPreviews)
+            //     {
+            //         return #Err(#TooManyPreviews);
+            //     };
 
-                // Check all the previews and make sure they aren't too big
-                for (preview in new_previews.vals()) {
-                    let fileSize = preview.previewData.size();
-                    if (fileSize > maxPreviewBlobSize)
-                    {
-                      return #Err(#PreviewTooLarge(counter));
-                    };
-                    counter := counter + 1;
-                };
-              };
-            };
+            //     // Check all the previews and make sure they aren't too big
+            //     for (preview in new_previews.vals()) {
+            //         let fileSize = preview.previewData.size();
+            //         if (fileSize > maxPreviewBlobSize)
+            //         {
+            //           return #Err(#PreviewTooLarge(counter));
+            //         };
+            //         counter := counter + 1;
+            //     };
+            //   };
+            // };
             let updatedEntity : Entity.Entity = Entity.updateEntityFromUpdateObject(entityUpdateObject, entityToUpdate);
             let result = putEntity(updatedEntity);
             return #Ok(updatedEntity.id);
@@ -300,35 +305,35 @@ actor {
             return #Err(#Unauthorized);
           }; // Only owner may delete the Entity
           case true {
-            // First delete all the bridges pointing to this Entity
-            for (toBridge in entityToDelete.toIds.vals()) {
-              let bridge = getBridge(toBridge.id);
-              switch (bridge) {
-                case (null) {};
-                case (?bridgeToDelete) {
-                  // Since this bridge points to the current Entity being deleted, we need to
-                  // delete the reference to where the bridge was pointing from and delete the reference to
-                  // this bridge in the Entity it was pointing from before deleting the bridge
-                  let deleteReferenceResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeToDelete.id);
-                  let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
-                };
-              };
-            };
+            // // First delete all the bridges pointing to this Entity
+            // for (toBridge in entityToDelete.toIds.vals()) {
+            //   let bridge = getBridge(toBridge.id);
+            //   switch (bridge) {
+            //     case (null) {};
+            //     case (?bridgeToDelete) {
+            //       // Since this bridge points to the current Entity being deleted, we need to
+            //       // delete the reference to where the bridge was pointing from and delete the reference to
+            //       // this bridge in the Entity it was pointing from before deleting the bridge
+            //       let deleteReferenceResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeToDelete.id);
+            //       let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
+            //     };
+            //   };
+            // };
 
             // Second delete all the bridges pointing from this Entity
-            for (fromBridge in entityToDelete.fromIds.vals()) {
-              let bridge = getBridge(fromBridge.id);
-              switch (bridge) {
-                case (null) {};
-                case (?bridgeToDelete) {
-                  // Since this bridge points from the current Entity being deleted, we need to
-                  // delete the reference to where the bridge was pointing to and delete the reference to
-                  // this bridge in the Entity it was pointing to before deleting the bridge
-                  let deleteReferenceResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeToDelete.id);
-                  let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
-                };
-              };
-            };
+            // for (fromBridge in entityToDelete.fromIds.vals()) {
+            //   let bridge = getBridge(fromBridge.id);
+            //   switch (bridge) {
+            //     case (null) {};
+            //     case (?bridgeToDelete) {
+            //       // Since this bridge points from the current Entity being deleted, we need to
+            //       // delete the reference to where the bridge was pointing to and delete the reference to
+            //       // this bridge in the Entity it was pointing to before deleting the bridge
+            //       let deleteReferenceResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeToDelete.id);
+            //       let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
+            //     };
+            //   };
+            // };
 
             // Finally delete the entity itself
             let result = deleteEntityFromStorage(entityToDelete.id);
@@ -416,21 +421,21 @@ actor {
     // Add the bridge of the bridge database and add the bridge id to the related entities
     let result = putBridge(bridge);
 
-    // If the from id result fails, then just delete the bridge but no connections were added
-    let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge);
-    if (fromIdResult == false) {
-      bridgesStorage.delete(bridge.id);
-      return null;
-    };
+    // // If the from id result fails, then just delete the bridge but no connections were added
+    // let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge);
+    // if (fromIdResult == false) {
+    //   bridgesStorage.delete(bridge.id);
+    //   return null;
+    // };
 
-    // If the to id result fails, then the from id was added, so make sure to delete the from id on the Entity as well
-    // as the bridge itself
-    let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge);
-    if (toIdResult == false) {
-      let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridge.fromEntityId, bridge.id);
-      bridgesStorage.delete(bridge.id);
-      return null;
-    };
+    // // If the to id result fails, then the from id was added, so make sure to delete the from id on the Entity as well
+    // // as the bridge itself
+    // let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge);
+    // if (toIdResult == false) {
+    //   let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridge.fromEntityId, bridge.id);
+    //   bridgesStorage.delete(bridge.id);
+    //   return null;
+    // };
 
     return ?bridge.id;
   };
@@ -454,25 +459,25 @@ actor {
    * @return True if the bridge ID was added to the from ID list, otherwise
    * false is returned if it couldn't
   */
-  private func addBridgeToEntityFromIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
-    let entity = getEntity(entityId);
-    switch (entity) {
-      case (null) {
-        return false;
-      };
-      case (?retrievedEntity) {
-        let newEntityAttachedBridge = {
-          linkStatus=Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
-          id=bridge.id;
-          creationTime = Time.now();
-          bridgeType = bridge.bridgeType;
-        };
-        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, [newEntityAttachedBridge]));
-        let result = putEntity(newEntity);
-        return true;
-      };
-    };
-  };
+  // private func addBridgeToEntityFromIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
+  //   let entity = getEntity(entityId);
+  //   switch (entity) {
+  //     case (null) {
+  //       return false;
+  //     };
+  //     case (?retrievedEntity) {
+  //       let newEntityAttachedBridge = {
+  //         linkStatus=Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+  //         id=bridge.id;
+  //         creationTime = Time.now();
+  //         // bridgeType = bridge.bridgeType;
+  //       };
+  //       let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, [newEntityAttachedBridge]));
+  //       let result = putEntity(newEntity);
+  //       return true;
+  //     };
+  //   };
+  // };
 
   /**
    * This function takes a bridge and adds the bridge ID to the toIds field
@@ -481,25 +486,25 @@ actor {
    * @return True if the bridge ID was added to the to ID list, otherwise
    * false is returned if it couldn't
   */
-  private func addBridgeToEntityToIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
-    var entity = getEntity(entityId);
-    switch (entity) {
-      case (null) {
-        return false;
-      };
-      case (?retrievedEntity) {
-         let newEntityAttachedBridge = {
-          linkStatus=Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
-          id=bridge.id;
-          creationTime = Time.now();
-          bridgeType = bridge.bridgeType;
-        };
-        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.toIds, [newEntityAttachedBridge]));
-        let result = putEntity(newEntity);
-        return true;
-      };
-    };
-  };
+  // private func addBridgeToEntityToIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
+  //   var entity = getEntity(entityId);
+  //   switch (entity) {
+  //     case (null) {
+  //       return false;
+  //     };
+  //     case (?retrievedEntity) {
+  //        let newEntityAttachedBridge = {
+  //         linkStatus=Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+  //         id=bridge.id;
+  //         creationTime = Time.now();
+  //         // bridgeType = bridge.bridgeType;
+  //       };
+  //       let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.toIds, [newEntityAttachedBridge]));
+  //       let result = putEntity(newEntity);
+  //       return true;
+  //     };
+  //   };
+  // };
 
   /**
    * This function takes an entity and the bridge associated to it, and deletes the bridge
@@ -508,19 +513,19 @@ actor {
    * @return True if the bridge id was successfully removed from the fromIds list, false
    * if either it didn't exist or something went wrong
   */
-  private func deleteBridgeFromEntityFromIds(entityId : Text, bridgeId : Text) : Bool {
-    let entity = getEntity(entityId);
-    switch (entity) {
-      case (null) {
-        return false;
-      };
-      case (?retrievedEntity) {
-        let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.filter<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, func x = x.id != bridgeId));
-        let result = putEntity(newEntity);
-        return true;
-      };
-    };
-  };
+  // private func deleteBridgeFromEntityFromIds(entityId : Text, bridgeId : Text) : Bool {
+  //   let entity = getEntity(entityId);
+  //   switch (entity) {
+  //     case (null) {
+  //       return false;
+  //     };
+  //     case (?retrievedEntity) {
+  //       let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.filter<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, func x = x.id != bridgeId));
+  //       let result = putEntity(newEntity);
+  //       return true;
+  //     };
+  //   };
+  // };
 
   /**
    * This function takes an entity and the bridge associated to it, and deletes the bridge
@@ -529,19 +534,19 @@ actor {
    * @return True if the bridge id was successfully removed from the toIds list, false
    * if either it didn't exist or something went wrong
   */
-  private func deleteBridgeFromEntityToIds(entityId : Text, bridgeId : Text) : Bool {
-    let entity = getEntity(entityId);
-    switch (entity) {
-      case (null) {
-        return false;
-      };
-      case (?retrievedEntity) {
-        let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.filter<Entity.EntityAttachedBridge>(retrievedEntity.toIds, func x = x.id != bridgeId));
-        let result = putEntity(newEntity);
-        return true;
-      };
-    };
-  };
+  // private func deleteBridgeFromEntityToIds(entityId : Text, bridgeId : Text) : Bool {
+  //   let entity = getEntity(entityId);
+  //   switch (entity) {
+  //     case (null) {
+  //       return false;
+  //     };
+  //     case (?retrievedEntity) {
+  //       let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.filter<Entity.EntityAttachedBridge>(retrievedEntity.toIds, func x = x.id != bridgeId));
+  //       let result = putEntity(newEntity);
+  //       return true;
+  //     };
+  //   };
+  // };
 
   /**
    * Function retrieves a bridge based on the input ID
@@ -594,11 +599,11 @@ actor {
           case true {
             // First delete the references to the bridge in the entities
             // Then delete the bridge itself
-            let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeId);
-            let bridgeDeleteFromEntityToIdResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeId);
-            if (bridgeDeleteFromEntityFromIdsResult == false or bridgeDeleteFromEntityToIdResult == false) {
-              return #Err(#Error);
-            };
+            // let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeId);
+            // let bridgeDeleteFromEntityToIdResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeId);
+            // if (bridgeDeleteFromEntityFromIdsResult == false or bridgeDeleteFromEntityToIdResult == false) {
+            //   return #Err(#Error);
+            // };
             let bridgeDeleteResult = deleteBridgeFromStorage(bridgeId);
             return #Ok(bridgeId);
           };
