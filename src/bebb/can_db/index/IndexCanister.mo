@@ -7,10 +7,33 @@ import CanisterMap "mo:candb/CanisterMap";
 import Buffer "mo:stablebuffer/StableBuffer";
 import Cycles "mo:base/ExperimentalCycles";
 import CA "mo:candb/CanisterActions";
+import RangeTreeV2 "mo:candb/RangeTreeV2";
 
 import BebbService "../bebb_service/BebbService";
 
 shared ({caller = owner}) actor class IndexCanister() = this {
+  
+  /**
+   * Stores the can db entity types that can be used as PK for candb
+  */
+  public type CanDBEntityTypes = {
+    #CanDBTypeEntity;
+    #CanDBTypeBridge;
+  };
+
+  /**
+   * Used to convert the different can db entity types to a string to be used
+   * for the PK for CanDb
+  */
+  private func canDBEntityTypeToString(canDBEntityType: CanDBEntityTypes): Text {
+    switch canDBEntityType {
+      case (#CanDBTypeEntity) "BebbEntity";
+      case (#CanDBTypeBridge) "BebbBridge";
+    };
+  };
+
+
+
   /// @required stable variable (Do not delete or change)
   ///
   /// Holds the CanisterMap of PK -> CanisterIdList
@@ -94,5 +117,12 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
     Debug.print("new Bebb service canisterId=" # newBebbServiceCanisterId);
     newBebbServiceCanisterId;
+  };
+
+  /**
+   * Generates the correct PK based on the ENtity type
+  */
+  func getCanEntityTypePK(canDBEntityType: CanDBEntityTypes): Text {
+      return canDBEntityTypeToString(canDBEntityType) # "#";
   };
 }

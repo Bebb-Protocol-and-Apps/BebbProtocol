@@ -42,12 +42,17 @@ as shown above. It will provide the URL to the canister backend Candid UI. You c
 
 ## Testing Frontend Changes
 
-If you are making frontend changes, you can start a development server with
-
+In order for the frontend to talk to the backend, we need to copy over the backend canister candid declaration files. From the root hello-candb directory run
 ```bash
-npm start
+npm run refresh-declarations
 ```
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 8000.
+Let’s navigate to the frontend directory and install its code dependencies
+```bash
+cd frontend; npm install
+```
 
-Note: while the protocol doesn't need or have a UI, the asset's canister here serves as a simple way of testing the protocol by simulating how an application might create Entities and connect them via Bridges.
+Start up your frontend
+```bash
+npm run start
+```

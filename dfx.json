@@ -13,13 +13,6 @@
       "declarations": {
         "node_compatibility": true
       }
-    },
-    "bebb": {
-      "main": "src/bebb/main.mo",
-      "type": "motoko",
-      "dependencies": [
-        "index"
-      ]
     }
   },
   "declarations": {

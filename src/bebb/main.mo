@@ -162,10 +162,9 @@ actor {
   */
   private func createEntity(caller : Principal, entityToCreate : Entity.EntityInitiationObject) : async Text {
 
-    Debug.print("In create Entity");
-    //let canisterId = IndexCanister.getCanisterIdsIfExists("entity#") //getCanisterIdsIfExists is a private func
+    let canisterId = IndexCanister.getCanisterIdsIfExists("entity#") //getCanisterIdsIfExists is a private func
     //Debug.print("Response: " # canisterId);
-    return "";
+    // return "";
     // Find a unique id for the new entity that will not
     // conflict with any current items
     var newEntityId : Text = "";

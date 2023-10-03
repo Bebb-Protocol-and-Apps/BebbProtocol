@@ -14,7 +14,10 @@
     "start": "webpack serve --mode development --env development",
     "prestart": "npm run copy:types",
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
-    "copy:types:GenererateCandid": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations"
+    "copy:types:GenererateCandid": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --delete src/declarations",
+    "generate-declarations": "dfx generate",
+    "copy-declarations": "rm -rf frontend/declarations && cp -r src/declarations frontend/declarations",
+    "refresh-declarations": "npm run generate-declarations && npm run copy-declarations"
   },
   "devDependencies": {
     "@dfinity/agent": "0.10.3",
