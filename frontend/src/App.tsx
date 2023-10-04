@@ -5,13 +5,11 @@ import { initializeHelloServiceClient, intializeIndexClient } from "./client";
 const isLocal = true;
 const indexClient = intializeIndexClient(isLocal);
 const helloServiceClient = initializeHelloServiceClient(isLocal, indexClient);
-type GroupType = 'eightyr' | 'dev' | 'icmaxi' 
 const groupOptions = {
-  eightyr: { value: "eightyr", label: "8 Year Gang" },
-  dev: { value: "dev", label: "IC Developer/Creator" },
-  icmaxi: { value: "icmaxi", label: "ICP Maximalist" }
+  bridge: { value: "bridges", label: "Bridge" },
+  entity: { value: "entities", label: "Bebb Entity" }
 }
-
+type GroupType = 'bridge' | 'entity' 
 export default function App() {
   let [greetName, setGreetName] = React.useState("");
   let [name, setName] = React.useState("");
@@ -19,7 +17,7 @@ export default function App() {
   let [greetingResponse, setGreetingResponse] = React.useState("");
   let [greetErrorText, setGreetErrorText] = React.useState("");
   let [createErrorText, setCreateErrorText] = React.useState("");
-  let [group, setGroup] = React.useState(groupOptions.eightyr);
+  let [group, setGroup] = React.useState(groupOptions.entity);
   let [successText, setSuccessText] = React.useState("");
 
   async function getUserGreeting() {
@@ -54,8 +52,8 @@ export default function App() {
     <div className="flex-center">
       
       <div className="section-wrapper">
-        <h1>Hello CanDB!</h1>
-        <p>Below is a sample CanDB app in which one can create users in separate "groups". 
+        <h1>Hello to Bebb!</h1>
+        <p>Below is a testing frontend to communicate with Bebb. 
           <br/><br/>
           To accomplish this, a unique <b>partition key</b> (PK) is used in order to <span className="partition-highlight">partition</span>, or separate the data associated with each unique "group" name. 
           <br/><br/>
@@ -72,7 +70,7 @@ export default function App() {
       </div>
 
       <div className="section-wrapper">
-        <h2>Get a User from the {group.label} group</h2>
+        <h2>Get an Entity from the {group.label} group</h2>
         <div className="flex-wrapper">
           <div className="prompt-text">Set username to greet:</div>
           <input
@@ -90,7 +88,7 @@ export default function App() {
       </div>
 
       <div className="section-wrapper">
-        <h2>Create a User in {group.label} group</h2>
+        <h2>Create an Entity in {group.label} group</h2>
         <div className="flex-wrapper">
           <div className="prompt-text">Set username to create:</div>
           <input
@@ -106,7 +104,7 @@ export default function App() {
           />
         </div>
         <div className="flex-wrapper">
-          <button type="button" onClick={createUser}>Create username</button>
+          <button type="button" onClick={createUser}>Create entity</button>
           <div className="left-margin">{successText}</div>
           <div>{createErrorText}</div>
         </div>

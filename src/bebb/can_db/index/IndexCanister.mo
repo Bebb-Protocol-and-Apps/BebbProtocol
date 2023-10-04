@@ -21,17 +21,13 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     #CanDBTypeBridge;
   };
 
-  /**
-   * Used to convert the different can db entity types to a string to be used
-   * for the PK for CanDb
-  */
-  private func canDBEntityTypeToString(canDBEntityType: CanDBEntityTypes): Text {
-    switch canDBEntityType {
-      case (#CanDBTypeEntity) "BebbEntity";
-      case (#CanDBTypeBridge) "BebbBridge";
-    };
+  public shared query func getPkOptions(): async [Text] {
+    // var available_pks = [];
+    // for (key in CanDBEntityTypes) {
+    //   available_pks.append(getCanEntityTypePK(key));
+    // };
+    return ["BebbEntity", "BebbBridge"];
   };
-
 
 
   /// @required stable variable (Do not delete or change)
@@ -125,4 +121,16 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   func getCanEntityTypePK(canDBEntityType: CanDBEntityTypes): Text {
       return canDBEntityTypeToString(canDBEntityType) # "#";
   };
+
+  /**
+   * Used to convert the different can db entity types to a string to be used
+   * for the PK for CanDb
+  */
+  private func canDBEntityTypeToString(canDBEntityType: CanDBEntityTypes): Text {
+    switch canDBEntityType {
+      case (#CanDBTypeEntity) "BebbEntity";
+      case (#CanDBTypeBridge) "BebbBridge";
+    };
+  };
+
 }

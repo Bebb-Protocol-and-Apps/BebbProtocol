@@ -7,6 +7,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'getCanistersByPK' : IDL.Func([IDL.Text], [IDL.Vec(IDL.Text)], ['query']),
+    'getPkOptions' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   });
   return IndexCanister;
 };
