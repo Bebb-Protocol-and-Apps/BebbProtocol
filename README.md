@@ -56,3 +56,5 @@ Start up your frontend
 ```bash
 npm run start
 ```
+
+Now you can navigate to localhost:8080 to interact with the frontend!

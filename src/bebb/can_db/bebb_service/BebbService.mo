@@ -45,6 +45,10 @@ shared ({ caller = owner }) actor class BebbService({
   /*************************************************
           Public Interface for Entities
   *************************************************/
+
+
+
+  
   /**
    * Public interface for creating an entity. This will attempt to create the entity and return the id if it does so
    * successfully
@@ -52,7 +56,7 @@ shared ({ caller = owner }) actor class BebbService({
    * @return Returns the entity id if it was successfully created, otherwise it returns an error
   */
   public shared ({ caller }) func create_entity(entityToCreate : Entity.EntityInitiationObject) : async Entity.EntityIdResult {
-    if (partitionKey != "entity") {
+    if (partitionKey != "entities") {
       return #Err(#Unauthorized);
     };
     let result = await createEntity(caller, entityToCreate);
@@ -70,7 +74,7 @@ shared ({ caller = owner }) actor class BebbService({
    * @return The entity if the id matches an entity, otherwise an error
   */
   public shared query ({ caller }) func get_entity(entityId : Text) : async Entity.EntityResult {
-    if (partitionKey != "entity") {
+    if (partitionKey != "entities") {
       return #Err(#Unauthorized("Wrong Partition"));
     };
     let result = getEntity(entityId);
@@ -201,7 +205,7 @@ shared ({ caller = owner }) actor class BebbService({
    * @return The bridge id if the bridge was successfully created, otherwise an error
   */
   public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async Bridge.BridgeIdResult {
-    if (partitionKey != "bridge") {
+    if (partitionKey != "bridges") {
       return #Err(#Unauthorized);
     };
     let result = await createBridge(caller, bridgeToCreate);
@@ -217,7 +221,7 @@ shared ({ caller = owner }) actor class BebbService({
    * @return Returns the bridge if the id matches a stored bridge, otherwise an error
   */
   public shared query ({ caller }) func get_bridge(bridgeId : Text) : async Bridge.BridgeResult {
-    if (partitionKey != "bridge") {
+    if (partitionKey != "bridges") {
       return #Err(#Unauthorized("Wrong Partition"));
     };
     let result = getBridge(bridgeId);
@@ -226,6 +230,7 @@ shared ({ caller = owner }) actor class BebbService({
       case (?bridge) { return #Ok(bridge) };
     };
   };
+
 
   // TODO: update_bridge
 
