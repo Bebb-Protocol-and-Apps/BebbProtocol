@@ -9,7 +9,8 @@ import Cycles "mo:base/ExperimentalCycles";
 import CA "mo:candb/CanisterActions";
 import RangeTreeV2 "mo:candb/RangeTreeV2";
 
-import BebbService "../bebb_service/BebbService";
+import BebbEntityService "../bebb_service/BebbEntityService";
+import BebbBridgeService "../bebb_service/BebbBridgeService";
 
 shared ({caller = owner}) actor class IndexCanister() = this {
   
@@ -29,7 +30,6 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     return ["BebbEntity", "BebbBridge"];
   };
 
-
   /// @required stable variable (Do not delete or change)
   ///
   /// Holds the CanisterMap of PK -> CanisterIdList
@@ -37,7 +37,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   /// @required API (Do not delete or change)
   ///
-  /// Get all canisters for an specific PK
+  /// Get all canisters for a specific PK
   ///
   /// This method is called often by the candb-client query & update methods. 
   public shared query({caller = caller}) func getCanistersByPK(pk: Text): async [Text] {
@@ -67,7 +67,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   // Partition BebbService canisters by the type (Entity, Bridge, File, User) passed in
   public shared({caller = creator}) func createBebbServiceCanisterByType(serviceType: Text): async ?Text {
-    let pk = serviceType # "#"; // TODO: determine exact pk
+    let pk = await getPkForServiceType(serviceType);
     Debug.print("PK used to create the new canister: " # pk);
     let canisterIds = getCanisterIdsIfExists(pk);
     if (canisterIds == []) {
@@ -79,24 +79,44 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     };
   };
 
-  // Spins up a new BebbService canister with the provided pk and controllers
+  // Spins up a new Bebb Service canister with the provided pk and controllers
   func createBebbServiceCanister(pk: Text, controllers: ?[Principal]): async Text {
     Debug.print("creating new hello service canister with pk=" # pk);
     // Pre-load 300 billion cycles for the creation of a new Bebb Service canister
     // Note that canister creation costs 100 billion cycles, meaning there are 200 billion
     // left over for the new canister when it is created
     Cycles.add(300_000_000_000); // TODO: enough?
-    let newBebbServiceCanister = await BebbService.BebbService({
-      partitionKey = pk;
-      scalingOptions = {
-        autoScalingHook = autoScaleBebbServiceCanister;
-        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO: increase (as this seems low)?
-        // for auto-scaling testing
-        //sizeLimit = #count(3); // Scale out at 3 entities inserted
+    var newBebbServiceCanisterPrincipal = Principal.fromText(""); // placeholder to be filled
+    switch pk {
+      case ("BebbEntity") {
+        let newBebbServiceCanister = await BebbEntityService.BebbEntityService({
+          partitionKey = pk;
+          scalingOptions = {
+            autoScalingHook = autoScaleBebbServiceCanister;
+            sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO: increase (as this seems low)?
+            // for auto-scaling testing
+            //sizeLimit = #count(3); // Scale out at 3 entities inserted
+          };
+          owners = controllers;
+        });
+        newBebbServiceCanisterPrincipal := Principal.fromActor(newBebbServiceCanister);
       };
-      owners = controllers;
-    });
-    let newBebbServiceCanisterPrincipal = Principal.fromActor(newBebbServiceCanister);
+      case ("BebbBridge") {
+        let newBebbServiceCanister = await BebbBridgeService.BebbBridgeService({
+          partitionKey = pk;
+          scalingOptions = {
+            autoScalingHook = autoScaleBebbServiceCanister;
+            sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO: increase (as this seems low)?
+            // for auto-scaling testing
+            //sizeLimit = #count(3); // Scale out at 3 entities inserted
+          };
+          owners = controllers;
+        });
+        newBebbServiceCanisterPrincipal := Principal.fromActor(newBebbServiceCanister);
+      };
+      case (_) { throw Error.reject("Unsupported pk"); };
+    };
+    
     await CA.updateCanisterSettings({
       canisterId = newBebbServiceCanisterPrincipal;
       settings = {
@@ -116,10 +136,10 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   };
 
   /**
-   * Generates the correct PK based on the ENtity type
+   * Generates the correct PK based on the Entity type
   */
   func getCanEntityTypePK(canDBEntityType: CanDBEntityTypes): Text {
-      return canDBEntityTypeToString(canDBEntityType) # "#";
+    return canDBEntityTypeToString(canDBEntityType) # "#";
   };
 
   /**
@@ -130,6 +150,14 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     switch canDBEntityType {
       case (#CanDBTypeEntity) "BebbEntity";
       case (#CanDBTypeBridge) "BebbBridge";
+    };
+  };
+
+  private func getPkForServiceType(serviceType: Text): async Text {
+    switch serviceType {
+      case ("Enity") getCanEntityTypePK(#CanDBTypeEntity);
+      case ("Bridge") getCanEntityTypePK(#CanDBTypeBridge);
+      case (_) { throw Error.reject("Unsupported serviceType"); };
     };
   };
 
