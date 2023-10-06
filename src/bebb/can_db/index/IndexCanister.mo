@@ -155,7 +155,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   private func getPkForServiceType(serviceType: Text): async Text {
     switch serviceType {
-      case ("Enity") getCanEntityTypePK(#CanDBTypeEntity);
+      case ("Entity") getCanEntityTypePK(#CanDBTypeEntity);
       case ("Bridge") getCanEntityTypePK(#CanDBTypeBridge);
       case (_) { throw Error.reject("Unsupported serviceType"); };
     };

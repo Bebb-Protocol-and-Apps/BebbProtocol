@@ -1,0 +1,80 @@
+type ScalingOptions = 
+ record {
+   autoScalingHook: AutoScalingCanisterSharedFunctionHook;
+   sizeLimit: ScalingLimitType;
+ };
+type ScalingLimitType = 
+ variant {
+   count: nat;
+   heapSize: nat;
+ };
+type BridgeType = 
+ variant {
+   IsAttachedto;
+   IsPartOf;
+   IsRelatedto;
+ };
+type BridgeSettings = record {};
+type BridgeResult = 
+ variant {
+   Err: BridgeErrors;
+   Ok: Bridge;
+ };
+type BridgeInitiationObject = 
+ record {
+   bridgeType: BridgeType;
+   description: opt text;
+   entitySpecificFields: opt text;
+   fromEntityId: text;
+   keywords: opt vec text;
+   name: opt text;
+   settings: opt BridgeSettings;
+   toEntityId: text;
+ };
+type BridgeIdResult = 
+ variant {
+   Err: BridgeIdErrors;
+   Ok: text;
+ };
+type BridgeIdErrors = 
+ variant {
+   BridgeNotFound;
+   Error;
+   Unauthorized;
+ };
+type BridgeErrors = 
+ variant {
+   BridgeNotFound;
+   Error;
+   Unauthorized: text;
+ };
+type Bridge = 
+ record {
+   bridgeType: BridgeType;
+   creationTimestamp: nat64;
+   creator: principal;
+   description: text;
+   entitySpecificFields: text;
+   fromEntityId: text;
+   id: text;
+   keywords: vec text;
+   listOfEntitySpecificFieldKeys: vec text;
+   name: text;
+   owner: principal;
+   settings: BridgeSettings;
+   toEntityId: text;
+ };
+type BebbBridgeService = 
+ service {
+   create_bridge: (BridgeInitiationObject) -> (BridgeIdResult);
+   getPK: () -> (text) query;
+   get_bridge: (text) -> (BridgeResult) query;
+   skExists: (text) -> (bool) query;
+   transferCycles: () -> ();
+ };
+type AutoScalingCanisterSharedFunctionHook = func (text) -> (text);
+service : (record {
+             owners: opt vec principal;
+             partitionKey: text;
+             scalingOptions: ScalingOptions;
+           }) -> BebbBridgeService

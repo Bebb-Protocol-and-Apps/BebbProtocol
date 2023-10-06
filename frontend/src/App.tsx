@@ -1,52 +1,82 @@
 import * as React from "react";
-import { greetUser, putUser } from "./api";
-import { initializeHelloServiceClient, intializeIndexClient } from "./client";
+import { getBebbBridge, getBebbEntity, putBebbBridge, putBebbEntity } from "./api";
+import {
+  intializeIndexClient,
+  initializeBebbEntityServiceClient,
+  initializeBebbBridgeServiceClient
+} from "./client";
 
 const isLocal = true;
 const indexClient = intializeIndexClient(isLocal);
-const helloServiceClient = initializeHelloServiceClient(isLocal, indexClient);
-const groupOptions = {
-  bridge: { value: "bridges", label: "Bridge" },
-  entity: { value: "entities", label: "Bebb Entity" }
-}
-type GroupType = 'bridge' | 'entity' 
+const entityServiceClient = initializeBebbEntityServiceClient(isLocal, indexClient);
+const bridgeServiceClient = initializeBebbBridgeServiceClient(isLocal, indexClient);
+const partitionOptions = {
+  Bridge: { value: "Bridge", label: "Bridge" },
+  Entity: { value: "Entity", label: "Bebb Entity" }
+};
+type GroupType = 'Bridge' | 'Entity';
+
 export default function App() {
-  let [greetName, setGreetName] = React.useState("");
-  let [name, setName] = React.useState("");
-  let [displayName, setDisplayName] = React.useState("");
-  let [greetingResponse, setGreetingResponse] = React.useState("");
-  let [greetErrorText, setGreetErrorText] = React.useState("");
+  let [entityId, setEntityId] = React.useState("");
+  let [bebbEntityResponse, setBebbEntityResponse] = React.useState("");
+  let [retrievalErrorText, setRetrievalErrorText] = React.useState("");
   let [createErrorText, setCreateErrorText] = React.useState("");
-  let [group, setGroup] = React.useState(groupOptions.entity);
+  let [partition, setPartition] = React.useState(partitionOptions.Entity);
   let [successText, setSuccessText] = React.useState("");
 
-  async function getUserGreeting() {
-    if (greetName === "") {
-      let errorText = "must enter a name to try to greet";
-      console.error(errorText);
-      setGreetErrorText(errorText)
-    } else {
-      setGreetErrorText("");
-      let greeting = await greetUser(helloServiceClient, group.value, greetName)
-      console.log("response", greeting)
-      setGreetingResponse(greeting);
-    }
-  }
+  let [name, setName] = React.useState("");
+  let [toEntityId, setToEntityId] = React.useState("");
+  let [fromEntityId, setFromEntityId] = React.useState("");
 
-  async function createUser() {
-    if (name === "" || displayName == "") {
-      let errorText = "must enter a name and a displayName for user";
+  async function getEntity() {
+    if (entityId === "") {
+      let errorText = "must enter an id to retrieve";
       console.error(errorText);
-      setCreateErrorText(errorText)
+      setRetrievalErrorText(errorText)
+    } else {
+      setRetrievalErrorText("");
+      let bebbEntity;
+      if (partition.value === "Bridge") {
+        bebbEntity = await getBebbBridge(bridgeServiceClient, partition.value, entityId);
+      } else {
+        bebbEntity = await getBebbEntity(entityServiceClient, partition.value, entityId);
+      };
+      console.log("response", bebbEntity)
+      setBebbEntityResponse(bebbEntity);
+    }
+  };
+
+  async function createEntity() {
+    if (partition.value === "Bridge") {
+      if (toEntityId && fromEntityId) {
+        setCreateErrorText("");
+        console.log("createEntity partition.value ", partition.value);
+        // create the canister for the partition key if not sure that it exists
+        await indexClient.indexCanisterActor.createBebbServiceCanisterByType(partition.value);
+        // create the new Bridge
+        const bebbBridgeObject = {
+          toEntityId,
+          fromEntityId, 
+          name,
+        };
+        await putBebbBridge(bridgeServiceClient, partition.value, bebbBridgeObject);
+        setSuccessText(`${name} successfully inserted`);
+      } else {
+        let errorText = "must enter a toEntityId and a fromEntityId to create a Bridge";
+        console.error(errorText);
+        setCreateErrorText(errorText)
+      };
     } else {
       setCreateErrorText("");
+      console.log("createEntity partition.value ", partition.value);
       // create the canister for the partition key if not sure that it exists
-      await indexClient.indexCanisterActor.createBebbServiceCanisterByType(group.value);
-      // create the new user
-      await putUser(helloServiceClient, group.value, name, displayName);
-      setSuccessText(`${name} successfully inserted`)
+      await indexClient.indexCanisterActor.createBebbServiceCanisterByType(partition.value);
+      // create the new Bebb Entity
+      const bebbEntityObject = { name };
+      await putBebbEntity(entityServiceClient, partition.value, bebbEntityObject);
+      setSuccessText(`${name} successfully inserted`);
     }
-  }
+  };
 
   return (
     <div className="flex-center">
@@ -62,63 +92,76 @@ export default function App() {
         <hr/>
 
         <div className="flex-wrapper">
-          <div>Selected Group (<span className="partition-highlight">Partition</span>):</div> 
-          <select className="left-margin" onChange={(e) => setGroup(groupOptions[e.target.value as GroupType])}>
-            {Object.values(groupOptions).map(createOption)}
+          <div>Selected (<span className="partition-highlight">Partition</span>):</div> 
+          <select className="left-margin" onChange={(e) => setPartition(partitionOptions[e.target.value as GroupType])}>
+            {Object.values(partitionOptions).map(createOption)}
           </select>
         </div>
       </div>
 
       <div className="section-wrapper">
-        <h2>Get an Entity from the {group.label} group</h2>
+        <h2>Get an Entity from the {partition.label} partition</h2>
         <div className="flex-wrapper">
-          <div className="prompt-text">Set username to greet:</div>
+          <div className="prompt-text">Set id to retrieve:</div>
           <input
             className="margin-left"
-            value={greetName}
-            onChange={ev => setGreetName(ev.target.value)}
+            value={entityId}
+            onChange={ev => setEntityId(ev.target.value)}
           />
-          <button className="left-margin" type="button" onClick={getUserGreeting}>Get user greeting</button>
+          <button className="left-margin" type="button" onClick={getEntity}>Get Entity</button>
         </div>
         <div className="flex-wrapper">
           <div className="prompt-text">Greeting response:</div>
-          <div>{greetingResponse}</div>
-          <div>{greetErrorText}</div>
+          <div>{bebbEntityResponse}</div>
+          <div>{retrievalErrorText}</div>
         </div>
       </div>
 
       <div className="section-wrapper">
-        <h2>Create an Entity in {group.label} group</h2>
+        <h2>Create an Entity in {partition.label} partition</h2>
+        {
+          partition.value === "Bridge" &&
+            <div>
+              <div className="flex-wrapper">
+                <div className="prompt-text">Set Entity Id to bridge from:</div>
+                <input
+                  value={fromEntityId}
+                  onChange={ev => setFromEntityId(ev.target.value)}
+                />
+              </div>
+              <div className="flex-wrapper">
+                <div className="prompt-text">Set Entity Id to bridge to:</div>
+                <input
+                  value={toEntityId}
+                  onChange={ev => setToEntityId(ev.target.value)}
+                />
+              </div>
+            </div>
+        }
         <div className="flex-wrapper">
-          <div className="prompt-text">Set username to create:</div>
+          <div className="prompt-text">Set name (optional):</div>
           <input
             value={name}
             onChange={ev => setName(ev.target.value)}
           />
         </div>
+
         <div className="flex-wrapper">
-          <div className="prompt-text">Set displayName:</div>
-          <input
-            value={displayName}
-            onChange={ev => setDisplayName(ev.target.value)}
-          />
-        </div>
-        <div className="flex-wrapper">
-          <button type="button" onClick={createUser}>Create entity</button>
+          <button type="button" onClick={createEntity}>Create Entity</button>
           <div className="left-margin">{successText}</div>
           <div>{createErrorText}</div>
         </div>
       </div>
 
     </div>
-  )
-}
+  );
+};
 
 type OptionType = {
   value: string;
   label: string;
-}
+};
 
 function createOption(option: OptionType) {
   return <option key={option.value} value={option.value}>{option.label}</option>
-}
+};

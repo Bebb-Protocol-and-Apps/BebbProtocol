@@ -1,0 +1,119 @@
+type Time = int;
+type ScalingOptions = 
+ record {
+   autoScalingHook: AutoScalingCanisterSharedFunctionHook;
+   sizeLimit: ScalingLimitType;
+ };
+type ScalingLimitType = 
+ variant {
+   count: nat;
+   heapSize: nat;
+ };
+type EntityTypeResourceTypes = 
+ variant {
+   Content;
+   DigitalAsset;
+   Web;
+ };
+type EntityType = 
+ variant {
+   Other: text;
+   Resource: EntityTypeResourceTypes;
+ };
+type EntitySettings = record {};
+type EntityResult = 
+ variant {
+   Err: EntityErrors;
+   Ok: Entity;
+ };
+type EntityPreviewSupportedTypes = 
+ variant {
+   Glb;
+   Gltf;
+   Jpg;
+   Other: text;
+   Png;
+ };
+type EntityPreview = 
+ record {
+   previewData: blob;
+   previewType: EntityPreviewSupportedTypes;
+ };
+type EntityInitiationObject = 
+ record {
+   description: opt text;
+   entitySpecificFields: opt text;
+   entityType: EntityType;
+   keywords: opt vec text;
+   name: opt text;
+   settings: opt EntitySettings;
+ };
+type EntityIdResult = 
+ variant {
+   Err: EntityIdErrors;
+   Ok: text;
+ };
+type EntityIdErrors = 
+ variant {
+   EntityNotFound;
+   Error;
+   PreviewTooLarge: int;
+   TooManyPreviews;
+   Unauthorized;
+ };
+type EntityErrors = 
+ variant {
+   EntityNotFound;
+   Error;
+   Unauthorized: text;
+ };
+type EntityAttachedBridges = vec EntityAttachedBridge;
+type EntityAttachedBridge = 
+ record {
+   bridgeType: BridgeType;
+   creationTime: Time;
+   id: text;
+   linkStatus: BridgeLinkStatus;
+ };
+type Entity = 
+ record {
+   creationTimestamp: nat64;
+   creator: principal;
+   description: text;
+   entitySpecificFields: text;
+   entityType: EntityType;
+   fromIds: EntityAttachedBridges;
+   id: text;
+   keywords: vec text;
+   listOfEntitySpecificFieldKeys: vec text;
+   name: text;
+   owner: principal;
+   previews: vec EntityPreview;
+   settings: EntitySettings;
+   toIds: EntityAttachedBridges;
+ };
+type BridgeType = 
+ variant {
+   IsAttachedto;
+   IsPartOf;
+   IsRelatedto;
+ };
+type BridgeLinkStatus = 
+ variant {
+   CreatedOther;
+   CreatedOwner;
+ };
+type BebbEntityService = 
+ service {
+   create_entity: (EntityInitiationObject) -> (EntityIdResult);
+   getPK: () -> (text) query;
+   get_entity: (text) -> (EntityResult) query;
+   skExists: (text) -> (bool) query;
+   transferCycles: () -> ();
+ };
+type AutoScalingCanisterSharedFunctionHook = func (text) -> (text);
+service : (record {
+             owners: opt vec principal;
+             partitionKey: text;
+             scalingOptions: ScalingOptions;
+           }) -> BebbEntityService

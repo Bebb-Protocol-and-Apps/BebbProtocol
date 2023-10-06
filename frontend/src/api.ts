@@ -1,18 +1,24 @@
 import { ActorClient } from "candb-client-typescript/dist/ActorClient";
-import { BebbService } from "../declarations/bebbservice/bebbservice.did";
-import { IndexCanister } from "../declarations/index/index.did";
-import { EntityInitiationObject } from "../declarations/bebbservice/bebbservice.did";
-import { EntityType } from "../declarations/bebbservice/bebbservice.did";
-import { EntityTypeResourceTypes } from "../declarations/bebbservice/bebbservice.did";
 
-export async function greetUser(helloServiceClient: ActorClient<IndexCanister, BebbService>, group: string, name: string) {
-  let pk = `group#${group}`;
-  let userGreetingQueryResults = await helloServiceClient.query<BebbService["get_entity"]>(
+import { IndexCanister } from "../declarations/index/index.did";
+
+import {
+  BebbEntityService,
+  EntityInitiationObject,
+} from "../declarations/bebbentityservice/bebbentityservice.did";
+import {
+  BebbBridgeService,
+  BridgeInitiationObject
+} from "../declarations/bebbbridgeservice/bebbbridgeservice.did";
+
+export async function getBebbEntity(bebbServiceClient: ActorClient<IndexCanister, BebbEntityService>, partition: string, name: string) {
+  let pk = `${partition}#`;
+  let entityQueryResults = await bebbServiceClient.query<BebbEntityService["get_entity"]>(
     pk,
     (actor) => actor.get_entity(name)
   );
 
-  for (let settledResult of userGreetingQueryResults) {
+  for (let settledResult of entityQueryResults) {
     // handle settled result if fulfilled
     if (settledResult.status === "fulfilled") {
       // handle candid returned optional type (string[] or string)
@@ -20,23 +26,69 @@ export async function greetUser(helloServiceClient: ActorClient<IndexCanister, B
     } 
   }
   
-  return "User does not exist";
+  return "Entity does not exist";
 };
 
-export async function putUser(helloServiceClient: ActorClient<IndexCanister, BebbService>, group: string, name: string, nickname: string) {
-  let pk = `group#${group}`;
-  let sk = name;
-  let entity_initialization_object: EntityInitiationObject = {
-    settings: [],
-    entityType: { "Resource": { "Web" : null } },
-    name: ["EntityName"], // Replace with the desired name or set it to null or undefined
-    description: ["EntityDescription"], // Replace with the desired description or set it to null or undefined
-    keywords: [["Keyword1", "Keyword2"]], // Replace with an array of keywords or set it to null or undefined
-    entitySpecificFields:[ "SpecificFieldsValue"], // Replace with the desired entity specific fields or set it to null or undefined
-  };
-  await helloServiceClient.update<BebbService["create_entity"]>(
+export async function getBebbBridge(bebbServiceClient: ActorClient<IndexCanister, BebbBridgeService>, partition: string, name: string) {
+  let pk = `${partition}#`;
+  let bridgeQueryResults = await bebbServiceClient.query<BebbBridgeService["get_bridge"]>(
     pk,
-    sk,
-    (actor) => actor.create_entity(entity_initialization_object)
+    (actor) => actor.get_bridge(name)
   );
-}
+
+  for (let settledResult of bridgeQueryResults) {
+    // handle settled result if fulfilled
+    if (settledResult.status === "fulfilled") {
+      // handle candid returned optional type (string[] or string)
+      return Array.isArray(settledResult.value) ? settledResult.value[0] : settledResult.value
+    } 
+  }
+  
+  return "Bridge does not exist";
+};
+
+export async function putBebbEntity(bebbServiceClient: ActorClient<IndexCanister, BebbEntityService>, partition: string, entityObject: any) {
+  let pk = `${partition}#`;
+  let sk = entityObject.id;
+  if (partition === "Entity") {
+    let entity_initialization_object: EntityInitiationObject = {
+      settings: [],
+      entityType: { "Resource": { "Web" : null } },
+      name: [entityObject.name], // Replace with the desired name or set it to null or undefined
+      description: ["EntityDescription"], // Replace with the desired description or set it to null or undefined
+      keywords: [["Bebb Protocol"]] as [Array<string>], // Replace with an array of keywords or set it to null or undefined
+      entitySpecificFields: [ "SpecificFieldsValue"], // Replace with the desired entity specific fields or set it to null or undefined
+    };
+    await bebbServiceClient.update<BebbEntityService["create_entity"]>(
+      pk,
+      sk,
+      (actor) => actor.create_entity(entity_initialization_object)
+    );
+  } else {
+    throw new Error("Unsupported partition");
+  };  
+};
+
+export async function putBebbBridge(bebbServiceClient: ActorClient<IndexCanister, BebbBridgeService>, partition: string, entityObject: any) {
+  let pk = `${partition}#`;
+  let sk = entityObject.id;
+  if (partition === "Bridge") {
+    let bridge_initialization_object: BridgeInitiationObject = {
+      settings: [],
+      name: [],
+      description: [``] as [string],
+      keywords: [["Bebb Protocol"]] as [Array<string>],
+      entitySpecificFields: [],
+      bridgeType: { 'IsRelatedto' : null },
+      fromEntityId: entityObject.fromEntityId,
+      toEntityId: entityObject.toEntityId,
+    };
+    await bebbServiceClient.update<BebbBridgeService["create_bridge"]>(
+      pk,
+      sk,
+      (actor) => actor.create_bridge(bridge_initialization_object)
+    );
+  } else {
+    throw new Error("Unsupported partition");
+  };  
+};
