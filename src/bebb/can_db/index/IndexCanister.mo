@@ -81,14 +81,14 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   // Spins up a new Bebb Service canister with the provided pk and controllers
   func createBebbServiceCanister(pk: Text, controllers: ?[Principal]): async Text {
-    Debug.print("creating new hello service canister with pk=" # pk);
+    Debug.print("creating new Bebb service canister with pk=" # pk);
     // Pre-load 300 billion cycles for the creation of a new Bebb Service canister
     // Note that canister creation costs 100 billion cycles, meaning there are 200 billion
     // left over for the new canister when it is created
     Cycles.add(300_000_000_000); // TODO: enough?
-    var newBebbServiceCanisterPrincipal = Principal.fromText(""); // placeholder to be filled
+    var newBebbServiceCanisterPrincipal = Principal.fromActor(this); // placeholder to be filled
     switch pk {
-      case ("BebbEntity") {
+      case ("BebbEntity#") {
         let newBebbServiceCanister = await BebbEntityService.BebbEntityService({
           partitionKey = pk;
           scalingOptions = {
@@ -101,7 +101,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
         });
         newBebbServiceCanisterPrincipal := Principal.fromActor(newBebbServiceCanister);
       };
-      case ("BebbBridge") {
+      case ("BebbBridge#") {
         let newBebbServiceCanister = await BebbBridgeService.BebbBridgeService({
           partitionKey = pk;
           scalingOptions = {
@@ -116,6 +116,8 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       };
       case (_) { throw Error.reject("Unsupported pk"); };
     };
+
+    assert(newBebbServiceCanisterPrincipal != Principal.fromActor(this)); // Ensure the principal was updated
     
     await CA.updateCanisterSettings({
       canisterId = newBebbServiceCanisterPrincipal;

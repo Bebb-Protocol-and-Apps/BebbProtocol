@@ -47,10 +47,27 @@ export async function getBebbBridge(bebbServiceClient: ActorClient<IndexCanister
   return "Bridge does not exist";
 };
 
-export async function putBebbEntity(bebbServiceClient: ActorClient<IndexCanister, BebbEntityService>, partition: string, entityObject: any) {
-  let pk = `${partition}#`;
-  let sk = entityObject.id;
+const getPkForPartition = (partition: string) => {
   if (partition === "Entity") {
+    return "BebbEntity#";
+  } else if (partition === "Bridge") {
+    return "BebbBridge#";
+  } else {
+    throw "Unsupported partition";
+  };
+};
+
+export async function putBebbEntity(bebbServiceClient: ActorClient<IndexCanister, BebbEntityService>, partition: string, entityObject: any) {
+  console.log("Debug putBebbEntity partition ", partition);
+  console.log("Debug putBebbEntity entityObject ", entityObject);
+  if (partition === "Entity") {
+    let pk = getPkForPartition(partition);
+    console.log("Debug putBebbEntity pk ", pk);
+    let sk = entityObject.id;
+    if (!sk) {
+      sk = "sk" + Math.floor(Math.random() * Date.now());
+    };
+    console.log("Debug putBebbEntity sk ", sk);
     let entity_initialization_object: EntityInitiationObject = {
       settings: [],
       entityType: { "Resource": { "Web" : null } },
@@ -70,9 +87,12 @@ export async function putBebbEntity(bebbServiceClient: ActorClient<IndexCanister
 };
 
 export async function putBebbBridge(bebbServiceClient: ActorClient<IndexCanister, BebbBridgeService>, partition: string, entityObject: any) {
-  let pk = `${partition}#`;
-  let sk = entityObject.id;
   if (partition === "Bridge") {
+    let pk = getPkForPartition(partition);
+    let sk = entityObject.id;
+    if (!sk) {
+      sk = "sk" + Math.floor(Math.random() * Date.now());
+    };
     let bridge_initialization_object: BridgeInitiationObject = {
       settings: [],
       name: [],

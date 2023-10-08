@@ -1,4 +1,7 @@
 import * as React from "react";
+import type { Identity } from "@dfinity/agent";
+import { AuthClient } from "@dfinity/auth-client";
+
 import { getBebbBridge, getBebbEntity, putBebbBridge, putBebbEntity } from "./api";
 import {
   intializeIndexClient,
@@ -6,13 +9,55 @@ import {
   initializeBebbBridgeServiceClient
 } from "./client";
 
-const isLocal = true;
-const indexClient = intializeIndexClient(isLocal);
-const entityServiceClient = initializeBebbEntityServiceClient(isLocal, indexClient);
-const bridgeServiceClient = initializeBebbBridgeServiceClient(isLocal, indexClient);
+const isLocal = process.env.NODE_ENV !== "production";
+let indexClient = intializeIndexClient(isLocal);
+let entityServiceClient = initializeBebbEntityServiceClient(isLocal, indexClient);
+let bridgeServiceClient = initializeBebbBridgeServiceClient(isLocal, indexClient);
+
+let authClient : AuthClient;
+const APPLICATION_NAME = "Bebb UI";
+const APPLICATION_LOGO_URL = "https://vdfyi-uaaaa-aaaai-acptq-cai.ic0.app/faviconFutureWebInitiative.ico";
+//"https%3A%2F%2Fx6occ%2Dbiaaa%2Daaaai%2Dacqzq%2Dcai.icp0.io%2Ffavicon.ico"
+//"https%3A%2F%2Fx6occ-biaaa-aaaai-acqzq-cai.icp0.io%2FFutureWebInitiative%5Fimg.png";
+const AUTH_PATH = "/authenticate/?applicationName="+APPLICATION_NAME+"&applicationLogo="+APPLICATION_LOGO_URL+"#authorize";
+
+const days = BigInt(30);
+const hours = BigInt(24);
+const nanosecondsPerHour = BigInt(3600000000000);
+let loggedInIdentity;
+
+const nfidConnect = async () => {
+  authClient = await AuthClient.create();
+  await authClient.login({
+    onSuccess: async () => {
+      loggedInIdentity = await authClient.getIdentity();
+      initNfid(loggedInIdentity);
+    },
+    identityProvider: "https://nfid.one" + AUTH_PATH,
+      /* process.env.DFX_NETWORK === "ic"
+        ? "https://nfid.one" + AUTH_PATH
+        : process.env.LOCAL_NFID_CANISTER + AUTH_PATH, */
+    // Maximum authorization expiration is 30 days
+    maxTimeToLive: days * hours * nanosecondsPerHour,
+    windowOpenerFeatures: 
+      `left=${window.screen.width / 2 - 525 / 2}, `+
+      `top=${window.screen.height / 2 - 705 / 2},` +
+      `toolbar=0,location=0,menubar=0,width=525,height=705`,
+    // See https://docs.nfid.one/multiple-domains
+    // for instructions on how to use derivationOrigin
+    // derivationOrigin: "https://<canister_id>.ic0.app"
+  });
+};
+
+const initNfid = async (identity: Identity) => {
+  indexClient = intializeIndexClient(isLocal, identity);
+  entityServiceClient = initializeBebbEntityServiceClient(isLocal, indexClient, identity);
+  bridgeServiceClient = initializeBebbBridgeServiceClient(isLocal, indexClient, identity);
+};
+
 const partitionOptions = {
-  Bridge: { value: "Bridge", label: "Bridge" },
-  Entity: { value: "Entity", label: "Bebb Entity" }
+  Entity: { value: "Entity", label: "Bebb Entity" },
+  Bridge: { value: "Bridge", label: "Bridge" }
 };
 type GroupType = 'Bridge' | 'Entity';
 
@@ -90,6 +135,8 @@ export default function App() {
           Creating a user inserts it into the currently selected group <span className="partition-highlight">partition</span>, and getting a user fetches it from the currently selected group partition.
         </p>
         <hr/>
+
+        <button className="left-margin" type="button" onClick={nfidConnect}>Login</button>
 
         <div className="flex-wrapper">
           <div>Selected (<span className="partition-highlight">Partition</span>):</div> 
