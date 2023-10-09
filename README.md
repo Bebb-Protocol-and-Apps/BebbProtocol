@@ -25,6 +25,8 @@ Local:
 dfx deploy
 
 Development:
+dfx deploy index --network development
+In frontend folder: dfx deploy frontend --network development
 dfx deploy --network development
 
 Testing:

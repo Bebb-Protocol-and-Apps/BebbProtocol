@@ -10,17 +10,53 @@ import { idlFactory as BebbEntityServiceCanisterIDL } from "../declarations/bebb
 import { BebbBridgeService } from "../declarations/bebbbridgeservice/bebbbridgeservice.did";
 import { idlFactory as BebbBridgeServiceCanisterIDL } from "../declarations/bebbbridgeservice/index";
 
+console.log("Debug client process.env.NODE_ENV ", process.env.NODE_ENV);
+console.log("Debug client process.env.DFX_NETWORK ", process.env.DFX_NETWORK);
+
+let HOST =
+  process.env.NODE_ENV !== "development"
+    ? "https://ic0.app"
+    : "http://localhost:4943";
+
+let appDomain = ".icp0.io";
+
+if (process.env.DFX_NETWORK === "ic") {
+  // production
+  HOST = "https://icp0.io";
+  appDomain = ".icp0.io";
+} else if (process.env.DFX_NETWORK === "local") {
+  // on localhost
+  HOST = "http://localhost:4943";
+} else if (process.env.DFX_NETWORK === "development") {
+  // development canisters on mainnet (for network development)
+  HOST = "https://icp0.io";
+  appDomain = ".icp0.io";
+} else if (process.env.DFX_NETWORK === "testing") {
+  // testing canisters on mainnet (for network testing)
+  HOST = "https://icp0.io";
+  appDomain = ".icp0.io";
+} else if (process.env.DFX_NETWORK === "alexStaging") {
+  // testing canisters on mainnet (for network testing for Alex)
+  HOST = "https://icp0.io";
+  appDomain = ".icp0.io";
+} else {
+  HOST = "https://icp0.io";
+};
+
 export function intializeIndexClient(isLocal: boolean, identity: Identity = null): IndexClient<IndexCanister> {
-  const host = isLocal ? "http://127.0.0.1:4943" : "https://ic0.app";
+  console.log("Debug intializeIndexClient isLocal ", isLocal);
+  console.log("Debug intializeIndexClient identity ", identity);
+  console.log("Debug intializeIndexClient process.env.INDEX_CANISTER_ID ", process.env.INDEX_CANISTER_ID);
   // canisterId of your index canister
-  const canisterId = isLocal ? process.env.INDEX_CANISTER_ID : "<prod_canister_id>";
+  const canisterId = isLocal ? process.env.INDEX_CANISTER_ID : "c2yuv-naaaa-aaaam-abumq-cai";
+  console.log("Debug intializeIndexClient canisterId ", canisterId);
   if (identity) {
     return new IndexClient<IndexCanister>({
       IDL: IndexCanisterIDL,
       canisterId, 
       agentOptions: {
         identity,
-        host,
+        host: HOST,
       },
     })
   };
@@ -28,20 +64,19 @@ export function intializeIndexClient(isLocal: boolean, identity: Identity = null
     IDL: IndexCanisterIDL,
     canisterId, 
     agentOptions: {
-      host,
+      host: HOST,
     },
   })
 };
 
 export function initializeBebbEntityServiceClient(isLocal: boolean, indexClient: IndexClient<IndexCanister>, identity: Identity = null): ActorClient<IndexCanister, BebbEntityService> {
-  const host = isLocal ? "http://127.0.0.1:8000" : "https://ic0.app";
   if (identity) {
     return new ActorClient<IndexCanister, BebbEntityService>({
       actorOptions: {
         IDL: BebbEntityServiceCanisterIDL,
         agentOptions: {
           identity,
-          host,
+          host: HOST,
         }
       },
       indexClient, 
@@ -51,7 +86,7 @@ export function initializeBebbEntityServiceClient(isLocal: boolean, indexClient:
     actorOptions: {
       IDL: BebbEntityServiceCanisterIDL,
       agentOptions: {
-        host,
+        host: HOST,
       }
     },
     indexClient, 
@@ -59,14 +94,13 @@ export function initializeBebbEntityServiceClient(isLocal: boolean, indexClient:
 };
 
 export function initializeBebbBridgeServiceClient(isLocal: boolean, indexClient: IndexClient<IndexCanister>, identity: Identity = null): ActorClient<IndexCanister, BebbBridgeService> {
-  const host = isLocal ? "http://127.0.0.1:8000" : "https://ic0.app";
   if (identity) {
     return new ActorClient<IndexCanister, BebbBridgeService>({
       actorOptions: {
         IDL: BebbBridgeServiceCanisterIDL,
         agentOptions: {
           identity,
-          host,
+          host: HOST,
         }
       },
       indexClient, 
@@ -76,7 +110,7 @@ export function initializeBebbBridgeServiceClient(isLocal: boolean, indexClient:
     actorOptions: {
       IDL: BebbBridgeServiceCanisterIDL,
       agentOptions: {
-        host,
+        host: HOST,
       }
     },
     indexClient, 
