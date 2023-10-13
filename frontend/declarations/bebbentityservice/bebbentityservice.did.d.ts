@@ -47,7 +47,7 @@ export type EntityIdErrors = { 'Error' : null } |
   { 'PreviewTooLarge' : bigint } |
   { 'EntityNotFound' : null } |
   { 'TooManyPreviews' : null } |
-  { 'Unauthorized' : null };
+  { 'Unauthorized' : string };
 export type EntityIdResult = { 'Ok' : string } |
   { 'Err' : EntityIdErrors };
 export interface EntityInitiationObject {

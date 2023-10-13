@@ -8,6 +8,7 @@ import Buffer "mo:stablebuffer/StableBuffer";
 import Cycles "mo:base/ExperimentalCycles";
 import CA "mo:candb/CanisterActions";
 import RangeTreeV2 "mo:candb/RangeTreeV2";
+import Admin "mo:candb/CanDBAdmin";
 
 import BebbEntityService "../bebb_service/BebbEntityService";
 import BebbBridgeService "../bebb_service/BebbBridgeService";
@@ -77,6 +78,36 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       Debug.print(pk # " already exists");
       null 
     };
+  };
+
+  /// !! Do not use this method without caller authorization
+  /// Upgrade user canisters in a PK range, i.e. rolling upgrades (limit is fixed at upgrading the canisters of 5 PKs per call)
+  public shared({ caller = caller }) func upgradeGroupCanistersInPKRange(lowerPK: Text, upperPK: Text, wasmModule: Blob): async Admin.UpgradePKRangeResult {
+    /* !!! Recommend Adding to prevent anyone from being able to upgrade the wasm of your service actor canisters
+    if (caller != owner) { // basic authorization
+      return {
+        upgradeCanisterResults = [];
+        nextKey = null;
+      }
+    }; 
+    */
+
+
+    // CanDB documentation on this library function - https://www.candb.canscale.dev/CanDBAdmin.html
+    await Admin.upgradeCanistersInPKRange({
+      canisterMap = pkToCanisterMap;
+      lowerPK = lowerPK; 
+      upperPK = upperPK;
+      limit = 5;
+      wasmModule = wasmModule;
+      // the scaling options parameter that will be passed to the constructor of the upgraded canister
+      scalingOptions = {
+        autoScalingHook = autoScaleBebbServiceCanister;
+        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB
+      };
+      // the owners parameter that will be passed to the constructor of the upgraded canister
+      owners = ?[owner, Principal.fromActor(this)];
+    });
   };
 
   // Spins up a new Bebb Service canister with the provided pk and controllers

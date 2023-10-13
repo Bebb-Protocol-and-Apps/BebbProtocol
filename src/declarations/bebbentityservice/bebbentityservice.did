@@ -59,7 +59,7 @@ type EntityIdErrors =
    Error;
    PreviewTooLarge: int;
    TooManyPreviews;
-   Unauthorized;
+   Unauthorized: text;
  };
 type EntityErrors = 
  variant {

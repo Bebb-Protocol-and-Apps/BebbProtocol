@@ -40,7 +40,7 @@ type BridgeIdErrors =
  variant {
    BridgeNotFound;
    Error;
-   Unauthorized;
+   Unauthorized: text;
  };
 type BridgeErrors = 
  variant {

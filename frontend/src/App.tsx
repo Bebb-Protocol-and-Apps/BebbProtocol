@@ -104,8 +104,8 @@ export default function App() {
           fromEntityId, 
           name,
         };
-        await putBebbBridge(bridgeServiceClient, partition.value, bebbBridgeObject);
-        setSuccessText(`${name} successfully inserted`);
+        const result = await putBebbBridge(bridgeServiceClient, partition.value, bebbBridgeObject);
+        setSuccessText(`${name} successfully inserted: ${result}`);
       } else {
         let errorText = "must enter a toEntityId and a fromEntityId to create a Bridge";
         console.error(errorText);
@@ -118,8 +118,8 @@ export default function App() {
       await indexClient.indexCanisterActor.createBebbServiceCanisterByType(partition.value);
       // create the new Bebb Entity
       const bebbEntityObject = { name };
-      await putBebbEntity(entityServiceClient, partition.value, bebbEntityObject);
-      setSuccessText(`${name} successfully inserted`);
+      const result = await putBebbEntity(entityServiceClient, partition.value, bebbEntityObject);
+      setSuccessText(`${name} successfully inserted: ${result}`);
     }
   };
 

@@ -76,11 +76,14 @@ export async function putBebbEntity(bebbServiceClient: ActorClient<IndexCanister
       keywords: [["Bebb Protocol"]] as [Array<string>], // Replace with an array of keywords or set it to null or undefined
       entitySpecificFields: [ "SpecificFieldsValue"], // Replace with the desired entity specific fields or set it to null or undefined
     };
-    await bebbServiceClient.update<BebbEntityService["create_entity"]>(
+    const result = await bebbServiceClient.update<BebbEntityService["create_entity"]>(
       pk,
       sk,
       (actor) => actor.create_entity(entity_initialization_object)
     );
+    console.log("Return value:" + result);
+    console.log(result);
+    return result;
   } else {
     throw new Error("Unsupported partition");
   };  
@@ -103,11 +106,12 @@ export async function putBebbBridge(bebbServiceClient: ActorClient<IndexCanister
       fromEntityId: entityObject.fromEntityId,
       toEntityId: entityObject.toEntityId,
     };
-    await bebbServiceClient.update<BebbBridgeService["create_bridge"]>(
+    const result = await bebbServiceClient.update<BebbBridgeService["create_bridge"]>(
       pk,
       sk,
       (actor) => actor.create_bridge(bridge_initialization_object)
     );
+    return result;
   } else {
     throw new Error("Unsupported partition");
   };  

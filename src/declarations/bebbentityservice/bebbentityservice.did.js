@@ -35,7 +35,7 @@ export const idlFactory = ({ IDL }) => {
     'PreviewTooLarge' : IDL.Int,
     'EntityNotFound' : IDL.Null,
     'TooManyPreviews' : IDL.Null,
-    'Unauthorized' : IDL.Null,
+    'Unauthorized' : IDL.Text,
   });
   const EntityIdResult = IDL.Variant({
     'Ok' : IDL.Text,

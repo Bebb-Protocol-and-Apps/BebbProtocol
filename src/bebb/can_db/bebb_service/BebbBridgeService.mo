@@ -52,8 +52,8 @@ shared ({ caller = owner }) actor class BebbBridgeService({
    * @return The bridge id if the bridge was successfully created, otherwise an error
   */
   public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async Bridge.BridgeIdResult {
-    if (partitionKey != "bridges") {
-      return #Err(#Unauthorized);
+    if (partitionKey != "BebbBridge") {
+      return #Err(#Unauthorized("Wrong Partition"));
     };
     let result = await createBridge(caller, bridgeToCreate);
     switch (result) {
@@ -68,7 +68,7 @@ shared ({ caller = owner }) actor class BebbBridgeService({
    * @return Returns the bridge if the id matches a stored bridge, otherwise an error
   */
   public shared query ({ caller }) func get_bridge(bridgeId : Text) : async Bridge.BridgeResult {
-    if (partitionKey != "bridges") {
+    if (partitionKey != "BebbBridge") {
       return #Err(#Unauthorized("Wrong Partition"));
     };
     let result = getBridge(bridgeId);

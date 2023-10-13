@@ -31,7 +31,7 @@ module {
    * Defines the errors for the public API when trying to retrieve a Bridge ID
   */
   public type BridgeIdErrors = {
-    #Unauthorized;
+    #Unauthorized : Text;
     #BridgeNotFound;
     #Error;
   };

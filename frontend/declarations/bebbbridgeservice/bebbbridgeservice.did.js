@@ -30,7 +30,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const BridgeIdErrors = IDL.Variant({
     'Error' : IDL.Null,
-    'Unauthorized' : IDL.Null,
+    'Unauthorized' : IDL.Text,
     'BridgeNotFound' : IDL.Null,
   });
   const BridgeIdResult = IDL.Variant({

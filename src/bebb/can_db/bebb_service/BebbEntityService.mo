@@ -52,8 +52,8 @@ shared ({ caller = owner }) actor class BebbEntityService({
    * @return Returns the entity id if it was successfully created, otherwise it returns an error
   */
   public shared ({ caller }) func create_entity(entityToCreate : Entity.EntityInitiationObject) : async Entity.EntityIdResult {
-    if (partitionKey != "entities") {
-      return #Err(#Unauthorized);
+    if (partitionKey != "BebbEntity") {
+      return #Err(#Unauthorized("Wrong Parition"));
     };
     let result = await createEntity(caller, entityToCreate);
     switch (result) {
@@ -70,7 +70,7 @@ shared ({ caller = owner }) actor class BebbEntityService({
    * @return The entity if the id matches an entity, otherwise an error
   */
   public shared query ({ caller }) func get_entity(entityId : Text) : async Entity.EntityResult {
-    if (partitionKey != "entities") {
+    if (partitionKey != "BebbEntity") {
       return #Err(#Unauthorized("Wrong Partition"));
     };
     let result = getEntity(entityId);

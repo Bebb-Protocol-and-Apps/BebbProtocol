@@ -10,6 +10,7 @@ The goal of these implementation efforts and different versions is to achieve a 
 ## Running the project locally
 
 If you want to test your project locally, you can use the following commands:
+Note: Local development currently won't work due to functionality that only works on the mainnet
 
 ```bash
 # Starts the replica, running in the background
@@ -20,7 +21,7 @@ dfx deploy index
 dfx deploy bebb
 ```
 
-## Different Stages
+## Deploy Bebb to the mainnet
 Local:
 dfx deploy
 
@@ -40,19 +41,8 @@ dfx deploy frontend --network alexStaging
 dfx deploy --network alexStaging
 ```
 
-
-Testing:
-dfx deploy --network testing
-
-Production:
-dfx deploy --network ic
-
 ## Testing Backend Changes
-The majority of the changes are tested via the candid backend. To access the Candid backend, after you run
-```bash
-dfx deploy
-```
-as shown above. It will provide the URL to the canister backend Candid UI. You can test the API calls through that interface
+The majority of the changes are tested via the frontend canister that is deployed with the backend canister above
 
 ## Testing Frontend Changes
 
@@ -72,3 +62,20 @@ npm run start
 ```
 
 Now you can navigate to localhost:8080 to interact with the frontend!
+
+# Upgrading the backend canisters
+First upgrade the backend canister
+```bash
+dfx deploy index --network <network>
+```
+Then build the service canister you want to upgrade
+```bash
+dfx build bebbentityservice --network <network>
+dfx build bebbbridgeservice --network <network>
+```
+Go to the management scripts
+```bash
+cd management_scripts
+npm install
+npm run upgrade
+```

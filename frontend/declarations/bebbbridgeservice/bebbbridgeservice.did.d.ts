@@ -31,7 +31,7 @@ export type BridgeErrors = { 'Error' : null } |
   { 'Unauthorized' : string } |
   { 'BridgeNotFound' : null };
 export type BridgeIdErrors = { 'Error' : null } |
-  { 'Unauthorized' : null } |
+  { 'Unauthorized' : string } |
   { 'BridgeNotFound' : null };
 export type BridgeIdResult = { 'Ok' : string } |
   { 'Err' : BridgeIdErrors };

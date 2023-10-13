@@ -87,7 +87,7 @@ module {
    * Defines the errors for the public API when trying to retrieve an Entity ID
   */
   public type EntityIdErrors = {
-    #Unauthorized;
+    #Unauthorized : Text;
     #EntityNotFound;
     #TooManyPreviews;
     // Returns the index of the preview that is too large
