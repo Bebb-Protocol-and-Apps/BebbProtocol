@@ -1,11 +1,19 @@
 {
   "bebb": {
+    "alexStaging": "yqn2i-hyaaa-aaaap-qbmiq-cai",
+    "development": "tsmol-tqaaa-aaaag-abt2a-cai",
     "ic": "pzrof-pyaaa-aaaai-acnha-cai",
     "local": "pzrof-pyaaa-aaaai-acnha-cai",
-    "development": "tsmol-tqaaa-aaaag-abt2a-cai",
     "testing": "t6nyb-faaaa-aaaal-qcbaa-cai"
   },
+  "bebbbridgeservice": {
+    "alexStaging": "awxxq-baaaa-aaaao-a2izq-cai"
+  },
+  "bebbentityservice": {
+    "alexStaging": "adqg5-aiaaa-aaaao-a2i2a-cai"
+  },
   "index": {
+    "alexStaging": "tafvp-iqaaa-aaaak-ae74a-cai",
     "development": "c2yuv-naaaa-aaaam-abumq-cai"
   }
 }

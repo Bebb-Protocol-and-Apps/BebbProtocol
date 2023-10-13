@@ -24,10 +24,22 @@ dfx deploy bebb
 Local:
 dfx deploy
 
-Development:
+Development: 
+```bash 
 dfx deploy index --network development
-In frontend folder: dfx deploy frontend --network development
+cd frontend  
+dfx deploy frontend --network development
 dfx deploy --network development
+```
+
+Alex Staging
+```bash
+dfx deploy index --network alexStaging
+cd frontend
+dfx deploy frontend --network alexStaging
+dfx deploy --network alexStaging
+```
+
 
 Testing:
 dfx deploy --network testing

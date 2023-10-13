@@ -26,6 +26,12 @@
         "https://icp0.io"
       ],
       "type": "persistent"
+    },
+    "alexStaging": {
+      "providers": [
+        "https://icp0.io"
+      ],
+      "type": "persistent"
     }
   }
 }
