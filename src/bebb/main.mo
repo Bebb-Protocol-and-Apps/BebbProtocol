@@ -160,7 +160,6 @@ actor {
    * @return The id of the new entity if the entity creation was successful, otherwise an empty string
   */
   private func createEntity(caller : Principal, entityToCreate : Entity.EntityInitiationObject) : async Text {
-
     // Find a unique id for the new entity that will not
     // conflict with any current items
     var newEntityId : Text = "";
@@ -630,6 +629,124 @@ actor {
       };
     };
   };
+
+// Migration
+// Force canister update (deletes all data): dfx canister install --mode=reinstall bebb --network ic 
+// Commands to check:
+  // Entities
+  // should not exist before migration but after (incl. attached Bridges): dfx canister --network ic call bebb get_entity '("83D99219-8B46-4624-BC1D-D821671E4CEC")'
+  // should not exist before migration but after (incl. attached Bridges): dfx canister --network ic call bebb get_entity '("2BD20745-5BE3-4BF9-9CCE-D97BB88FC071")'
+  // Bridges
+  // should not exist before migration but after: dfx canister --network ic call bebb get_bridge '("7A44FFFE-E64A-4DC2-89C2-1A84999BEA0D")'
+  // should not exist before migration but after: dfx canister --network ic call bebb get_bridge '("5035EFBF-E66F-1718-A31E-000000000000")'
+// Commands to run:
+  // Entities: dfx canister call bebb uploadEntities '[replace with (vec{...})]'
+  // Bridges: dfx canister call bebb uploadBridges '[replace with (vec{...})]'
+
+// For prod: add the network flag (--network ic)
+
+  public type OldEntityType = {
+      #BridgeEntity;
+      #Webasset;
+      #Person;
+      #Location;
+  };
+  public type OldEntity = {
+    internalId : Text;
+    creationTimestamp : Nat64;
+    creator : Principal;
+    owner : Principal;
+    settings : Entity.EntitySettings;
+    entityType : OldEntityType;
+    name : ?Text;
+    description : ?Text;
+    keywords : ?[Text];
+    externalId : ?Text;
+    entitySpecificFields : ?Text;
+    listOfEntitySpecificFieldKeys : [Text];
+    // resolveRepresentedEntity : () -> T; // if possible, generic return value, otherwise probably Text
+  };
+  type BridgeCategories = { // TODO: define bridge categories, probably import from a dedicated file (BridgeType)
+    ownerCreatedBridges : List.List<Text>;
+    otherBridges : List.List<Text>;
+  };
+
+  public shared ({ caller }) func uploadEntities(migratedEntities : [(Text, OldEntity)]) : async Bool {
+    if (not Principal.equal(Principal.fromText("cda4n-7jjpo-s4eus-yjvy7-o6qjc-vrueo-xd2hh-lh5v2-k7fpf-hwu5o-yqe"), caller)) {
+      return false;
+    };
+    for ((id, oldEntity) in migratedEntities.vals()) {
+      let newEntity = {
+        id = oldEntity.internalId;
+        creationTimestamp = oldEntity.creationTimestamp;
+        creator = oldEntity.creator;
+        owner = oldEntity.owner;
+        settings = Entity.EntitySettings();
+        entityType = #Resource(#Web);
+        name : Text = Option.get<Text>(oldEntity.name, "");
+        description : Text = Option.get<Text>(oldEntity.description, "");
+        keywords : [Text] = Option.get<[Text]>(oldEntity.keywords, []);
+        entitySpecificFields : Text = Option.get<Text>(oldEntity.entitySpecificFields, "");
+        listOfEntitySpecificFieldKeys : [Text] = oldEntity.listOfEntitySpecificFieldKeys;
+        toIds = [];
+        fromIds = [];
+        previews = [];
+      };
+
+      //entitiesStorage.put(oldEntity.internalId, newEntity);
+      let result = putEntity(newEntity);
+      assert(result == newEntity.id);
+    };
+
+    return true;
+  };
+
+  public type OldBridgeType = {
+        #OwnerCreated;
+  };
+  public type OldBridgeState = {
+        #Pending;
+        #Rejected;
+        #Confirmed;
+    };
+  public type OldBridgeEntity = OldEntity and {
+    bridgeType : OldBridgeType;
+    fromEntityId : Text;
+    toEntityId : Text;
+    state : OldBridgeState;
+  };
+
+  public shared ({ caller }) func uploadBridges(migratedBridges : [(Text, OldBridgeEntity)]) : async Bool {
+    if (not Principal.equal(Principal.fromText("cda4n-7jjpo-s4eus-yjvy7-o6qjc-vrueo-xd2hh-lh5v2-k7fpf-hwu5o-yqe"), caller)) {
+      return false;
+    };
+    for ((id, oldBridge) in migratedBridges.vals()) {
+      let newBridge = {
+        id = oldBridge.internalId;
+        creationTimestamp = oldBridge.creationTimestamp;
+        creator = oldBridge.creator;
+        owner = oldBridge.owner;
+        settings = Bridge.BridgeSettings();
+        name : Text = Option.get<Text>(oldBridge.name, "");
+        description : Text = Option.get<Text>(oldBridge.description, "");
+        keywords : [Text] = Option.get<[Text]>(oldBridge.keywords, []);
+        entitySpecificFields : Text = Option.get<Text>(oldBridge.entitySpecificFields, "");
+        listOfEntitySpecificFieldKeys : [Text] = ["bridgeType", "fromEntityId", "toEntityId"];
+        bridgeType = #IsRelatedto;
+        fromEntityId = oldBridge.fromEntityId;
+        toEntityId = oldBridge.toEntityId;
+      };
+
+      //bridgesStorage.put(oldBridge.internalId, newBridge);
+      let result = addNewBridge(newBridge);
+      //assert(result != null);
+    };
+
+    return true;
+  };
+
+  
+  
 
   /*************************************************
               Code related to system upgrades
