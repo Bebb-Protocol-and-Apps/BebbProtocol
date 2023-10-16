@@ -1,15 +1,15 @@
 import { ActorClient } from "./candb-client/ActorClient";
 
-import { IndexCanister } from "../declarations/index/index.did";
+import { IndexCanister } from "../../declarations/index/index.did";
 
 import {
   BebbEntityService,
   EntityInitiationObject,
-} from "../declarations/bebbentityservice/bebbentityservice.did";
+} from "../../declarations/bebbentityservice/bebbentityservice.did";
 import {
   BebbBridgeService,
   BridgeInitiationObject
-} from "../declarations/bebbbridgeservice/bebbbridgeservice.did";
+} from "../../declarations/bebbbridgeservice/bebbbridgeservice.did";
 
 export async function getBebbEntity(bebbServiceClient: ActorClient<IndexCanister, BebbEntityService>, partition: string, name: string) {
   let pk = `${partition}#`;

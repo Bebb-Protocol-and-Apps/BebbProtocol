@@ -2,15 +2,9 @@
   "canisters": {
     "index": {
       "type": "motoko",
-      "main": "src/bebb/can_db/index/IndexCanister.mo",
-      "declarations": {
-        "node_compatibility": true
-      }
+      "main": "src/bebb/can_db/index/IndexCanister.mo"
     },
     "frontend": {
-      "dependencies": [
-        "index"
-      ],
       "frontend": {
         "entrypoint": "dist/index.html"
       },

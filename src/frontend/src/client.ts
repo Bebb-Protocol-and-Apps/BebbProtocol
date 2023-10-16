@@ -3,12 +3,12 @@ import { ActorClient } from "./candb-client/ActorClient";
 
 import type { Identity } from "@dfinity/agent";
 
-import { idlFactory as IndexCanisterIDL } from "../declarations/index/index";
-import { IndexCanister } from "../declarations/index/index.did";
-import { BebbEntityService } from "../declarations/bebbentityservice/bebbentityservice.did";
-import { idlFactory as BebbEntityServiceCanisterIDL } from "../declarations/bebbentityservice/index";
-import { BebbBridgeService } from "../declarations/bebbbridgeservice/bebbbridgeservice.did";
-import { idlFactory as BebbBridgeServiceCanisterIDL } from "../declarations/bebbbridgeservice/index";
+import { idlFactory as IndexCanisterIDL } from "../../declarations/index/index";
+import { IndexCanister } from "../../declarations/index/index.did";
+import { BebbEntityService } from "../../declarations/bebbentityservice/bebbentityservice.did";
+import { idlFactory as BebbEntityServiceCanisterIDL } from "../../declarations/bebbentityservice/index";
+import { BebbBridgeService } from "../../declarations/bebbbridgeservice/bebbbridgeservice.did";
+import { idlFactory as BebbBridgeServiceCanisterIDL } from "../../declarations/bebbbridgeservice/index";
 
 console.log("Debug client process.env.NODE_ENV ", process.env.NODE_ENV);
 console.log("Debug client process.env.DFX_NETWORK ", process.env.DFX_NETWORK);
