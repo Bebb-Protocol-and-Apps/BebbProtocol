@@ -36,7 +36,8 @@ function initCanisterEnv() {
 }
 const canisterEnvVariables = initCanisterEnv();
 
-const isDevelopment = process.env.NODE_ENV !== "production";
+//const isDevelopment = process.env.NODE_ENV !== "production";
+const isDevelopment = process.env["DFX_NETWORK"] === "local";
 
 const frontendDirectory = "hello_assets";
 
@@ -95,8 +96,9 @@ module.exports = {
       ],
     }),
     new webpack.EnvironmentPlugin({
-      NODE_ENV: "development",
+      NODE_ENV: isDevelopment ? "development" : "production",
       ...canisterEnvVariables,
+      DFX_NETWORK: process.env["DFX_NETWORK"],
     }),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],

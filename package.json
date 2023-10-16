@@ -20,11 +20,11 @@
     "refresh-declarations": "npm run generate-declarations && npm run copy-declarations"
   },
   "devDependencies": {
-    "@dfinity/agent": "0.15.6",
-    "@dfinity/auth-client": "^0.15.6",
+    "@dfinity/agent": "0.19.3",
+    "@dfinity/auth-client": "0.19.3",
     "@dfinity/authentication": "^0.14.2",
-    "@dfinity/candid": "0.15.6",
-    "@dfinity/principal": "0.15.6",
+    "@dfinity/candid": "0.19.3",
+    "@dfinity/principal": "0.19.3",
     "assert": "2.0.0",
     "buffer": "6.0.3",
     "copy-webpack-plugin": "^9.0.1",
@@ -43,5 +43,8 @@
     "last 2 firefox version",
     "last 2 safari version",
     "last 2 edge version"
-  ]
+  ],
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
 }

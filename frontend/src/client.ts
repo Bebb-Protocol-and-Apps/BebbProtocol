@@ -1,5 +1,5 @@
-import { IndexClient } from "candb-client-typescript/dist/IndexClient";
-import { ActorClient } from "candb-client-typescript/dist/ActorClient";
+import { IndexClient } from "./candb-client/IndexClient";
+import { ActorClient } from "./candb-client/ActorClient";
 
 import type { Identity } from "@dfinity/agent";
 

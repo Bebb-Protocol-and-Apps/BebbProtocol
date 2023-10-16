@@ -1,4 +1,4 @@
-import { ActorClient } from "candb-client-typescript/dist/ActorClient";
+import { ActorClient } from "./candb-client/ActorClient";
 
 import { IndexCanister } from "../declarations/index/index.did";
 
