@@ -1,0 +1,15 @@
+type IndexCanister = service {
+  autoScaleBebbServiceCanister : (text) -> (text);
+  createBebbServiceCanisterByType : (text) -> (opt text);
+  getCanistersByPK : (text) -> (vec text) query;
+  getPkOptions : () -> (vec text) query;
+  upgradeGroupCanistersInPKRange : (text, text, vec nat8) -> (
+      UpgradePKRangeResult,
+    );
+};
+type InterCanisterActionResult = variant { ok; err : text };
+type UpgradePKRangeResult = record {
+  nextKey : opt text;
+  upgradeCanisterResults : vec record { text; InterCanisterActionResult };
+};
+service : IndexCanister
