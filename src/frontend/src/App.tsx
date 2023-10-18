@@ -81,13 +81,37 @@ export default function App() {
     } else {
       setRetrievalErrorText("");
       let bebbEntity;
+      let responseToSet = {};
       if (partition.value === "Bridge") {
         bebbEntity = await getBebbBridge(bridgeServiceClient, partition.value, entityId);
+        if (bebbEntity.id) {
+          responseToSet = {
+            id: bebbEntity.id,
+            //creationTimestamp: bebbEntity.creationTimestamp,
+            name: bebbEntity.name,
+            description: bebbEntity.description,
+            bridgeType: bebbEntity.bridgeType,
+          };
+        } else {
+          responseToSet = bebbEntity;
+        };
       } else {
         bebbEntity = await getBebbEntity(entityServiceClient, partition.value, entityId);
+        if (bebbEntity.id) {
+          responseToSet = {
+            id: bebbEntity.id,
+            //creationTimestamp: bebbEntity.creationTimestamp,
+            name: bebbEntity.name,
+            description: bebbEntity.description,
+            entityType: bebbEntity.entityType,
+          };
+        } else {
+          responseToSet = bebbEntity;
+        };
       };
-      console.log("response", bebbEntity)
-      setBebbEntityResponse(bebbEntity);
+      console.log("getEntity bebbEntity", bebbEntity);
+      console.log("getEntity response", responseToSet);
+      setBebbEntityResponse(JSON.stringify(responseToSet));
     }
   };
 
@@ -105,11 +129,18 @@ export default function App() {
           name,
         };
         const result = await putBebbBridge(bridgeServiceClient, partition.value, bebbBridgeObject);
-        setSuccessText(`${name} successfully inserted: ${result}`);
+        // @ts-ignore
+        if (result.Ok) {
+          // @ts-ignore
+          setSuccessText(`${name} successfully inserted with id: ${result.Ok}`);
+        } else {
+          // @ts-ignore
+          result.Err ? setCreateErrorText(result.Err) : setCreateErrorText("Something went wrong, please try once more.");
+        };
       } else {
         let errorText = "must enter a toEntityId and a fromEntityId to create a Bridge";
         console.error(errorText);
-        setCreateErrorText(errorText)
+        setCreateErrorText(errorText);
       };
     } else {
       setCreateErrorText("");
@@ -119,8 +150,15 @@ export default function App() {
       // create the new Bebb Entity
       const bebbEntityObject = { name };
       const result = await putBebbEntity(entityServiceClient, partition.value, bebbEntityObject);
-      setSuccessText(`${name} successfully inserted: ${result}`);
-    }
+      // @ts-ignore
+      if (result.Ok) {
+        // @ts-ignore
+        setSuccessText(`${name} successfully inserted with id: ${result.Ok}`);
+      } else {
+        // @ts-ignore
+        result.Err ? setCreateErrorText(result.Err) : setCreateErrorText("Something went wrong, please try once more.");
+      };
+    };
   };
 
   return (
@@ -158,7 +196,7 @@ export default function App() {
           <button className="left-margin" type="button" onClick={getEntity}>Get Entity</button>
         </div>
         <div className="flex-wrapper">
-          <div className="prompt-text">Greeting response:</div>
+          <div className="prompt-text">Retrieval response:</div>
           <div>{bebbEntityResponse}</div>
           <div>{retrievalErrorText}</div>
         </div>

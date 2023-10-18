@@ -152,14 +152,6 @@ module {
    * @return The array with the Bridge's attributes
   */
   public func getBridgeAttributesFromBridgeObject( bridge : Bridge ) : CanDbAttributes {
-    // https://mops.one/candy/docs/properties
-    // https://mops.one/candy/docs/conversion
-      // see e.g. propertySharedToText
-    let prop: [CandyTypes.PropertyShared] = [{
-      name = "name";
-      value = #Principal(Principal.fromText("abc"));
-      immutable = true;
-    }];
     return [
       ("id", #text(bridge.id)),
       ("creationTimestamp", #int(Nat64.toNat(bridge.creationTimestamp))),

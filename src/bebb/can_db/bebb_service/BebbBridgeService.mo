@@ -125,9 +125,9 @@ shared ({ caller = owner }) actor class BebbBridgeService({
   private func addNewBridge(bridge : Bridge.Bridge) : async ?Text {
     // Don't allow creating the bridge if the bridge already exists
       // TODO: needs to be changed
-    if (checkIfBridgeExists(bridge.id) == true) {
+    /* if (checkIfBridgeExists(bridge.id) == true) {
       return null;
-    };
+    }; */
 
     // Add the bridge of the bridge database and add the bridge id to the related entities
     let result = await putBridge(bridge);

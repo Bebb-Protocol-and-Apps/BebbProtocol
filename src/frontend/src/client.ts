@@ -39,8 +39,6 @@ if (process.env.DFX_NETWORK === "ic") {
   // testing canisters on mainnet (for network testing for Alex)
   HOST = "https://icp0.io";
   appDomain = ".icp0.io";
-} else {
-  HOST = "https://icp0.io";
 };
 
 export function intializeIndexClient(isLocal: boolean, identity: Identity = null): IndexClient<IndexCanister> {

@@ -97,10 +97,14 @@ module.exports = {
       ],
     }),
     new webpack.EnvironmentPlugin({
-      NODE_ENV: isDevelopment ? "development" : "production",
       ...canisterEnvVariables,
-      DFX_NETWORK: process.env["DFX_NETWORK"],
     }),
+    new webpack.EnvironmentPlugin([
+      ...Object.keys(process.env).filter((key) => {
+        if (key.includes("DFX")) return true;
+        return false;
+      }),
+    ]),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],
       process: require.resolve("process/browser"),
