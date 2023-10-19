@@ -135,8 +135,7 @@ shared ({ caller = owner }) actor class BebbBridgeService({
     let result = await putBridge(bridge);
 
     // If the from id result fails, then just delete the bridge but no connections were added
-      // TODO: needs to be changed
-    // let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge);
+    let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge, canister_ids.fromEntityCanisterId);
     // if (fromIdResult == false) {
     //   bridgesStorage.delete(bridge.id);
     //   return null;
@@ -300,10 +299,6 @@ shared ({ caller = owner }) actor class BebbBridgeService({
     };
   };
 
-// TODO: the following functions might be helpful in an adapted form  
-
-  // TODO: this needs to be changed as the Entities are now stored in different canisters
-    // This will currently fail
   /**
    * This function takes a bridge and adds the bridge ID to the fromIds field
    * of the entity it is linked from
@@ -311,25 +306,49 @@ shared ({ caller = owner }) actor class BebbBridgeService({
    * @return True if the bridge ID was added to the from ID list, otherwise
    * false is returned if it couldn't
   */
-  // private func addBridgeToEntityFromIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
-  //   let entity = getEntity(entityId);
-  //   switch (entity) {
-  //     case (null) {
-  //       return false;
-  //     };
-  //     case (?retrievedEntity) {
-  //       let newEntityAttachedBridge = {
-  //         linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
-  //         id=bridge.id;
-  //         creationTime = Time.now();
-  //         bridgeType = bridge.bridgeType;
-  //       };
-  //       let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, [newEntityAttachedBridge]));
-  //       let result = putEntity(newEntity);
-  //       return true;
-  //     };
-  //   };
-  // };
+  private func addBridgeToEntityFromIds(entityId : Text, bridge : Bridge.Bridge, canister_id: Text) : async Bool {
+    let entity = await getEntity(entityId, canister_id);
+    switch (entity) {
+      case (null) {
+        return false;
+      };
+      case (?retrievedEntity) {
+        let newEntityAttachedBridge = {
+          linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
+          id=bridge.id;
+          creationTime = Time.now();
+          bridgeType = bridge.bridgeType;
+        };
+        // let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, [newEntityAttachedBridge]));
+        // TODO call function to update the Entity, ideally just update that one attribute rather than all of them
+        // I.e create function called add 
+        // let result = putEntity(newEntity);
+        return true;
+      };
+    };
+    return true;
+  };
+
+  /**
+   * Given a canister id hint, this will look at that canister to try to retrieve the corresponding Entity
+   *
+   * @return The entity if it exists, otherwise null
+  */
+  private func getEntity(entityId : Text, canister_id: Text) : async ?Entity.Entity {
+     // TODO: This built but is untested
+    let entityCanister = actor(canister_id): actor { get_entity: (Text) -> async Entity.EntityResult };
+    let entityResult = await entityCanister.get_entity(entityId);
+    switch (entityResult)
+    {
+      case(#Ok(entity)) {
+          return ?entity;
+      };
+      case _ {
+        return null;
+      }
+    }
+  };
+
 
   // TODO: this needs to be changed as the Entities are now stored in different canisters
     // This will currently fail
@@ -359,21 +378,5 @@ shared ({ caller = owner }) actor class BebbBridgeService({
   //     };
   //   };
   // };
-  
-
-  // TODO: if we want to keep/need the functionality of checkIfEntityExists, we need to change it (as the Entities are now stored in different canisters)
-    // This call will thus currently always fail
-  /**
-  * Function checks that the given entity id provided exists within the database
-  *
-  * @return True if the entity exists, false otherwise
-  */
-  /* private func checkIfEntityExists(entityId : Text) : Bool {
-    let result = getEntity(entityId);
-    switch (result) {
-      case (null) { return false };
-      case (entity) { return true };
-    };
-  }; */
 
 }
