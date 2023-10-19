@@ -113,6 +113,14 @@ module {
   };
 
   /**
+   * Type provides the canister id to where the entitys are stored
+   */
+  public type BridgeEntityCanisterHints = {
+    fromEntityCanisterId : Text;
+    toEntityCanisterId : Text;
+  };
+
+  /**
    * This function is used to convert a user provided initialization object
    * and converts it into a Bridge. This bridge contains a null id and is not
    * saved in the database yet

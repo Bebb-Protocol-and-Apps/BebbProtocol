@@ -189,7 +189,8 @@ shared ({ caller = owner }) actor class BebbEntityService({
             //   };
             // };
             let updatedEntity : Entity.Entity = Entity.updateEntityFromUpdateObject(entityUpdateObject, entityToUpdate);
-            let result = putEntity(updatedEntity);
+            // TODO put the putUpdateEntity function using the Candb update function
+            // let result = putUpdateEntity(updatedEntity);
             return #Ok(updatedEntity.id);
           };
         };
