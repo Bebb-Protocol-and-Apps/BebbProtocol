@@ -80,9 +80,21 @@ shared ({ caller = owner }) actor class BebbEntityService({
     };
   };
 
-  // TODO: update_entity
+  /**
+   * Public interface for updating an entity. Only the owner of the entity is allowed to update the values specified in the
+   * entity update object
+   *
+   * @return The entity id if the update was sucessful, otherwise an error
+  */
+  public shared ({ caller }) func update_entity(entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
+    let result = await updateEntity(caller, entityUpdateObject);
+    return result;
+  };
 
-  // TODO: delete_entity
+  public shared ({ caller }) func delete_entity(entityId : Text) : async Entity.EntityIdResult {
+    let result = await deleteEntity(caller, entityId);
+    return result;
+  };
 
   // TODO: get_to_bridge_ids_by_entity_id (likely here)
 
@@ -138,6 +150,120 @@ shared ({ caller = owner }) actor class BebbEntityService({
       case null { null };
     };
   };
+
+  private func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
+    var entity = getEntity(entityUpdateObject.id);
+    switch (entity) {
+      case null { return #Err(#EntityNotFound) };
+      case (?entityToUpdate) {
+        switch (Principal.equal(entityToUpdate.owner, caller)) {
+          case false {
+            return #Err(#Unauthorized("Not the owner"));
+          };
+          // Only owner may update the Entity
+          case true {
+            // Ensure that the preivews are not too large and that there aren't too many previews
+            // If any of the previews are too large then return an error with
+            // the preview index that caused the error of being too large
+            // var counter = 0;
+            // switch(entityUpdateObject.previews)
+            // {
+            //   case(null) {};
+            //   case(?new_previews)
+            //   {
+            //     // Check to ensure there aren't too many previews
+            //     if (new_previews.size() > maxNumPreviews)
+            //     {
+            //         return #Err(#TooManyPreviews);
+            //     };
+
+            //     // Check all the previews and make sure they aren't too big
+            //     for (preview in new_previews.vals()) {
+            //         let fileSize = preview.previewData.size();
+            //         if (fileSize > maxPreviewBlobSize)
+            //         {
+            //           return #Err(#PreviewTooLarge(counter));
+            //         };
+            //         counter := counter + 1;
+            //     };
+            //   };
+            // };
+            let updatedEntity : Entity.Entity = Entity.updateEntityFromUpdateObject(entityUpdateObject, entityToUpdate);
+            let result = putEntity(updatedEntity);
+            return #Ok(updatedEntity.id);
+          };
+        };
+      };
+    };
+  };
+
+  /**
+   * Function takes in a caller and the entity id and attempts to delete the entity. If the caller is the entity owner,
+   * the entity will delete itself but will leave the bridges dangling
+   *
+   * @return The Entity id of the deleted entity or an error
+  */
+  func deleteEntity(caller : Principal, entityId : Text) : async Entity.EntityIdResult {
+    switch (getEntity(entityId)) {
+      case null { return #Err(#EntityNotFound) };
+      case (?entityToDelete) {
+        switch (Principal.equal(entityToDelete.owner, caller)) {
+          case false {
+            return #Err(#Unauthorized("Not the Owner"));
+          }; // Only owner may delete the Entity
+          case true {
+            // // First delete all the bridges pointing to this Entity
+            // for (toBridge in entityToDelete.toIds.vals()) {
+            //   let bridge = getBridge(toBridge.id);
+            //   switch (bridge) {
+            //     case (null) {};
+            //     case (?bridgeToDelete) {
+            //       // Since this bridge points to the current Entity being deleted, we need to
+            //       // delete the reference to where the bridge was pointing from and delete the reference to
+            //       // this bridge in the Entity it was pointing from before deleting the bridge
+            //       let deleteReferenceResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeToDelete.id);
+            //       let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
+            //     };
+            //   };
+            // };
+
+            // Second delete all the bridges pointing from this Entity
+            // for (fromBridge in entityToDelete.fromIds.vals()) {
+            //   let bridge = getBridge(fromBridge.id);
+            //   switch (bridge) {
+            //     case (null) {};
+            //     case (?bridgeToDelete) {
+            //       // Since this bridge points from the current Entity being deleted, we need to
+            //       // delete the reference to where the bridge was pointing to and delete the reference to
+            //       // this bridge in the Entity it was pointing to before deleting the bridge
+            //       let deleteReferenceResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeToDelete.id);
+            //       let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
+            //     };
+            //   };
+            // };
+
+            // Finally delete the entity itself
+            let result = deleteEntityFromStorage(entityToDelete.id);
+            return #Ok(entityToDelete.id);
+          };
+        };
+      };
+    };
+  };
+
+  /**
+   * Function deletes an entity from storage. Ensure to delete the connections from the Bridges
+   * before removing the entity
+   *
+   * @return True if the entity was successfully deleted, false otherwise
+  */
+  func deleteEntityFromStorage(entityId : Text) : Bool {
+    CanDB.delete(db, {
+      sk = entityId;
+    });
+    return true;
+  };
+
 
   func unwrapEntity(canDbEntity: CanDbEntity.Entity): ?Entity.Entity {
     let { sk; pk; attributes } = canDbEntity;
