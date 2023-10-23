@@ -6,11 +6,19 @@ export type AutoScalingCanisterSharedFunctionHook = ActorMethod<
   string
 >;
 export interface BebbBridgeService {
-  'create_bridge' : ActorMethod<[BridgeInitiationObject], BridgeIdResult>,
+  'create_bridge' : ActorMethod<
+    [BridgeInitiationObject, BridgeEntityCanisterHints],
+    BridgeIdResult
+  >,
+  'delete_bridge' : ActorMethod<
+    [string, BridgeEntityCanisterHints],
+    BridgeIdResult
+  >,
   'getPK' : ActorMethod<[], string>,
   'get_bridge' : ActorMethod<[string], BridgeResult>,
   'skExists' : ActorMethod<[string], boolean>,
   'transferCycles' : ActorMethod<[], undefined>,
+  'update_bridge' : ActorMethod<[BridgeUpdateObject], BridgeIdResult>,
 }
 export interface Bridge {
   'id' : string,
@@ -26,6 +34,10 @@ export interface Bridge {
   'listOfEntitySpecificFieldKeys' : Array<string>,
   'bridgeType' : BridgeType,
   'entitySpecificFields' : string,
+}
+export interface BridgeEntityCanisterHints {
+  'toEntityCanisterId' : string,
+  'fromEntityCanisterId' : string,
 }
 export type BridgeErrors = { 'Error' : null } |
   { 'Unauthorized' : string } |
@@ -51,6 +63,13 @@ export type BridgeSettings = {};
 export type BridgeType = { 'IsPartOf' : null } |
   { 'IsAttachedto' : null } |
   { 'IsRelatedto' : null };
+export interface BridgeUpdateObject {
+  'id' : string,
+  'name' : [] | [string],
+  'description' : [] | [string],
+  'keywords' : [] | [Array<string>],
+  'settings' : [] | [BridgeSettings],
+}
 export type ScalingLimitType = { 'heapSize' : bigint } |
   { 'count' : bigint };
 export interface ScalingOptions {

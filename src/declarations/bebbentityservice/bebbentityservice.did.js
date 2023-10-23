@@ -12,6 +12,38 @@ export const idlFactory = ({ IDL }) => {
     'autoScalingHook' : AutoScalingCanisterSharedFunctionHook,
     'sizeLimit' : ScalingLimitType,
   });
+  const BridgeSettings = IDL.Record({});
+  const BridgeType = IDL.Variant({
+    'IsPartOf' : IDL.Null,
+    'IsAttachedto' : IDL.Null,
+    'IsRelatedto' : IDL.Null,
+  });
+  const Bridge = IDL.Record({
+    'id' : IDL.Text,
+    'toEntityId' : IDL.Text,
+    'creator' : IDL.Principal,
+    'fromEntityId' : IDL.Text,
+    'owner' : IDL.Principal,
+    'creationTimestamp' : IDL.Nat64,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'keywords' : IDL.Vec(IDL.Text),
+    'settings' : BridgeSettings,
+    'listOfEntitySpecificFieldKeys' : IDL.Vec(IDL.Text),
+    'bridgeType' : BridgeType,
+    'entitySpecificFields' : IDL.Text,
+  });
+  const EntityIdErrors = IDL.Variant({
+    'Error' : IDL.Null,
+    'PreviewTooLarge' : IDL.Int,
+    'EntityNotFound' : IDL.Null,
+    'TooManyPreviews' : IDL.Null,
+    'Unauthorized' : IDL.Text,
+  });
+  const EntityIdResult = IDL.Variant({
+    'Ok' : IDL.Text,
+    'Err' : EntityIdErrors,
+  });
   const EntitySettings = IDL.Record({});
   const EntityTypeResourceTypes = IDL.Variant({
     'Web' : IDL.Null,
@@ -30,23 +62,7 @@ export const idlFactory = ({ IDL }) => {
     'entityType' : EntityType,
     'entitySpecificFields' : IDL.Opt(IDL.Text),
   });
-  const EntityIdErrors = IDL.Variant({
-    'Error' : IDL.Null,
-    'PreviewTooLarge' : IDL.Int,
-    'EntityNotFound' : IDL.Null,
-    'TooManyPreviews' : IDL.Null,
-    'Unauthorized' : IDL.Text,
-  });
-  const EntityIdResult = IDL.Variant({
-    'Ok' : IDL.Text,
-    'Err' : EntityIdErrors,
-  });
   const Time = IDL.Int;
-  const BridgeType = IDL.Variant({
-    'IsPartOf' : IDL.Null,
-    'IsAttachedto' : IDL.Null,
-    'IsRelatedto' : IDL.Null,
-  });
   const BridgeLinkStatus = IDL.Variant({
     'CreatedOther' : IDL.Null,
     'CreatedOwner' : IDL.Null,
@@ -91,12 +107,50 @@ export const idlFactory = ({ IDL }) => {
     'Unauthorized' : IDL.Text,
   });
   const EntityResult = IDL.Variant({ 'Ok' : Entity, 'Err' : EntityErrors });
+  const EntityAttachedBridgesErrors = IDL.Variant({
+    'Error' : IDL.Null,
+    'EntityNotFound' : IDL.Null,
+  });
+  const EntityAttachedBridgesResult = IDL.Variant({
+    'Ok' : EntityAttachedBridges,
+    'Err' : EntityAttachedBridgesErrors,
+  });
+  const EntityUpdateObject = IDL.Record({
+    'id' : IDL.Text,
+    'previews' : IDL.Opt(IDL.Vec(EntityPreview)),
+    'name' : IDL.Opt(IDL.Text),
+    'description' : IDL.Opt(IDL.Text),
+    'keywords' : IDL.Opt(IDL.Vec(IDL.Text)),
+    'settings' : IDL.Opt(EntitySettings),
+  });
   const BebbEntityService = IDL.Service({
+    'add_bridge_attachment' : IDL.Func(
+        [IDL.Text, Bridge, IDL.Bool],
+        [EntityIdResult],
+        [],
+      ),
     'create_entity' : IDL.Func([EntityInitiationObject], [EntityIdResult], []),
+    'delete_bridge_attachment' : IDL.Func(
+        [Bridge, IDL.Bool],
+        [EntityIdResult],
+        [],
+      ),
+    'delete_entity' : IDL.Func([IDL.Text], [EntityIdResult], []),
     'getPK' : IDL.Func([], [IDL.Text], ['query']),
     'get_entity' : IDL.Func([IDL.Text], [EntityResult], ['query']),
+    'get_from_bridge_ids_by_entity_id' : IDL.Func(
+        [IDL.Text],
+        [EntityAttachedBridgesResult],
+        ['query'],
+      ),
+    'get_to_bridge_ids_by_entity_id' : IDL.Func(
+        [IDL.Text],
+        [EntityAttachedBridgesResult],
+        ['query'],
+      ),
     'skExists' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'transferCycles' : IDL.Func([], [], []),
+    'update_entity' : IDL.Func([EntityUpdateObject], [EntityIdResult], []),
   });
   return BebbEntityService;
 };

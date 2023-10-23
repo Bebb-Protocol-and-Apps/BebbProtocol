@@ -9,6 +9,15 @@ type ScalingLimitType =
    count: nat;
    heapSize: nat;
  };
+type EntityUpdateObject = 
+ record {
+   description: opt text;
+   id: text;
+   keywords: opt vec text;
+   name: opt text;
+   previews: opt vec EntityPreview;
+   settings: opt EntitySettings;
+ };
 type EntityTypeResourceTypes = 
  variant {
    Content;
@@ -67,6 +76,16 @@ type EntityErrors =
    Error;
    Unauthorized: text;
  };
+type EntityAttachedBridgesResult = 
+ variant {
+   Err: EntityAttachedBridgesErrors;
+   Ok: EntityAttachedBridges;
+ };
+type EntityAttachedBridgesErrors = 
+ variant {
+   EntityNotFound;
+   Error;
+ };
 type EntityAttachedBridges = vec EntityAttachedBridge;
 type EntityAttachedBridge = 
  record {
@@ -98,18 +117,43 @@ type BridgeType =
    IsPartOf;
    IsRelatedto;
  };
+type BridgeSettings = record {};
 type BridgeLinkStatus = 
  variant {
    CreatedOther;
    CreatedOwner;
  };
+type Bridge = 
+ record {
+   bridgeType: BridgeType;
+   creationTimestamp: nat64;
+   creator: principal;
+   description: text;
+   entitySpecificFields: text;
+   fromEntityId: text;
+   id: text;
+   keywords: vec text;
+   listOfEntitySpecificFieldKeys: vec text;
+   name: text;
+   owner: principal;
+   settings: BridgeSettings;
+   toEntityId: text;
+ };
 type BebbEntityService = 
  service {
+   add_bridge_attachment: (text, Bridge, bool) -> (EntityIdResult);
    create_entity: (EntityInitiationObject) -> (EntityIdResult);
+   delete_bridge_attachment: (Bridge, bool) -> (EntityIdResult);
+   delete_entity: (text) -> (EntityIdResult);
    getPK: () -> (text) query;
    get_entity: (text) -> (EntityResult) query;
+   get_from_bridge_ids_by_entity_id: (text) ->
+    (EntityAttachedBridgesResult) query;
+   get_to_bridge_ids_by_entity_id: (text) ->
+    (EntityAttachedBridgesResult) query;
    skExists: (text) -> (bool) query;
    transferCycles: () -> ();
+   update_entity: (EntityUpdateObject) -> (EntityIdResult);
  };
 type AutoScalingCanisterSharedFunctionHook = func (text) -> (text);
 service : (record {
