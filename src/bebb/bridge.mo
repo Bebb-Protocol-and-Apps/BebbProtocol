@@ -113,6 +113,14 @@ module {
   };
 
   /**
+   * Type provides the canister id to where the entitys are stored
+   */
+  public type BridgeEntityCanisterHints = {
+    fromEntityCanisterId : Text;
+    toEntityCanisterId : Text;
+  };
+
+  /**
    * This function is used to convert a user provided initialization object
    * and converts it into a Bridge. This bridge contains a null id and is not
    * saved in the database yet
@@ -152,14 +160,6 @@ module {
    * @return The array with the Bridge's attributes
   */
   public func getBridgeAttributesFromBridgeObject( bridge : Bridge ) : CanDbAttributes {
-    // https://mops.one/candy/docs/properties
-    // https://mops.one/candy/docs/conversion
-      // see e.g. propertySharedToText
-    let prop: [CandyTypes.PropertyShared] = [{
-      name = "name";
-      value = #Principal(Principal.fromText("abc"));
-      immutable = true;
-    }];
     return [
       ("id", #text(bridge.id)),
       ("creationTimestamp", #int(Nat64.toNat(bridge.creationTimestamp))),

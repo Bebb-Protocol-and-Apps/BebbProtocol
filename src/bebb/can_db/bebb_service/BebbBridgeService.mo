@@ -9,8 +9,10 @@ import Time "mo:base/Time";
 import Principal "mo:base/Principal";
 import Nat64 "mo:base/Nat64";
 import Option "mo:base/Option";
+import Buffer "mo:base/Buffer";
 
 import CanDbEntity "mo:candb/Entity";
+import BebbEntityService "BebbEntityService";
 
 shared ({ caller = owner }) actor class BebbBridgeService({
   // the partition key of this canister
@@ -51,11 +53,11 @@ shared ({ caller = owner }) actor class BebbBridgeService({
    *
    * @return The bridge id if the bridge was successfully created, otherwise an error
   */
-  public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject) : async Bridge.BridgeIdResult {
-    if (partitionKey != "BebbBridge") {
+  public shared ({ caller }) func create_bridge(bridgeToCreate : Bridge.BridgeInitiationObject, canisterIds: Bridge.BridgeEntityCanisterHints) : async Bridge.BridgeIdResult {
+    if (partitionKey != db.pk) {
       return #Err(#Unauthorized("Wrong Partition"));
     };
-    let result = await createBridge(caller, bridgeToCreate);
+    let result = await createBridge(caller, bridgeToCreate, canisterIds);
     switch (result) {
       case (null) { return #Err(#Error) };
       case (?id) { return #Ok(id) };
@@ -68,7 +70,7 @@ shared ({ caller = owner }) actor class BebbBridgeService({
    * @return Returns the bridge if the id matches a stored bridge, otherwise an error
   */
   public shared query ({ caller }) func get_bridge(bridgeId : Text) : async Bridge.BridgeResult {
-    if (partitionKey != "BebbBridge") {
+    if (partitionKey != db.pk) {
       return #Err(#Unauthorized("Wrong Partition"));
     };
     let result = getBridge(bridgeId);
@@ -78,10 +80,27 @@ shared ({ caller = owner }) actor class BebbBridgeService({
     };
   };
 
+  /**
+   * Public interface for updating a bridge. Only the owner is allowed to update a brige. Updates the bridge with the info
+   * contained within the bridge update object
+   *
+   * @return The bridge id if the update was successful, otherwise an error
+  */
+  public shared ({ caller }) func update_bridge(bridgeUpdateObject : Bridge.BridgeUpdateObject) : async Bridge.BridgeIdResult {
+    let result = await updateBridge(caller, bridgeUpdateObject);
+    return result;
+  };
 
-  // TODO: update_bridge
-
-  // TODO: delete_bridge
+  /**
+   * Public interface for deleting a Bridge. Only the owner is allowed to delete the Brige.
+   * Also deletes the Bridge attachment on the connected Entities
+   *
+   * @return The bridge id if the deletion was successful, otherwise an error
+  */
+  public shared ({ caller }) func delete_bridge(bridgeId : Text, canisterIds: Bridge.BridgeEntityCanisterHints) : async Bridge.BridgeIdResult {
+    let result = await deleteBridge(caller, bridgeId, canisterIds);
+    return result;
+  };
 
   // TODO: get_to_bridge_ids_by_entity_id (actually this will likely be on BebbEntityService)
 
@@ -91,27 +110,120 @@ shared ({ caller = owner }) actor class BebbBridgeService({
           Helper Functions related to Bridges
   *************************************************/
   /**
+   * Function deletes the Bridge if it exists. If it is able
+   * to, it returns the id
+   *
+   * @return The id of the Bridge if the deletion was successful, otherwise null
+  */
+  private func deleteBridge(caller : Principal, bridgeId : Text, canisterIds: Bridge.BridgeEntityCanisterHints) : async Bridge.BridgeIdResult {
+    switch (getBridge(bridgeId)) {
+      case null { return #Err(#BridgeNotFound) };
+      case (?bridgeToDelete) {
+        switch (Principal.equal(bridgeToDelete.owner, caller)) {
+          case false {
+            return #Err(#Unauthorized("Not the owner"));
+          }; // Only owner may delete the Bridge
+          case true {
+            // Parallelized retrievals of the connected Entities for additional processing 
+              // first, to check that the two Entities actually exist in the canisters provided
+            let executingFunctionsBuffer = Buffer.Buffer<async Bool>(2);
+            executingFunctionsBuffer.add(checkIfEntityExists(bridgeToDelete.toEntityId, canisterIds.toEntityCanisterId)); 
+            executingFunctionsBuffer.add(checkIfEntityExists(bridgeToDelete.fromEntityId, canisterIds.fromEntityCanisterId));
+            switch(await executingFunctionsBuffer.get(0)) { // toEntityResponse
+              case false { return #Err(#Unauthorized("Not the correct canister for toEntity")); }; // to Entity doesn't exist
+              case true {
+                switch(await executingFunctionsBuffer.get(1)) { // fromEntityResponse
+                  case false { return #Err(#Unauthorized("Not the correct canister for fromEntity")); }; // from Entity doesn't exist
+                  case true {
+                    let attachmentDeletionResult = await deleteBridgeAttachmentsFromEntities(bridgeToDelete, canisterIds);
+                    let result = deleteBridgeFromStorage(bridgeId);
+                    return #Ok(bridgeId);
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+
+  /**
+   * Function deletes a Bridge from storage. Ensure to delete the connections from the connected Entities
+   * before removing the Bridge
+   *
+   * @return True if the Bridge was successfully deleted, false otherwise
+  */
+  func deleteBridgeFromStorage(bridgeId : Text) : Bool {
+    CanDB.delete(db, {
+      sk = bridgeId;
+    });
+    return true;
+  };
+
+  private func deleteBridgeAttachmentsFromEntities(bridge : Bridge.Bridge, canisterIds: Bridge.BridgeEntityCanisterHints) : async ?Text {
+    // Parallelized calls to the canisters storing the connected Entities to delete the Bridge attachment 
+    let executingFunctionsBuffer = Buffer.Buffer<async Bool>(2);
+    executingFunctionsBuffer.add(deleteBridgeAttachmentOnEntity(bridge, true, canisterIds.toEntityCanisterId)); 
+    executingFunctionsBuffer.add(deleteBridgeAttachmentOnEntity(bridge, false, canisterIds.fromEntityCanisterId));
+    switch(await executingFunctionsBuffer.get(0)) { // toEntityResponse
+      case false { return null; }; // Error in deleting attachment on to Entity, TODO: better handling (e.g. retry, add to error list, notify)
+      case(true) {
+        switch(await executingFunctionsBuffer.get(1)) { // fromEntityResponse
+          case false { return null; }; // Error in deleting attachment on from Entity, TODO: better handling (e.g. retry, add to error list, notify)
+          case(true) {
+            // both attachments were deleted
+            return ?bridge.id;
+          };
+        };
+      };
+    };
+  };
+
+  private func deleteBridgeAttachmentOnEntity(bridge : Bridge.Bridge, bridgingTo : Bool, canisterId: Text) : async Bool {
+    let entityCanister = actor(canisterId): actor { delete_bridge_attachment: (Bridge.Bridge, Bool) -> async Entity.EntityIdResult };
+    // Call function on Entity canister to delete Bridge attachment
+    let entityIdResult = await entityCanister.delete_bridge_attachment(bridge, bridgingTo);
+    switch (entityIdResult)
+    {
+      case(#Ok(entityId)) {
+        return true;
+      };
+      case _ {
+        return false;
+      }
+    };
+  };
+
+  /**
    * Function creates a new bridge based on the input initialization object. If it is able
    * to make the object, it stores it and return the id, otherwise it will not
    * store an object and return an empty string
    *
    * @return The id of the new entity if the entity creation was successful, otherwise an empty string
   */
-  private func createBridge(caller : Principal, bridgeToCreate : Bridge.BridgeInitiationObject) : async ?Text {
-    // Check if both the to and from entities exist for the bridge
-    // TODO: needs to be changed
-    // let toEntityExists = checkIfEntityExists(bridgeToCreate.toEntityId);
-    // let fromEntityExists = checkIfEntityExists(bridgeToCreate.fromEntityId);
-
-    // if (toEntityExists == false or fromEntityExists == false) {
-    //   return null;
-    // };
-
-    // Find a unique id for the new bridge that will not
-    // conflict with any current items
-    var newBridgeId : Text = await Utils.newRandomUlid();
-    let bridge : Bridge.Bridge = Bridge.generateBridgeFromInitializationObject(bridgeToCreate, newBridgeId, caller);
-    return await addNewBridge(bridge);
+  private func createBridge(caller : Principal, bridgeToCreate : Bridge.BridgeInitiationObject, canisterIds: Bridge.BridgeEntityCanisterHints) : async ?Text {
+    // Parallelized retrievals of the to be connected Entities for additional processing 
+      // first, to check that the two Entities actually exist 
+    let executingFunctionsBuffer = Buffer.Buffer<async ?Entity.Entity>(2);
+    executingFunctionsBuffer.add(getEntity(bridgeToCreate.toEntityId, canisterIds.toEntityCanisterId)); 
+    executingFunctionsBuffer.add(getEntity(bridgeToCreate.fromEntityId, canisterIds.fromEntityCanisterId));
+    switch(await executingFunctionsBuffer.get(0)) { // toEntityResponse
+      case null { return null; }; // to Entity doesn't exist
+      case(?toEntityRetrieved) {
+        switch(await executingFunctionsBuffer.get(1)) { // fromEntityResponse
+          case null { return null; }; // from Entity doesn't exist
+          case(?fromEntityRetrieved) {
+            var toEntity : Entity.Entity = toEntityRetrieved;
+            var fromEntity : Entity.Entity = fromEntityRetrieved;
+            // Find a unique id for the new Bridge 
+            var newBridgeId : Text = await Utils.newRandomUlid();
+            let bridge : Bridge.Bridge = Bridge.generateBridgeFromInitializationObject(bridgeToCreate, newBridgeId, caller);
+            return await addNewBridge(bridge, fromEntity, toEntity, canisterIds);
+          };
+        };
+      };
+    };
   };
 
   /**
@@ -122,36 +234,48 @@ shared ({ caller = owner }) actor class BebbBridgeService({
    * @return Returns null if the entitiy failed to get created, otherwise it returns
    * the bridge id of the newly created bridge
   */
-  private func addNewBridge(bridge : Bridge.Bridge) : async ?Text {
-    // Don't allow creating the bridge if the bridge already exists
-      // TODO: needs to be changed
-    if (checkIfBridgeExists(bridge.id) == true) {
-      return null;
-    };
-
-    // Add the bridge of the bridge database and add the bridge id to the related entities
+  private func addNewBridge(bridge : Bridge.Bridge, fromEntity : Entity.Entity, toEntity : Entity.Entity, canisterIds: Bridge.BridgeEntityCanisterHints) : async ?Text {
+    // Add the Bridge to the Bridge database and add the Bridge id to the connected Entities
     let result = await putBridge(bridge);
+    // Parallelized calls to the canisters storing the connected Entities to add the Bridge attachment 
+    let executingFunctionsBuffer = Buffer.Buffer<async Bool>(2);
+    executingFunctionsBuffer.add(addBridgeAttachmentOnEntity(toEntity, bridge, true, canisterIds.toEntityCanisterId)); 
+    executingFunctionsBuffer.add(addBridgeAttachmentOnEntity(fromEntity, bridge, false, canisterIds.fromEntityCanisterId));
+    switch(await executingFunctionsBuffer.get(0)) { // toEntityResponse
+      case false { return null; }; // Error in adding attachment on to Entity, TODO: better handling (e.g. retry, add to error list, notify)
+      case(true) {
+        switch(await executingFunctionsBuffer.get(1)) { // fromEntityResponse
+          case false { return null; }; // Error in adding attachment on from Entity, TODO: better handling (e.g. retry, add to error list, notify)
+          case(true) {
+            // both attachments were added
+            return ?bridge.id;
+          };
+        };
+      };
+    };
+  };
 
-    // If the from id result fails, then just delete the bridge but no connections were added
-      // TODO: needs to be changed
-    // let fromIdResult = addBridgeToEntityFromIds(bridge.fromEntityId, bridge);
-    // if (fromIdResult == false) {
-    //   bridgesStorage.delete(bridge.id);
-    //   return null;
-    // };
+  /**
+  * Function checks that the given entity id provided exists within the database
+  *
+  * @return True if the entity exists, false otherwise
+  */
+  private func checkIfEntityExists(entityId : Text, canisterId: Text) : async Bool {
+    let entityCanister = actor(canisterId): actor { skExists: (Text) -> async Bool };
+    return await entityCanister.skExists(entityId);
+  };
 
-    // // If the to id result fails, then the from id was added, so make sure to delete the from id on the Entity as well
-    // // as the bridge itself
-    //   // TODO: needs to be changed
-    // let toIdResult = addBridgeToEntityToIds(bridge.toEntityId, bridge);
-    // if (toIdResult == false) {
-    //   // TODO: needs to be changed
-    //   let bridgeDeleteFromEntityFromIdsResult = deleteBridgeFromEntityFromIds(bridge.fromEntityId, bridge.id);
-    //   bridgesStorage.delete(bridge.id);
-    //   return null;
-    // };
-
-    return ?bridge.id;
+  /**
+   * Function checks that the given bridge id provided exists within the database
+   *
+   * @return True if the entity exists, false otherwise
+  */
+  private func checkIfBridgeExists(bridgeId : Text, canister_id: Text) : Bool {
+    let result = getBridge(bridgeId);
+    switch (result) {
+      case (null) { return false };
+      case (bridge) { return true };
+    };
   };
 
   /**
@@ -170,13 +294,22 @@ shared ({ caller = owner }) actor class BebbBridgeService({
     return bridge;
   };
 
+  /* private func putUpdateBridge(bridge : Bridge.Bridge): async Bridge.Bridge {
+   let bridgeAttributes = Bridge.getBridgeAttributesFromBridgeObject(bridge);
+    await* CanDB.update(db, {
+      sk = bridge.id;
+      attributes = bridgeAttributes;
+    });
+    return bridge;
+  }; */
+
   /**
    * Function retrieves a bridge based on the input ID
    *
    * @return The bridge if it is found or null if not found
   */
   private func getBridge(bridgeId : Text) : ?Bridge.Bridge {
-    let bridgeData = switch(CanDB.get(db, { sk = bridgeId }))  { // TODO: double-check pk and sk
+    let bridgeData = switch(CanDB.get(db, { sk = bridgeId }))  {
       case null { null };
       case (?canDbEntity) { unwrapBridge(canDbEntity)};
     };
@@ -184,6 +317,31 @@ shared ({ caller = owner }) actor class BebbBridgeService({
     switch(bridgeData) {
       case(?b)  { ?b };
       case null { null };
+    };
+  };
+
+  
+  /**
+   * Function takes in a caller and a bridge update object. If the caller is the bridge owner,
+   * the bridge will be updated with the data within the bridge update object
+   *
+   * @return The Bridge id of the updated bridge or an error
+  */
+  func updateBridge(caller : Principal, bridgeUpdateObject : Bridge.BridgeUpdateObject) : async Bridge.BridgeIdResult {
+    switch (getBridge(bridgeUpdateObject.id)) {
+      case null { return #Err(#BridgeNotFound) };
+      case (?bridgeToUpdate) {
+        switch (Principal.equal(bridgeToUpdate.owner, caller)) {
+          case false {
+            return #Err(#Unauthorized("Not the owner"));
+          }; // Only owner may update the Bridge
+          case true {
+            let updatedBridge : Bridge.Bridge = Bridge.updateBridgeFromUpdateObject(bridgeUpdateObject, bridgeToUpdate);
+            let result = putBridge(updatedBridge);
+            return #Ok(updatedBridge.id);
+          };
+        };
+      };
     };
   };
 
@@ -239,36 +397,48 @@ shared ({ caller = owner }) actor class BebbBridgeService({
     };
   };
 
-// TODO: the following functions might be helpful in an adapted form  
-
-  // TODO: this needs to be changed as the Entities are now stored in different canisters
-    // This will currently fail
   /**
    * This function takes a bridge and adds the bridge ID to the fromIds field
    * of the entity it is linked from
-   *
+   * bridgingTo: if Entity is Entity to bridge to then true, if bridging from the Entity then false
    * @return True if the bridge ID was added to the from ID list, otherwise
    * false is returned if it couldn't
   */
-  // private func addBridgeToEntityFromIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
-  //   let entity = getEntity(entityId);
-  //   switch (entity) {
-  //     case (null) {
-  //       return false;
-  //     };
-  //     case (?retrievedEntity) {
-  //       let newEntityAttachedBridge = {
-  //         linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
-  //         id=bridge.id;
-  //         creationTime = Time.now();
-  //         bridgeType = bridge.bridgeType;
-  //       };
-  //       let newEntity = Entity.updateEntityFromIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.fromIds, [newEntityAttachedBridge]));
-  //       let result = putEntity(newEntity);
-  //       return true;
-  //     };
-  //   };
-  // };
+  private func addBridgeAttachmentOnEntity(entity : Entity.Entity, bridge : Bridge.Bridge, bridgingTo : Bool, canisterId: Text) : async Bool {
+    let entityCanister = actor(canisterId): actor { add_bridge_attachment: (Text, Bridge.Bridge, Bool) -> async Entity.EntityIdResult };
+    // Call function on Entity canister to add Bridge attachment
+    let entityIdResult = await entityCanister.add_bridge_attachment(entity.id, bridge, bridgingTo);
+    switch (entityIdResult)
+    {
+      case(#Ok(entityId)) {
+        return true;
+      };
+      case _ {
+        return false;
+      }
+    };
+  };
+
+  /**
+   * Given a canister id hint, this will look at that canister to try to retrieve the corresponding Entity
+   *
+   * @return The entity if it exists, otherwise null
+  */
+  private func getEntity(entityId : Text, canister_id: Text) : async ?Entity.Entity {
+     // TODO: This built but is untested
+    let entityCanister = actor(canister_id): actor { get_entity: (Text) -> async Entity.EntityResult };
+    let entityResult = await entityCanister.get_entity(entityId);
+    switch (entityResult)
+    {
+      case(#Ok(entity)) {
+        return ?entity;
+      };
+      case _ {
+        return null;
+      }
+    }
+  };
+
 
   // TODO: this needs to be changed as the Entities are now stored in different canisters
     // This will currently fail
@@ -298,35 +468,5 @@ shared ({ caller = owner }) actor class BebbBridgeService({
   //     };
   //   };
   // };
-  
-  // TODO: needs to change as Bridges are distributed across multiple canisters
-    // Does not work properly currently
-  /**
-  * Function checks that the given bridge id provided exists within the database
-  *
-  * @return True if the entity exists, false otherwise
-  */
-  private func checkIfBridgeExists(bridgeId : Text) : Bool {
-    let result = getBridge(bridgeId);
-    switch (result) {
-      case (null) { return false };
-      case (bridge) { return true };
-    };
-  };
-
-  // TODO: if we want to keep/need the functionality of checkIfEntityExists, we need to change it (as the Entities are now stored in different canisters)
-    // This call will thus currently always fail
-  /**
-  * Function checks that the given entity id provided exists within the database
-  *
-  * @return True if the entity exists, false otherwise
-  */
-  /* private func checkIfEntityExists(entityId : Text) : Bool {
-    let result = getEntity(entityId);
-    switch (result) {
-      case (null) { return false };
-      case (entity) { return true };
-    };
-  }; */
 
 }

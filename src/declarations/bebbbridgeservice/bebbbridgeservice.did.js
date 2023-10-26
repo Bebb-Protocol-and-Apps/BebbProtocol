@@ -28,6 +28,10 @@ export const idlFactory = ({ IDL }) => {
     'bridgeType' : BridgeType,
     'entitySpecificFields' : IDL.Opt(IDL.Text),
   });
+  const BridgeEntityCanisterHints = IDL.Record({
+    'toEntityCanisterId' : IDL.Text,
+    'fromEntityCanisterId' : IDL.Text,
+  });
   const BridgeIdErrors = IDL.Variant({
     'Error' : IDL.Null,
     'Unauthorized' : IDL.Text,
@@ -58,12 +62,29 @@ export const idlFactory = ({ IDL }) => {
     'BridgeNotFound' : IDL.Null,
   });
   const BridgeResult = IDL.Variant({ 'Ok' : Bridge, 'Err' : BridgeErrors });
+  const BridgeUpdateObject = IDL.Record({
+    'id' : IDL.Text,
+    'name' : IDL.Opt(IDL.Text),
+    'description' : IDL.Opt(IDL.Text),
+    'keywords' : IDL.Opt(IDL.Vec(IDL.Text)),
+    'settings' : IDL.Opt(BridgeSettings),
+  });
   const BebbBridgeService = IDL.Service({
-    'create_bridge' : IDL.Func([BridgeInitiationObject], [BridgeIdResult], []),
+    'create_bridge' : IDL.Func(
+        [BridgeInitiationObject, BridgeEntityCanisterHints],
+        [BridgeIdResult],
+        [],
+      ),
+    'delete_bridge' : IDL.Func(
+        [IDL.Text, BridgeEntityCanisterHints],
+        [BridgeIdResult],
+        [],
+      ),
     'getPK' : IDL.Func([], [IDL.Text], ['query']),
     'get_bridge' : IDL.Func([IDL.Text], [BridgeResult], ['query']),
     'skExists' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'transferCycles' : IDL.Func([], [], []),
+    'update_bridge' : IDL.Func([BridgeUpdateObject], [BridgeIdResult], []),
   });
   return BebbBridgeService;
 };

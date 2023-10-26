@@ -8,6 +8,14 @@ type ScalingLimitType =
    count: nat;
    heapSize: nat;
  };
+type BridgeUpdateObject = 
+ record {
+   description: opt text;
+   id: text;
+   keywords: opt vec text;
+   name: opt text;
+   settings: opt BridgeSettings;
+ };
 type BridgeType = 
  variant {
    IsAttachedto;
@@ -48,6 +56,11 @@ type BridgeErrors =
    Error;
    Unauthorized: text;
  };
+type BridgeEntityCanisterHints = 
+ record {
+   fromEntityCanisterId: text;
+   toEntityCanisterId: text;
+ };
 type Bridge = 
  record {
    bridgeType: BridgeType;
@@ -66,11 +79,14 @@ type Bridge =
  };
 type BebbBridgeService = 
  service {
-   create_bridge: (BridgeInitiationObject) -> (BridgeIdResult);
+   create_bridge: (BridgeInitiationObject, BridgeEntityCanisterHints) ->
+    (BridgeIdResult);
+   delete_bridge: (text, BridgeEntityCanisterHints) -> (BridgeIdResult);
    getPK: () -> (text) query;
    get_bridge: (text) -> (BridgeResult) query;
    skExists: (text) -> (bool) query;
    transferCycles: () -> ();
+   update_bridge: (BridgeUpdateObject) -> (BridgeIdResult);
  };
 type AutoScalingCanisterSharedFunctionHook = func (text) -> (text);
 service : (record {

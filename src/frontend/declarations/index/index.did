@@ -1,7 +1,0 @@
-type IndexCanister = 
- service {
-   autoScaleHelloServiceCanister: (text) -> (text);
-   createHelloServiceCanisterByGroup: (text) -> (opt text);
-   getCanistersByPK: (text) -> (vec text) query;
- };
-service : () -> IndexCanister

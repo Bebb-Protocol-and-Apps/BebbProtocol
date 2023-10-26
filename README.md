@@ -18,12 +18,20 @@ dfx start --background
 
 # Deploys your canisters to the replica and generates your candid interface
 dfx deploy index
-dfx deploy bebb
+dfx deploy frontend
+```
+
+During development, whenever the code for Index or Service canisters change, we need to run a fresh replica (and also regenerate the candid files):
+```bash
+dfx stop
+dfx start --background --clean
+dfx generate
+dfx deploy index
+dfx deploy frontend
+npm run start
 ```
 
 ## Deploy Bebb to the mainnet
-Local:
-dfx deploy
 
 Development: 
 ```bash 
