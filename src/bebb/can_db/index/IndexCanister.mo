@@ -26,7 +26,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   public shared query func getPkOptions(): async [Text] {
     // var available_pks = [];
     // for (key in CanDBEntityTypes) {
-    //   available_pks.append(getCanEntityTypePK(key));
+    //   available_pks.append(getCanDbEntityTypePK(key));
     // };
     return ["BebbEntity", "BebbBridge"];
   };
@@ -171,7 +171,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   /**
    * Generates the correct PK based on the Entity type
   */
-  func getCanEntityTypePK(canDBEntityType: CanDBEntityTypes): Text {
+  func getCanDbEntityTypePK(canDBEntityType: CanDBEntityTypes): Text {
     return canDBEntityTypeToString(canDBEntityType) # "#";
   };
 
@@ -188,8 +188,8 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   private func getPkForServiceType(serviceType: Text): async Text {
     switch serviceType {
-      case ("Entity") getCanEntityTypePK(#CanDBTypeEntity);
-      case ("Bridge") getCanEntityTypePK(#CanDBTypeBridge);
+      case ("Entity") getCanDbEntityTypePK(#CanDBTypeEntity);
+      case ("Bridge") getCanDbEntityTypePK(#CanDBTypeBridge);
       case (_) { throw Error.reject("Unsupported serviceType"); };
     };
   };

@@ -12,6 +12,20 @@
         "dist/"
       ],
       "type": "assets"
+    },
+    "bebbentityservice": {
+      "type": "motoko",
+      "main": "src/bebb/can_db/bebb_service/BebbEntityService.mo",
+      "declarations": {
+        "node_compatibility": true
+      }
+    },
+    "bebbbridgeservice": {
+      "type": "motoko",
+      "main": "src/bebb/can_db/bebb_service/BebbBridgeService.mo",
+      "declarations": {
+        "node_compatibility": true
+      }
     }
   },
   "declarations": {

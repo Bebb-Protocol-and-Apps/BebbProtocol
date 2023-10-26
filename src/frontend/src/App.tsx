@@ -2,7 +2,7 @@ import * as React from "react";
 import type { Identity } from "@dfinity/agent";
 import { AuthClient } from "@dfinity/auth-client";
 
-import { getBebbBridge, getBebbEntity, putBebbBridge, putBebbEntity } from "./api";
+import { getBebbBridge, getBebbEntity, putBebbBridge, putBebbEntity, removeBebbEntity, removeBebbBridge } from "./api";
 import {
   intializeIndexClient,
   initializeBebbEntityServiceClient,
@@ -72,6 +72,9 @@ export default function App() {
   let [name, setName] = React.useState("");
   let [toEntityId, setToEntityId] = React.useState("");
   let [fromEntityId, setFromEntityId] = React.useState("");
+  let [idToDelete, setIdToDelete] = React.useState("");
+  let [deleteEntityResponse, setDeleteEntityResponse] = React.useState("");
+  let [deletionErrorText, setDeletionErrorText] = React.useState("");
 
   async function getEntity() {
     if (entityId === "") {
@@ -128,7 +131,7 @@ export default function App() {
           fromEntityId, 
           name,
         };
-        const result = await putBebbBridge(bridgeServiceClient, partition.value, bebbBridgeObject);
+        const result = await putBebbBridge(bridgeServiceClient, partition.value, bebbBridgeObject, entityServiceClient);
         // @ts-ignore
         if (result.Ok) {
           // @ts-ignore
@@ -157,6 +160,41 @@ export default function App() {
       } else {
         // @ts-ignore
         result.Err ? setCreateErrorText(result.Err) : setCreateErrorText("Something went wrong, please try once more.");
+      };
+    };
+  };
+
+  async function deleteEntity() {
+    if (!idToDelete) {
+      let errorText = "Must enter an idToDelete";
+      console.error(errorText);
+      setDeletionErrorText(errorText);
+    };
+    if (partition.value === "Bridge") {
+      setDeletionErrorText("");
+      console.log("deleteEntity partition.value ", partition.value);
+      const result = await removeBebbBridge(bridgeServiceClient, partition.value, idToDelete, entityServiceClient);
+      console.log("Debug deleteEntity result ", result);
+      // @ts-ignore
+      if (result.Ok) {
+        // @ts-ignore
+        setDeleteEntityResponse(`Successfully deleted Bridge with id: ${result.Ok}`);
+      } else {
+        // @ts-ignore
+        result.Err ? setDeletionErrorText(result.Err) : setDeletionErrorText("Something went wrong, please try once more.");
+      };
+    } else {
+      setDeletionErrorText("");
+      console.log("Debug deleteEntity partition.value ", partition.value);
+      const result = await removeBebbEntity(entityServiceClient, partition.value, idToDelete);
+      console.log("Debug deleteEntity result ", result);
+      // @ts-ignore
+      if (result.Ok) {
+        // @ts-ignore
+        setDeleteEntityResponse(`Successfully deleted Entity with id: ${result.Ok}`);
+      } else {
+        // @ts-ignore
+        result.Err ? setDeletionErrorText(JSON.stringify(result.Err)) : setDeletionErrorText("Something went wrong, please try once more.");
       };
     };
   };
@@ -235,6 +273,24 @@ export default function App() {
           <button type="button" onClick={createEntity}>Create Entity</button>
           <div className="left-margin">{successText}</div>
           <div>{createErrorText}</div>
+        </div>
+      </div>
+
+      <div className="section-wrapper">
+        <h2>Delete an Entity from the {partition.label} partition</h2>
+        <div className="flex-wrapper">
+          <div className="prompt-text">Set id to delete:</div>
+          <input
+            className="margin-left"
+            value={idToDelete}
+            onChange={ev => setIdToDelete(ev.target.value)}
+          />
+          <button className="left-margin" type="button" onClick={deleteEntity}>Delete Entity</button>
+        </div>
+        <div className="flex-wrapper">
+          <div className="prompt-text">Deletion response:</div>
+          <div>{deleteEntityResponse}</div>
+          <div>{deletionErrorText}</div>
         </div>
       </div>
 
