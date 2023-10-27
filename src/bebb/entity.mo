@@ -97,6 +97,12 @@ module {
   public type EntityIdResult = Types.Result<Text, EntityIdErrors>;
 
   /**
+   * Defines the result type for returning multiple Entity Ids from
+   * the public API
+  */
+  public type EntityIdsResult = Types.Result<[Text], EntityIdErrors>;
+
+  /**
    * Defines the entity errors that can occur when trying to retrieve an entity
   */
   public type EntityErrors = {
@@ -110,6 +116,27 @@ module {
    * the public API
   */
   public type EntityResult = Types.Result<Entity, EntityErrors>;
+
+  /**
+   * Defines the result type for returning multiple Entities from
+   * the public API
+  */
+  public type EntitiesResult = Types.Result<[Entity], EntityErrors>;
+
+  /**
+   * Input type used to specify criterion to filter and match Entities
+  */
+  public type EntityFilterCriterion = {
+    /**
+     * The criterion to apply
+    */
+    criterionKey : Text;
+
+    /**
+     * Which value to look to match against
+    */
+    criterionValue : Text;
+  };
 
   /**
    * Stores entity specific settings

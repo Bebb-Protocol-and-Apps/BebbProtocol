@@ -148,6 +148,25 @@ actor {
     };
   };
 
+  /**
+   * Public interface for finding matching Entities according to supported search parameters. Retrieving an Entity is subject to any permission and rules defined by the Entity.
+   * Any matching Entities found are returned, otherwise an empty array is returned.
+  */
+  public shared query ({ caller }) func match_entities(filterCriteria : [Entity.EntityFilterCriterion]) : async Entity.EntitiesResult {
+    if (filterCriteria.size() < 1) {
+      return #Err(#Unauthorized "Must specify matchCriteria");
+    };
+    if (filterCriteria.size() > 5) {
+      return #Err(#Unauthorized "Too many matchCriteria");
+    };
+    let result = matchEntities(caller, filterCriteria);
+    switch (result) {
+      case (null) { return #Err(#Error) };
+      case (?entities) { return #Ok(entities) };
+    };
+  };
+
+
   /*************************************************
           Helper Functions related to entities
   *************************************************/
@@ -628,6 +647,44 @@ actor {
           };
         };
       };
+    };
+  };
+
+  /**
+   * Helper functions to match filters against all Entities
+  */
+  private func matchEntities(caller : Principal, filterCriteria : [Entity.EntityFilterCriterion]) : ?[Entity.Entity] {
+    if (filterCriteria.size() < 1) {
+      return null;
+    };
+    var foundMatches : Iter.Iter<Entity.Entity> = entitiesStorage.vals();
+    for (filterCriterion in filterCriteria.vals()) {
+      foundMatches := filterEntities(caller, filterCriterion, foundMatches)
+    };
+    return ?Iter.toArray<Entity.Entity>(foundMatches);
+  };
+
+  private func filterEntities(caller : Principal, filterCriterion : Entity.EntityFilterCriterion, entitiesToFilter : Iter.Iter<Entity.Entity>) : Iter.Iter<Entity.Entity> {
+    let buffer = Buffer.Buffer<Entity.Entity>(8);
+    Iter.iterate(entitiesToFilter, func(entity : Entity.Entity, ix : Nat) {
+      switch (applyFilterToEntity(caller, filterCriterion, entity)) {
+        case (true) { buffer.add(entity) };
+        case _ {};
+      };
+    });
+    return buffer.vals();
+  };
+
+  private func applyFilterToEntity(caller : Principal, filterCriterion : Entity.EntityFilterCriterion, entity : Entity.Entity) : Bool {
+    switch (filterCriterion.criterionKey) {
+      case ("externalId") {
+        if (Text.contains(entity.entitySpecificFields, #text("externalId"))) {
+          return Text.contains(entity.entitySpecificFields, #text(filterCriterion.criterionValue))
+        } else {
+          return false;
+        };
+      };
+      case _ { return false; };
     };
   };
 
