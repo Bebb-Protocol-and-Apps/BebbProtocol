@@ -156,7 +156,7 @@ actor {
     if (filterCriteria.size() < 1) {
       return #Err(#Unauthorized "Must specify matchCriteria");
     };
-    if (filterCriteria.size() > 5) {
+    if (filterCriteria.size() > maxNumberOfFilters) {
       return #Err(#Unauthorized "Too many matchCriteria");
     };
     let result = matchEntities(caller, filterCriteria);
@@ -653,15 +653,19 @@ actor {
   /**
    * Helper functions to match filters against all Entities
   */
+  let maxNumberOfFilters = 5; // Maximum number of filters allowed to be applied during the Entity matching query
+
   private func matchEntities(caller : Principal, filterCriteria : [Entity.EntityFilterCriterion]) : ?[Entity.Entity] {
     if (filterCriteria.size() < 1) {
       return null;
     };
-    var foundMatches : Iter.Iter<Entity.Entity> = entitiesStorage.vals();
+    // Start off with all Entities and filter them according to each criterion
+    var remainingEntities : Iter.Iter<Entity.Entity> = entitiesStorage.vals();
     for (filterCriterion in filterCriteria.vals()) {
-      foundMatches := filterEntities(caller, filterCriterion, foundMatches)
+      // Keep the remaining Entities after each filter step (i.e. the ones that passed the filter criterion)
+      remainingEntities := filterEntities(caller, filterCriterion, remainingEntities)
     };
-    return ?Iter.toArray<Entity.Entity>(foundMatches);
+    return ?Iter.toArray<Entity.Entity>(remainingEntities);
   };
 
   private func filterEntities(caller : Principal, filterCriterion : Entity.EntityFilterCriterion, entitiesToFilter : Iter.Iter<Entity.Entity>) : Iter.Iter<Entity.Entity> {
@@ -676,15 +680,10 @@ actor {
   };
 
   private func applyFilterToEntity(caller : Principal, filterCriterion : Entity.EntityFilterCriterion, entity : Entity.Entity) : Bool {
-    switch (filterCriterion.criterionKey) {
-      case ("externalId") {
-        if (Text.contains(entity.entitySpecificFields, #text("externalId"))) {
-          return Text.contains(entity.entitySpecificFields, #text(filterCriterion.criterionValue))
-        } else {
-          return false;
-        };
-      };
-      case _ { return false; };
+    if (Text.contains(entity.entitySpecificFields, #text("externalId"))) {
+      return Text.contains(entity.entitySpecificFields, #text(filterCriterion.criterionValue))
+    } else {
+      return false;
     };
   };
 
