@@ -258,6 +258,7 @@ actor {
   let oneMB : Nat = 1048576; // 1 MB
   private let maxPreviewBlobSize : Nat = 2 * oneMB; 
   private let maxNumPreviews = 5;
+  
   private func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
     var entity = getEntity(entityUpdateObject.id);
     switch (entity) {
@@ -286,12 +287,12 @@ actor {
 
                 // Check all the previews and make sure they aren't too big
                 for (preview in new_previews.vals()) {
-                    let fileSize = preview.previewData.size();
-                    if (fileSize > maxPreviewBlobSize)
-                    {
-                      return #Err(#PreviewTooLarge(counter));
-                    };
-                    counter := counter + 1;
+                  let fileSize = preview.previewData.size();
+                  if (fileSize > maxPreviewBlobSize)
+                  {
+                    return #Err(#PreviewTooLarge(counter));
+                  };
+                  counter := counter + 1;
                 };
               };
             };

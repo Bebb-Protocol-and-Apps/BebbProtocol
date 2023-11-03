@@ -232,6 +232,7 @@ module {
     description : ?Text;
     keywords : ?[Text];
     entitySpecificFields : ?Text;
+    previews: ?[EntityPreview];
   };
 
   /**
