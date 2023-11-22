@@ -1,0 +1,6 @@
+[dependencies]
+base = "0.9.8"
+matchers = "https://github.com/kritzcreek/motoko-matchers#v1.2.0"
+rand = "https://github.com/aviate-labs/rand.mo#v0.2.1"
+uuid = "https://github.com/aviate-labs/uuid.mo#88871a6e1801c61ba54d42966f08be0604bb2a2d"
+json = "https://github.com/aviate-labs/json.mo#v0.2.1"
