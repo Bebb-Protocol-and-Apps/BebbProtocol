@@ -9,13 +9,15 @@ import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
+import Time "mo:base/Time";
+
+import JSON "mo:json/JSON";
 
 import Entity "entity";
 import Bridge "bridge";
 import HTTP "./Http";
 import Types "./Types";
 import Utils "./Utils";
-import Time "mo:base/Time";
 
 actor {
   /*************************************************
@@ -154,10 +156,10 @@ actor {
   */
   public shared query ({ caller }) func match_entities(filterCriteria : [Entity.EntityFilterCriterion]) : async Entity.EntitiesResult {
     if (filterCriteria.size() < 1) {
-      return #Err(#Unauthorized "Must specify matchCriteria");
+      return #Err(#Unauthorized "Must specify filterCriteria");
     };
     if (filterCriteria.size() > maxNumberOfFilters) {
-      return #Err(#Unauthorized "Too many matchCriteria");
+      return #Err(#Unauthorized "Too many filterCriteria");
     };
     let result = matchEntities(caller, filterCriteria);
     switch (result) {
@@ -660,11 +662,14 @@ actor {
     if (filterCriteria.size() < 1) {
       return null;
     };
+    if (filterCriteria.size() > maxNumberOfFilters) {
+      return null;
+    };
     // Start off with all Entities and filter them according to each criterion
     var remainingEntities : Iter.Iter<Entity.Entity> = entitiesStorage.vals();
     for (filterCriterion in filterCriteria.vals()) {
       // Keep the remaining Entities after each filter step (i.e. the ones that passed the filter criterion)
-      remainingEntities := filterEntities(caller, filterCriterion, remainingEntities)
+      remainingEntities := filterEntities(caller, filterCriterion, remainingEntities);
     };
     return ?Iter.toArray<Entity.Entity>(remainingEntities);
   };
@@ -680,13 +685,40 @@ actor {
     return buffer.vals();
   };
 
+  type JSON = JSON.JSON;
   private func applyFilterToEntity(caller : Principal, filterCriterion : Entity.EntityFilterCriterion, entity : Entity.Entity) : Bool {
-    if (Text.contains(entity.entitySpecificFields, #text("externalId"))) {
-      return Text.contains(entity.entitySpecificFields, #text(filterCriterion.criterionValue))
-    } else {
-      return false;
+    // Attempt to parse the entity's specific fields as JSON
+    let parsedJsonResult = JSON.parse(entity.entitySpecificFields);
+    switch (parsedJsonResult) {
+      case (?parsedJson) {
+        // Ensure the parsed JSON is an object
+        switch (parsedJson) {
+          case (#Object(obj)) {
+            for (pair in obj.vals()) {
+              switch (pair) {
+                case ((key, #String(value))) {
+                  // Check if the value matches the criterion value
+                  if (Text.equal(key, filterCriterion.criterionKey) and Text.equal(value,filterCriterion.criterionValue)) {
+                    return true;
+                  };
+                };
+                case _ {};
+              };
+            };
+            return false;
+          };
+          case _ {
+            // The JSON is not an object
+            return false;
+          };
+        };
+      };
+      case (_) {
+        // Error in parsing JSON
+        return false;
+      };
     };
-  };
+  };  
 
   /*************************************************
               Code related to system upgrades
