@@ -9,13 +9,15 @@ import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";
 import Option "mo:base/Option";
+import Time "mo:base/Time";
+
+import JSON "mo:json/JSON";
 
 import Entity "entity";
 import Bridge "bridge";
 import HTTP "./Http";
 import Types "./Types";
 import Utils "./Utils";
-import Time "mo:base/Time";
 
 actor {
   /*************************************************
@@ -148,6 +150,25 @@ actor {
     };
   };
 
+  /**
+   * Public interface for finding matching Entities according to supported search parameters. Retrieving an Entity is subject to any permission and rules defined by the Entity.
+   * Any matching Entities found are returned, otherwise an empty array is returned.
+  */
+  public shared query ({ caller }) func match_entities(filterCriteria : [Entity.EntityFilterCriterion]) : async Entity.EntitiesResult {
+    if (filterCriteria.size() < 1) {
+      return #Err(#Unauthorized "Must specify filterCriteria");
+    };
+    if (filterCriteria.size() > maxNumberOfFilters) {
+      return #Err(#Unauthorized "Too many filterCriteria");
+    };
+    let result = matchEntities(caller, filterCriteria);
+    switch (result) {
+      case (null) { return #Err(#Error) };
+      case (?entities) { return #Ok(entities) };
+    };
+  };
+
+
   /*************************************************
           Helper Functions related to entities
   *************************************************/
@@ -239,6 +260,7 @@ actor {
   let oneMB : Nat = 1048576; // 1 MB
   private let maxPreviewBlobSize : Nat = 2 * oneMB; 
   private let maxNumPreviews = 5;
+  
   private func updateEntity(caller : Principal, entityUpdateObject : Entity.EntityUpdateObject) : async Entity.EntityIdResult {
     var entity = getEntity(entityUpdateObject.id);
     switch (entity) {
@@ -267,12 +289,12 @@ actor {
 
                 // Check all the previews and make sure they aren't too big
                 for (preview in new_previews.vals()) {
-                    let fileSize = preview.previewData.size();
-                    if (fileSize > maxPreviewBlobSize)
-                    {
-                      return #Err(#PreviewTooLarge(counter));
-                    };
-                    counter := counter + 1;
+                  let fileSize = preview.previewData.size();
+                  if (fileSize > maxPreviewBlobSize)
+                  {
+                    return #Err(#PreviewTooLarge(counter));
+                  };
+                  counter := counter + 1;
                 };
               };
             };
@@ -630,6 +652,73 @@ actor {
       };
     };
   };
+
+  /**
+   * Helper functions to match filters against all Entities
+  */
+  let maxNumberOfFilters = 5; // Maximum number of filters allowed to be applied during the Entity matching query
+
+  private func matchEntities(caller : Principal, filterCriteria : [Entity.EntityFilterCriterion]) : ?[Entity.Entity] {
+    if (filterCriteria.size() < 1) {
+      return null;
+    };
+    if (filterCriteria.size() > maxNumberOfFilters) {
+      return null;
+    };
+    // Start off with all Entities and filter them according to each criterion
+    var remainingEntities : Iter.Iter<Entity.Entity> = entitiesStorage.vals();
+    for (filterCriterion in filterCriteria.vals()) {
+      // Keep the remaining Entities after each filter step (i.e. the ones that passed the filter criterion)
+      remainingEntities := filterEntities(caller, filterCriterion, remainingEntities);
+    };
+    return ?Iter.toArray<Entity.Entity>(remainingEntities);
+  };
+
+  private func filterEntities(caller : Principal, filterCriterion : Entity.EntityFilterCriterion, entitiesToFilter : Iter.Iter<Entity.Entity>) : Iter.Iter<Entity.Entity> {
+    let buffer = Buffer.Buffer<Entity.Entity>(8);
+    Iter.iterate(entitiesToFilter, func(entity : Entity.Entity, ix : Nat) {
+      switch (applyFilterToEntity(caller, filterCriterion, entity)) {
+        case (true) { buffer.add(entity) };
+        case _ {};
+      };
+    });
+    return buffer.vals();
+  };
+
+  type JSON = JSON.JSON;
+  private func applyFilterToEntity(caller : Principal, filterCriterion : Entity.EntityFilterCriterion, entity : Entity.Entity) : Bool {
+    // Attempt to parse the entity's specific fields as JSON
+    let parsedJsonResult = JSON.parse(entity.entitySpecificFields);
+    switch (parsedJsonResult) {
+      case (?parsedJson) {
+        // Ensure the parsed JSON is an object
+        switch (parsedJson) {
+          case (#Object(obj)) {
+            for (pair in obj.vals()) {
+              switch (pair) {
+                case ((key, #String(value))) {
+                  // Check if the value matches the criterion value
+                  if (Text.equal(key, filterCriterion.criterionKey) and Text.equal(value,filterCriterion.criterionValue)) {
+                    return true;
+                  };
+                };
+                case _ {};
+              };
+            };
+            return false;
+          };
+          case _ {
+            // The JSON is not an object
+            return false;
+          };
+        };
+      };
+      case (_) {
+        // Error in parsing JSON
+        return false;
+      };
+    };
+  };  
 
   /*************************************************
               Code related to system upgrades
