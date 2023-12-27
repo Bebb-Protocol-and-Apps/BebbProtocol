@@ -102,10 +102,6 @@ shared ({ caller = owner }) actor class BebbBridgeService({
     return result;
   };
 
-  // TODO: get_to_bridge_ids_by_entity_id (actually this will likely be on BebbEntityService)
-
-  // TODO: get_from_bridge_ids_by_entity_id (actually this will likely be on BebbEntityService)
-
   /*************************************************
           Helper Functions related to Bridges
   *************************************************/

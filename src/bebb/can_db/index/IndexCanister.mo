@@ -16,7 +16,7 @@ import BebbBridgeService "../bebb_service/BebbBridgeService";
 shared ({caller = owner}) actor class IndexCanister() = this {
   
   /**
-   * Stores the can db entity types that can be used as PK for candb
+   * Stores the can db Entity types that can be used as PK for candb
   */
   public type CanDBEntityTypes = {
     #CanDBTypeEntity;
@@ -28,7 +28,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     // for (key in CanDBEntityTypes) {
     //   available_pks.append(getCanDbEntityTypePK(key));
     // };
-    return ["BebbEntity", "BebbBridge"];
+    return ["BebbEntity#", "BebbBridge#"];
   };
 
   /// @required stable variable (Do not delete or change)
@@ -83,15 +83,13 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   /// !! Do not use this method without caller authorization
   /// Upgrade user canisters in a PK range, i.e. rolling upgrades (limit is fixed at upgrading the canisters of 5 PKs per call)
   public shared({ caller = caller }) func upgradeGroupCanistersInPKRange(lowerPK: Text, upperPK: Text, wasmModule: Blob): async Admin.UpgradePKRangeResult {
-    /* !!! Recommend Adding to prevent anyone from being able to upgrade the wasm of your service actor canisters
+    // !!! Recommend Adding to prevent anyone from being able to upgrade the wasm of your service actor canisters
     if (caller != owner) { // basic authorization
       return {
         upgradeCanisterResults = [];
         nextKey = null;
       }
     }; 
-    */
-
 
     // CanDB documentation on this library function - https://www.candb.canscale.dev/CanDBAdmin.html
     await Admin.upgradeCanistersInPKRange({
@@ -103,7 +101,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       // the scaling options parameter that will be passed to the constructor of the upgraded canister
       scalingOptions = {
         autoScalingHook = autoScaleBebbServiceCanister;
-        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB
+        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO
       };
       // the owners parameter that will be passed to the constructor of the upgraded canister
       owners = ?[owner, Principal.fromActor(this)];
