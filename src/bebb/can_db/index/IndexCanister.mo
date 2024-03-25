@@ -14,6 +14,8 @@ import BebbEntityService "../bebb_service/BebbEntityService";
 import BebbBridgeService "../bebb_service/BebbBridgeService";
 
 shared ({caller = owner}) actor class IndexCanister() = this {
+
+  let HEAP_SIZE_INSERT_LIMIT = 1_000_000_000; // 1GB
   
   /**
    * Stores the can db Entity types that can be used as PK for candb
@@ -101,7 +103,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       // the scaling options parameter that will be passed to the constructor of the upgraded canister
       scalingOptions = {
         autoScalingHook = autoScaleBebbServiceCanister;
-        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO
+        sizeLimit = #heapSize(HEAP_SIZE_INSERT_LIMIT); // Scale out at 1GB
       };
       // the owners parameter that will be passed to the constructor of the upgraded canister
       owners = ?[owner, Principal.fromActor(this)];
@@ -122,7 +124,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
           partitionKey = pk;
           scalingOptions = {
             autoScalingHook = autoScaleBebbServiceCanister;
-            sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO: increase (as this seems low)?
+            sizeLimit = #heapSize(HEAP_SIZE_INSERT_LIMIT); // Scale out at 1GB
             // for auto-scaling testing
             //sizeLimit = #count(3); // Scale out at 3 entities inserted
           };
@@ -135,7 +137,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
           partitionKey = pk;
           scalingOptions = {
             autoScalingHook = autoScaleBebbServiceCanister;
-            sizeLimit = #heapSize(200_000_000); // Scale out at 200MB TODO: increase (as this seems low)?
+            sizeLimit = #heapSize(HEAP_SIZE_INSERT_LIMIT); // Scale out at 1GB
             // for auto-scaling testing
             //sizeLimit = #count(3); // Scale out at 3 entities inserted
           };
