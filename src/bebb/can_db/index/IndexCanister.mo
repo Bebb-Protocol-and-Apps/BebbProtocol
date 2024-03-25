@@ -154,8 +154,8 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       canisterId = newBebbServiceCanisterPrincipal;
       settings = {
         controllers = controllers;
-        compute_allocation = ?0; // TODO: change?
-        memory_allocation = ?0; // TODO: change?
+        compute_allocation = ?0; // priority boost for execution
+        memory_allocation = ?0; // reserve storage up-front
         freezing_threshold = ?2592000;
       }
     });
