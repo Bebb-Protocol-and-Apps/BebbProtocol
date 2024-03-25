@@ -387,4 +387,11 @@ module {
 
     return #CreatedOther;
   };
+
+  // For Entity previews
+  //public let oneMB : Nat = 1048576; // 1 MB
+  //public let maxPreviewBlobSize : Nat = 2 * oneMB; 
+  public let maxPreviewBlobSize : Nat = 2097152; 
+  public let maxNumPreviews = 5;
+
 };

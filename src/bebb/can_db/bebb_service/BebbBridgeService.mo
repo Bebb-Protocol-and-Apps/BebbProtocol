@@ -290,15 +290,6 @@ shared ({ caller = owner }) actor class BebbBridgeService({
     return bridge;
   };
 
-  /* private func putUpdateBridge(bridge : Bridge.Bridge): async Bridge.Bridge {
-   let bridgeAttributes = Bridge.getBridgeAttributesFromBridgeObject(bridge);
-    await* CanDB.update(db, {
-      sk = bridge.id;
-      attributes = bridgeAttributes;
-    });
-    return bridge;
-  }; */
-
   /**
    * Function retrieves a bridge based on the input ID
    *
@@ -421,7 +412,6 @@ shared ({ caller = owner }) actor class BebbBridgeService({
    * @return The entity if it exists, otherwise null
   */
   private func getEntity(entityId : Text, canister_id: Text) : async ?Entity.Entity {
-     // TODO: This built but is untested
     let entityCanister = actor(canister_id): actor { get_entity: (Text) -> async Entity.EntityResult };
     let entityResult = await entityCanister.get_entity(entityId);
     switch (entityResult)
@@ -434,35 +424,5 @@ shared ({ caller = owner }) actor class BebbBridgeService({
       }
     }
   };
-
-
-  // TODO: this needs to be changed as the Entities are now stored in different canisters
-    // This will currently fail
-  /**
-   * This function takes a bridge and adds the bridge ID to the toIds field
-   * of the entity it is linked to
-   *
-   * @return True if the bridge ID was added to the to ID list, otherwise
-   * false is returned if it couldn't
-  */
-  // private func addBridgeToEntityToIds(entityId : Text, bridge : Bridge.Bridge) : Bool {
-  //   var entity = getEntity(entityId);
-  //   switch (entity) {
-  //     case (null) {
-  //       return false;
-  //     };
-  //     case (?retrievedEntity) {
-  //        let newEntityAttachedBridge = {
-  //         linkStatus = Entity.determineBridgeLinkStatus(retrievedEntity, bridge);
-  //         id=bridge.id;
-  //         creationTime = Time.now();
-  //         bridgeType = bridge.bridgeType;
-  //       };
-  //       let newEntity = Entity.updateEntityToIds(retrievedEntity, Array.append<Entity.EntityAttachedBridge>(retrievedEntity.toIds, [newEntityAttachedBridge]));
-  //       let result = putEntity(newEntity);
-  //       return true;
-  //     };
-  //   };
-  // };
 
 }

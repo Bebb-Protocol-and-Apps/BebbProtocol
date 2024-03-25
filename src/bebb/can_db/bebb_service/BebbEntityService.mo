@@ -214,33 +214,32 @@ shared ({ caller = owner }) actor class BebbEntityService({
             // Ensure that the preivews are not too large and that there aren't too many previews
             // If any of the previews are too large then return an error with
             // the preview index that caused the error of being too large
-            // var counter = 0;
-            // switch(entityUpdateObject.previews)
-            // {
-            //   case(null) {};
-            //   case(?new_previews)
-            //   {
-            //     // Check to ensure there aren't too many previews
-            //     if (new_previews.size() > maxNumPreviews)
-            //     {
-            //         return #Err(#TooManyPreviews);
-            //     };
+            var counter = 0;
+            switch(entityUpdateObject.previews)
+            {
+              case(null) {};
+              case(?new_previews)
+              {
+                // Check to ensure there aren't too many previews
+                if (new_previews.size() > Entity.maxNumPreviews)
+                {
+                  return #Err(#TooManyPreviews);
+                };
 
-            //     // Check all the previews and make sure they aren't too big
-            //     for (preview in new_previews.vals()) {
-            //         let fileSize = preview.previewData.size();
-            //         if (fileSize > maxPreviewBlobSize)
-            //         {
-            //           return #Err(#PreviewTooLarge(counter));
-            //         };
-            //         counter := counter + 1;
-            //     };
-            //   };
-            // };
+                // Check all the previews and make sure they aren't too big
+                for (preview in new_previews.vals()) {
+                  let fileSize = preview.previewData.size();
+                  if (fileSize > Entity.maxPreviewBlobSize)
+                  {
+                    return #Err(#PreviewTooLarge(counter));
+                  };
+                  counter := counter + 1;
+                };
+              };
+            };
             let updatedEntity : Entity.Entity = Entity.updateEntityFromUpdateObject(entityUpdateObject, entityToUpdate);
-            // TODO put the putUpdateEntity function using the Candb update function
-            // let result = putUpdateEntity(updatedEntity);
-            return #Ok(updatedEntity.id);
+            let result = await putEntity(updatedEntity);
+            return #Ok(result);
           };
         };
       };
@@ -263,38 +262,10 @@ shared ({ caller = owner }) actor class BebbEntityService({
           }; // Only owner may delete the Entity
           case true {
             let result = deleteEntityFromStorage(entityToDelete.id);
-            return #Ok(entityToDelete.id);
             // TODO Potentially: update all attached Bridges that the Entity was deleted
               // this is likely best done via a background process (e.g. temp storage, heartbeat process checks temp storage and takes care of additional deletion-related tasks)
-            // // First delete all the bridges pointing to this Entity
-            // for (toBridge in entityToDelete.toIds.vals()) {
-            //   let bridge = getBridge(toBridge.id);
-            //   switch (bridge) {
-            //     case (null) {};
-            //     case (?bridgeToDelete) {
-            //       // Since this bridge points to the current Entity being deleted, we need to
-            //       // delete the reference to where the bridge was pointing from and delete the reference to
-            //       // this bridge in the Entity it was pointing from before deleting the bridge
-            //       let deleteReferenceResult = deleteBridgeFromEntityFromIds(bridgeToDelete.fromEntityId, bridgeToDelete.id);
-            //       let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
-            //     };
-            //   };
-            // };
-
-            // Second delete all the bridges pointing from this Entity
-            // for (fromBridge in entityToDelete.fromIds.vals()) {
-            //   let bridge = getBridge(fromBridge.id);
-            //   switch (bridge) {
-            //     case (null) {};
-            //     case (?bridgeToDelete) {
-            //       // Since this bridge points from the current Entity being deleted, we need to
-            //       // delete the reference to where the bridge was pointing to and delete the reference to
-            //       // this bridge in the Entity it was pointing to before deleting the bridge
-            //       let deleteReferenceResult = deleteBridgeFromEntityToIds(bridgeToDelete.toEntityId, bridgeToDelete.id);
-            //       let deleteBridge = deleteBridgeFromStorage(bridgeToDelete.id);
-            //     };
-            //   };
-            // };
+              // otherwise: dangling Bridges
+            return #Ok(entityToDelete.id);
           };
         };
       };
