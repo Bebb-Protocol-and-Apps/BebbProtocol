@@ -2,7 +2,14 @@ import * as React from "react";
 import type { Identity } from "@dfinity/agent";
 import { AuthClient } from "@dfinity/auth-client";
 
-import { getBebbBridge, getBebbEntity, putBebbBridge, putBebbEntity, removeBebbEntity, removeBebbBridge } from "./api";
+import {
+  getBebbBridge,
+  getBebbEntity,
+  putBebbBridge,
+  putBebbEntity,
+  removeBebbEntity,
+  removeBebbBridge
+} from "./api";
 import {
   intializeIndexClient,
   initializeBebbEntityServiceClient,
@@ -75,6 +82,9 @@ export default function App() {
   let [idToDelete, setIdToDelete] = React.useState("");
   let [deleteEntityResponse, setDeleteEntityResponse] = React.useState("");
   let [deletionErrorText, setDeletionErrorText] = React.useState("");
+  let [idToUpdate, setIdToUpdate] = React.useState("");
+  let [updateEntityResponse, setUpdateEntityResponse] = React.useState("");
+  let [updateErrorText, setUpdateErrorText] = React.useState("");
 
   async function getEntity() {
     if (entityId === "") {
@@ -199,11 +209,56 @@ export default function App() {
     };
   };
 
+  async function updateEntity() {
+    if (!idToUpdate) {
+      let errorText = "Must enter an idToUpdate";
+      console.error(errorText);
+      setUpdateErrorText(errorText);
+    };
+    if (partition.value === "Bridge") {
+      setUpdateErrorText("");
+      console.log("updateEntity partition.value ", partition.value);
+      // updated Bridge
+      const bebbBridgeObject = {
+        id: idToUpdate,
+        name,
+      };
+      const result = await putBebbBridge(bridgeServiceClient, partition.value, bebbBridgeObject, null);
+      console.log("Debug updateEntity result ", result);
+      // @ts-ignore
+      if (result.Ok) {
+        // @ts-ignore
+        setUpdateEntityResponse(`Successfully updated Bridge with id: ${result.Ok}`);
+      } else {
+        // @ts-ignore
+        result.Err ? setUpdateErrorText(result.Err) : setUpdateErrorText("Something went wrong, please try once more.");
+      };
+    } else {
+      setUpdateErrorText("");
+      console.log("Debug updateEntity partition.value ", partition.value);
+      // updated Bebb Entity
+      const bebbEntityObject = {
+        id: idToUpdate,
+        name,
+      };
+      const result = await putBebbEntity(entityServiceClient, partition.value, bebbEntityObject);
+      console.log("Debug updateEntity result ", result);
+      // @ts-ignore
+      if (result.Ok) {
+        // @ts-ignore
+        setUpdateEntityResponse(`Successfully updated Entity with id: ${result.Ok}`);
+      } else {
+        // @ts-ignore
+        result.Err ? setUpdateErrorText(JSON.stringify(result.Err)) : setUpdateErrorText("Something went wrong, please try once more.");
+      };
+    };
+  };
+
   return (
     <div className="flex-center">
       
       <div className="section-wrapper">
-        <h1>Hello to Bebb!</h1>
+        <h1>Welcome to Bebb!</h1>
         <p>Below is a testing frontend to communicate with Bebb. 
           <br/><br/>
           To accomplish this, a unique <b>partition key</b> (PK) is used in order to <span className="partition-highlight">partition</span>, or separate the data associated with each unique "group" name. 
